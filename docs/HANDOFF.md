@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:30 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-020
+
+- **What Changed:** Created and applied the initial migration `20260706195605_init` to local PostgreSQL database using Prisma migrate dev, successfully creating the persistent database tables (`User`, `Room`, `Player`, `Game`, `Question`, `Round`, `Answer`) and storing migration history.
+- **Why:** To sync the database schema with the Prisma schema and enable a traceable migration workflow.
+- **What's Next:** Start `FFH-021: Configure Prisma Client Module` to encapsulate PrismaClient in a NestJS PrismaService/PrismaModule with dependency injection and graceful shutdown.
+
+---
+
 **Date/Time:** 2026-07-07 01:27 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-019

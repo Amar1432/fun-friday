@@ -1,17 +1,17 @@
 # Active Task
 
-## FFH-020: Configure Prisma Migrations
+## FFH-021: Configure Prisma Client Module
 
 ### Description
 
-Enable migration workflow.
+Integrate Prisma into NestJS.
 
 ### Acceptance Criteria
 
-- [ ] Initial migration created.
-- [ ] Migration executes successfully.
-- [ ] Database tables created.
-- [ ] Migration history stored.
+- [ ] Singleton Prisma service created (e.g. PrismaService extending PrismaClient).
+- [ ] Graceful shutdown/cleanup implemented in PrismaService.
+- [ ] Dependency injection configured via a shared DatabaseModule/PrismaModule.
+- [ ] Database accessible from other NestJS modules.
 
 ---
 
