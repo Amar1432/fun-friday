@@ -1,22 +1,17 @@
 # Active Task
 
-## FFH-019: Create Initial Database Schema
+## FFH-020: Configure Prisma Migrations
 
 ### Description
 
-Add project schema.
+Enable migration workflow.
 
 ### Acceptance Criteria
 
-- [ ] User model defined in schema.prisma.
-- [ ] Room model defined in schema.prisma.
-- [ ] Player model defined in schema.prisma.
-- [ ] Game model defined in schema.prisma.
-- [ ] Question model defined in schema.prisma.
-- [ ] Round model defined in schema.prisma.
-- [ ] Answer model defined in schema.prisma.
-- [ ] Relations match architecture documentation.
-- [ ] Schema validates successfully.
+- [ ] Initial migration created.
+- [ ] Migration executes successfully.
+- [ ] Database tables created.
+- [ ] Migration history stored.
 
 ---
 
