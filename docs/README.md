@@ -1,6 +1,7 @@
 # Fun Friday Hub Documentation
 
 ## 🛑 STOP: Mandatory Reading Order 🛑
+
 Whether you are a human contributor or an AI agent, you **MUST** read these documents in this exact order before modifying the codebase:
 
 1. `PRD.md` - What we are building and why.

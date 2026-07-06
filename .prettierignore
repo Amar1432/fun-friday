@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+out/
+**/out/
+.turbo/
+**/.turbo/
+coverage/
+**/coverage/
+
+# Vercel
+.vercel/
+
+# TypeScript declarations
+next-env.d.ts
+
+# Package locks and config logs
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+bun.lockb
+.system_generated/

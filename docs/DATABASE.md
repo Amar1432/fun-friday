@@ -1,6 +1,6 @@
 # Database Architecture
 
-This document defines the persistent storage layer for the Fun Friday Hub. It uses PostgreSQL and Prisma ORM. 
+This document defines the persistent storage layer for the Fun Friday Hub. It uses PostgreSQL and Prisma ORM.
 
 **Note on State:** This database is strictly for long-term persistence (User profiles, Game templates, Historical analytics). All rapid, in-game state changes (active timers, live scoreboards) are handled in-memory via Redis.
 
@@ -122,3 +122,4 @@ model Answer {
   round        Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
   player       Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }
+```

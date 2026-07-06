@@ -125,19 +125,19 @@ Authorization: Bearer <guest_access_token>
 
 # HTTP Status Codes
 
-| Status | Meaning |
-|---------|----------|
-|200|OK|
-|201|Created|
-|204|No Content|
-|400|Validation Error|
-|401|Unauthorized|
-|403|Forbidden|
-|404|Not Found|
-|409|Conflict|
-|422|Unprocessable Entity|
-|429|Too Many Requests|
-|500|Internal Server Error|
+| Status | Meaning               |
+| ------ | --------------------- |
+| 200    | OK                    |
+| 201    | Created               |
+| 204    | No Content            |
+| 400    | Validation Error      |
+| 401    | Unauthorized          |
+| 403    | Forbidden             |
+| 404    | Not Found             |
+| 409    | Conflict              |
+| 422    | Unprocessable Entity  |
+| 429    | Too Many Requests     |
+| 500    | Internal Server Error |
 
 ---
 
@@ -183,10 +183,10 @@ Returns application JWT.
 
 ## Errors
 
-|Status|Reason|
-|------|------|
-|401|Invalid SSO token|
-|400|Missing idToken|
+| Status | Reason            |
+| ------ | ----------------- |
+| 401    | Invalid SSO token |
+| 400    | Missing idToken   |
 
 ---
 
@@ -233,11 +233,11 @@ Returns guest JWT.
 
 ## Errors
 
-|Status|Reason|
-|------|------|
-|404|Room not found|
-|409|Display name already exists|
-|422|Room is no longer accepting players|
+| Status | Reason                              |
+| ------ | ----------------------------------- |
+| 404    | Room not found                      |
+| 409    | Display name already exists         |
+| 422    | Room is no longer accepting players |
 
 ---
 
@@ -307,9 +307,9 @@ Authorization: Bearer <host_token>
 
 ## Errors
 
-|Status|Reason|
-|------|------|
-|401|Unauthorized|
+| Status | Reason       |
+| ------ | ------------ |
+| 401    | Unauthorized |
 
 ---
 
@@ -505,12 +505,12 @@ Returns a filtered question set.
 
 ## Query Parameters
 
-|Parameter|Type|Required|
-|----------|----|---------|
-|limit|number|No|
-|difficulty|EASY \| MEDIUM \| HARD|No|
-|category|string|No|
-|random|boolean|No|
+| Parameter  | Type                   | Required |
+| ---------- | ---------------------- | -------- |
+| limit      | number                 | No       |
+| difficulty | EASY \| MEDIUM \| HARD | No       |
+| category   | string                 | No       |
+| random     | boolean                | No       |
 
 ---
 
@@ -689,21 +689,21 @@ HARD
 
 # REST API Summary
 
-|Method|Endpoint|Authentication|
-|--------|----------|--------------|
-|POST|/auth/sso/login|No|
-|POST|/auth/guest|No|
-|POST|/auth/logout|JWT|
-|GET|/me|Host JWT|
-|GET|/me/rooms|Host JWT|
-|POST|/rooms|Host JWT|
-|GET|/rooms|Host JWT|
-|GET|/rooms/:id|Host JWT|
-|DELETE|/rooms/:id|Host JWT|
-|GET|/rooms/validate/:code|No|
-|GET|/games|Optional|
-|GET|/games/:id|Optional|
-|GET|/games/:id/questions|Host JWT|
+| Method | Endpoint              | Authentication |
+| ------ | --------------------- | -------------- |
+| POST   | /auth/sso/login       | No             |
+| POST   | /auth/guest           | No             |
+| POST   | /auth/logout          | JWT            |
+| GET    | /me                   | Host JWT       |
+| GET    | /me/rooms             | Host JWT       |
+| POST   | /rooms                | Host JWT       |
+| GET    | /rooms                | Host JWT       |
+| GET    | /rooms/:id            | Host JWT       |
+| DELETE | /rooms/:id            | Host JWT       |
+| GET    | /rooms/validate/:code | No             |
+| GET    | /games                | Optional       |
+| GET    | /games/:id            | Optional       |
+| GET    | /games/:id/questions  | Host JWT       |
 
 ---
 
@@ -734,4 +734,7 @@ The following actions are handled exclusively over Socket.IO and **must never** 
 - Emoji reactions
 - Heartbeats
 - Redis synchronization
+
+```
+
 ```

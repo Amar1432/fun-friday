@@ -1,17 +1,19 @@
 # Active Task
 
-**Ticket:** FFH-004
-**Title:** Configure Shared ESLint
-**Status:** COMPLETED
+**Ticket:** FFH-006
+**Title:** Configure Git Hooks
 
 ## Objective
-Implement a reusable ESLint configuration package that enforces consistent linting rules across the entire monorepo.
+
+Prevent commits that break code standards by verifying type checking, linting, and formatting on pre-commit hooks.
 
 ## Execution Requirements
-1. **Package Setup:** Create a new package `packages/eslint-config`.
-2. **Configuration:** Define a base ESLint configuration here that sets the standard for both React (Next.js) and Node.js (NestJS) environments.
-3. **Integration:** Update `apps/web` and `apps/api` to extend this shared package.
-4. **Validation:** Ensure the root `pnpm lint` command correctly triggers linting for all workspace apps and reports no errors on the current scaffolded state.
+
+1. **Tool Setup:** Install and configure husky and/or lint-staged (or another light pre-commit hook framework) in the monorepo root.
+2. **Pre-commit Script:** Add a pre-commit hook that runs the linter (`pnpm lint`) and formatting check (`pnpm format`).
+3. **Commit Guard:** Ensure the commit is blocked if linting or formatting checks fail.
+4. **Verification:** Verify that formatting is run and checked on files staged for commit.
 
 ## Completion
-Once the shared configuration is integrated and `pnpm lint` runs successfully across the monorepo, update `docs/HANDOFF.md` with your status and close the session.
+
+Once the git hooks are configured and successfully run before commits, update `docs/HANDOFF.md` with your status and close the session.

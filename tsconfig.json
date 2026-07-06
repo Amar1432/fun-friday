@@ -5,10 +5,5 @@
     "module": "commonjs",
     "moduleResolution": "node"
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/dist",
-    "**/.next"
-  ]
+  "exclude": ["node_modules", "dist", "**/dist", "**/.next"]
 }

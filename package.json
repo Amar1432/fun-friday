@@ -11,6 +11,9 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,json,css,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
   }
 }
