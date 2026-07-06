@@ -1,27 +1,29 @@
 # Active Task
 
-**Ticket:** FFH-009
-**Title:** Configure Tailwind CSS
+**Ticket:** FFH-010
+**Title:** Configure Shared UI Package
 **Status:** Completed
 
 ## Objective
 
-Install and configure Tailwind CSS to provide a consistent, utility-first styling system for the Next.js frontend.
+Prepare a reusable component library package under `packages/ui` for the monorepo workspace.
 
 ## Execution Requirements
 
-1. **Installation:** Install `tailwindcss`, `postcss`, and `autoprefixer` as devDependencies in `apps/web`. (Completed)
-2. **Configuration:** Initialize the Tailwind configuration and ensure `tailwind.config.ts` is correctly pointing to your source files. (Completed)
-3. **Global Styles:** Configure the `globals.css` file to include the Tailwind directives (`@tailwind base`, `@tailwind components`, `@tailwind utilities`). (Completed)
-4. **Validation:** Ensure the Next.js development server correctly renders Tailwind styles and a production build (`pnpm build` inside `apps/web`) completes successfully. (Completed)
+1. **Workspace Package:** Create `packages/ui` with its own `package.json` and `tsconfig.json`. (Completed)
+2. **Components:** Implement a reusable sample component (like a styled `Button`). (Completed)
+3. **Integration:** Import and use the shared component library in the Next.js frontend application (`apps/web`). (Completed)
+4. **Validation:** Ensure the Next.js development server compiles successfully and the production build resolves the imports cleanly. (Completed)
 
 ## Progress
 
-- [x] Installed `tailwindcss`, `postcss`, and `autoprefixer` as devDependencies in `apps/web`.
-- [x] Initialized `tailwind.config.ts` pointing to the source directories.
-- [x] Configured the `@tailwind` base directives in `globals.css`.
-- [x] Verified the production build (`pnpm build`) and lint/typecheck steps pass monorepo-wide.
+- [x] Created `packages/ui` package directory with `package.json` and `tsconfig.json`.
+- [x] Implemented styled `Button` component under `packages/ui/src/Button.tsx` and exported it via `packages/ui/src/index.ts`.
+- [x] Configured Tailwind CSS v4 in `apps/web/app/globals.css` with `@source` to scan `packages/ui` for utility classes.
+- [x] Configured Next.js transpilation for `@fun-friday/ui` in `apps/web/next.config.ts`.
+- [x] Imported and rendered the shared `Button` component in the frontend homepage (`apps/web/app/page.tsx`).
+- [x] Verified build, lint, and formatting pass successfully monorepo-wide.
 
 ## Completion
 
-Tailwind CSS is now fully configured for the frontend application at `apps/web`, successfully resolving and loading the tailwind configuration.
+The shared UI package is successfully configured, integrated, and validated across the monorepo.
