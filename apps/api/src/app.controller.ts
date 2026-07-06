@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
+import { TestValidationDto } from './test-validation.dto';
 
 @Controller()
 export class AppController {
@@ -23,6 +24,14 @@ export class AppController {
     return {
       success: true,
       data: this.appService.getHealth(),
+    };
+  }
+
+  @Post('test-validation')
+  testValidation(@Body() body: TestValidationDto) {
+    return {
+      success: true,
+      data: body,
     };
   }
 }

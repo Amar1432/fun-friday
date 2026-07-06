@@ -37,4 +37,14 @@ describe('AppController', () => {
       expect(response.data.uptime).toBeGreaterThanOrEqual(0);
     });
   });
+
+  describe('testValidation', () => {
+    it('should return input data', () => {
+      const payload = { name: 'John Doe', age: 30 };
+      expect(appController.testValidation(payload)).toEqual({
+        success: true,
+        data: payload,
+      });
+    });
+  });
 });

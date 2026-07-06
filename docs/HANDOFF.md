@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 00:53 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-013
+
+- **What Changed:** Installed `class-validator` and `class-transformer` as dependencies in `apps/api`. Enabled global `ValidationPipe` in `apps/api/src/main.ts` configured with `whitelist: true`, `forbidNonWhitelisted: true`, and `transform: true`. Created a test controller endpoint (`/api/v1/test-validation`) and `TestValidationDto` to verify validation behaviour. Updated unit and E2E tests, verifying that valid payloads are accepted, unknown fields are rejected, and invalid values return structured validation errors.
+- **Why:** To satisfy validation requirements (enabling request validation pipe, rejecting unknown/unwhitelisted fields, returning proper validation errors, and verifying with DTO validation).
+- **What's Next:** Start `FFH-014: Configure Global Exception Handling` to configure global exception filtering and standardized validation/API error responses.
+
+---
+
 **Date/Time:** 2026-07-07 00:49 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-012

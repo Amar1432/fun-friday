@@ -1,17 +1,17 @@
 # Active Task
 
-## FFH-013: Configure Global Validation
+## FFH-014: Configure Global Exception Handling
 
 ### Description
 
-Enable request validation.
+Create consistent API error responses.
 
 ### Acceptance Criteria
 
-- Global validation pipe enabled.
-- Unknown fields rejected.
-- Invalid payloads return validation errors.
-- DTO validation enabled.
+- Global exception filter configured.
+- Validation errors are standardized.
+- Internal server errors return consistent format.
+- Stack traces hidden in production.
 
 ---
 
