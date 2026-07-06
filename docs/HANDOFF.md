@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 00:46 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-011
+
+- **What Changed:** Created `apps/web/.env.local` containing the development values for `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_AUTH_CALLBACK_URL`, and `NEXT_PUBLIC_APP_NAME`. Implemented configuration module `apps/web/lib/config.ts` to parse, validate, and export these environment variables safely to both server and client components in Next.js. Updated `apps/web/app/page.tsx` with a premium dark-themed, glassmorphic landing page displaying and verifying the loaded environment variables.
+- **Why:** To satisfy acceptance criteria of enabling access to frontend environment variables, validating their formats, loading them correctly in development, and rendering a high-quality frontend representation of their state.
+- **What's Next:** Start `FFH-012: Scaffold NestJS API` under Epic 3 (Backend Foundation) to create and verify the backend service and its health endpoint.
+
+---
+
 **Date/Time:** 2026-07-07 00:42 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-010
