@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:25 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-018
+
+- **What Changed:** Created the local PostgreSQL database `fun_friday`, configured the `DATABASE_URL` in root `.env` and `.env.example`, verified that NestJS API application starts successfully and logs connection to PostgreSQL, fixed unbound-method lint errors in `database-connection.spec.ts`, and verified all checks pass successfully.
+- **Why:** To verify database connection capability and ensure error-free startup of the backend NestJS service.
+- **What's Next:** Start `FFH-019: Create Initial Database Schema` to build out the full Prisma schema models and verify their validity.
+
+---
+
 **Date/Time:** 2026-07-07 01:13 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-017
