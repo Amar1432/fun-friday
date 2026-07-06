@@ -19,4 +19,22 @@ describe('AppController', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
   });
+
+  describe('health', () => {
+    it('should return health status', () => {
+      const response = appController.getHealth();
+      expect(response.success).toBe(true);
+      expect(response.data.status).toBe('ok');
+      expect(response.data.timestamp).toBeDefined();
+      expect(response.data.uptime).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return health status for v1 path', () => {
+      const response = appController.getHealthV1();
+      expect(response.success).toBe(true);
+      expect(response.data.status).toBe('ok');
+      expect(response.data.timestamp).toBeDefined();
+      expect(response.data.uptime).toBeGreaterThanOrEqual(0);
+    });
+  });
 });

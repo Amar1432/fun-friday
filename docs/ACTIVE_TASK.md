@@ -1,17 +1,17 @@
 # Active Task
 
-## FFH-012: Scaffold NestJS API
+## FFH-013: Configure Global Validation
 
 ### Description
 
-Create backend service.
+Enable request validation.
 
 ### Acceptance Criteria
 
-- NestJS application exists.
-- TypeScript enabled.
-- API starts successfully.
-- Health endpoint responds successfully.
+- Global validation pipe enabled.
+- Unknown fields rejected.
+- Invalid payloads return validation errors.
+- DTO validation enabled.
 
 ---
 

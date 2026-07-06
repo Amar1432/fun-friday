@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 00:49 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-012
+
+- **What Changed:** Installed `dotenv` dependency in `apps/api`. Created `apps/api/.env` based on `.env.example` to set local port to 3001. Updated `apps/api/src/main.ts` to load environment variables and set the global prefix `/api/v1` (excluding `/health` and `/api/v1/health` paths). Implemented health check functionality in `AppService` (`getHealth`) and exposed it in `AppController` via GET `/health` and GET `/api/v1/health`. Added unit and E2E tests for these new endpoints. Casting the response body in E2E tests to satisfy TypeScript strict lint rules.
+- **Why:** To satisfy acceptance criteria of verifying that the NestJS API application exists, has TypeScript enabled, starts successfully, and responds successfully on health endpoints.
+- **What's Next:** Start `FFH-013: Configure Global Validation` to enable request validation pipe, rejecting unknown fields, and utilizing DTO-based validation.
+
+---
+
 **Date/Time:** 2026-07-07 00:46 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-011

@@ -13,14 +13,43 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api/v1', {
+      exclude: ['health', 'api/v1/health'],
+    });
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/api/v1 (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/api/v1')
       .expect(200)
       .expect('Hello World!');
+  });
+
+  it('/health (GET)', async () => {
+    const res = await request(app.getHttpServer()).get('/health').expect(200);
+    const body = res.body as {
+      success: boolean;
+      data: { status: string; timestamp: string; uptime: number };
+    };
+    expect(body.success).toBe(true);
+    expect(body.data.status).toBe('ok');
+    expect(body.data.timestamp).toBeDefined();
+    expect(body.data.uptime).toBeGreaterThanOrEqual(0);
+  });
+
+  it('/api/v1/health (GET)', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/v1/health')
+      .expect(200);
+    const body = res.body as {
+      success: boolean;
+      data: { status: string; timestamp: string; uptime: number };
+    };
+    expect(body.success).toBe(true);
+    expect(body.data.status).toBe('ok');
+    expect(body.data.timestamp).toBeDefined();
+    expect(body.data.uptime).toBeGreaterThanOrEqual(0);
   });
 
   afterEach(async () => {
