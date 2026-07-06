@@ -72,9 +72,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
     }
 
+    const rawRequestId = request.headers['x-request-id'];
+    const requestId =
+      (Array.isArray(rawRequestId) ? rawRequestId[0] : rawRequestId) ||
+      'unknown';
+
     // Log the error
     this.logger.error(
-      `${request.method} ${request.url} - Status: ${status} - Error: ${
+      `${request.method} ${request.url} - Status: ${status} - RequestID: ${requestId} - Error: ${
         exception instanceof Error ? exception.message : String(exception)
       }`,
       exception instanceof Error ? exception.stack : undefined,

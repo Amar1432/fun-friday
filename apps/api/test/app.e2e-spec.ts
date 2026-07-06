@@ -171,6 +171,38 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  describe('Request ID Header propagation', () => {
+    it('should generate a new request ID if none is provided in headers', async () => {
+      const res = await request(app.getHttpServer()).get('/health').expect(200);
+
+      expect(res.headers['x-request-id']).toBeDefined();
+      expect(typeof res.headers['x-request-id']).toBe('string');
+      expect(res.headers['x-request-id'].length).toBeGreaterThan(0);
+    });
+
+    it('should reuse and return the request ID provided in request headers', async () => {
+      const customId = 'client-provided-req-id-789';
+      const res = await request(app.getHttpServer())
+        .get('/health')
+        .set('x-request-id', customId)
+        .expect(200);
+
+      expect(res.headers['x-request-id']).toBe(customId);
+    });
+
+    it('should include request ID header in error responses', async () => {
+      const customId = 'error-req-id-456';
+      const res = await request(app.getHttpServer())
+        .get('/api/v1/test-http-error')
+        .set('x-request-id', customId)
+        .expect(400);
+
+      expect(res.headers['x-request-id']).toBe(customId);
+      const body = res.body as { success: boolean };
+      expect(body.success).toBe(false);
+    });
+  });
+
   afterEach(async () => {
     await app.close();
   });

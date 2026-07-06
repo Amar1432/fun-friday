@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:02 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-015
+
+- **What Changed:** Created `apps/api/src/common/middleware/logging.middleware.ts` to implement a NestJS/Express request logging middleware. Registered it globally in `AppModule`. The middleware extracts the request ID from `x-request-id` header (or generates one using `crypto.randomUUID()`), attaches it to both request and response headers (`x-request-id`), measures response time, and outputs a structured log (Method, URL, Status, Response Time, Request ID) on request completion using NestJS `Logger`. Also updated `apps/api/src/common/filters/global-exception.filter.ts` to extract and log the Request ID safely, ensuring type-safety. Added comprehensive unit tests in `logging.middleware.spec.ts` and E2E tests in `app.e2e-spec.ts` checking Request ID propagation and formatting.
+- **Why:** To fulfill acceptance criteria for structured request logging in development and production environments, enabling correlation of logs by request identifier and validating this behavior through unit and E2E test assertions.
+- **What's Next:** Start `FFH-016: Configure CORS` to enable CORS with configurable origin, credentials support, and invalid origin rejection.
+
+---
+
 **Date/Time:** 2026-07-07 00:56 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-014

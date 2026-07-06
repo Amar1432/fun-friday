@@ -1,22 +1,16 @@
 # Active Task
 
-## FFH-015: Configure API Logging
+## FFH-016: Configure CORS
 
 ### Description
 
-Add structured request logging.
+Allow frontend communication.
 
 ### Acceptance Criteria
 
-Logs include:
-
-- Method
-- URL
-- Status
-- Response time
-- Request ID
-
-Logging works in development.
+- Frontend origin configurable.
+- Credentials supported.
+- Invalid origins rejected.
 
 ---
 
