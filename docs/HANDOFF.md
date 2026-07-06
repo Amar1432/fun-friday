@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:40 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-022
+
+- **What Changed:** Scaffolded the core NestJS authentication structures under `apps/api/src/auth`, including `AuthModule`, `AuthService`, and `AuthController`. Registered `AuthModule` in `AppModule` and wrote unit tests for both controller and service while validating clean linting and testing passes.
+- **Why:** To bootstrap the authentication layer architecture, paving the way for SSO and JWT flows.
+- **What's Next:** Start `FFH-023: Configure JWT Infrastructure` to introduce JWT configuration, token signing, and token validation.
+
+---
+
 **Date/Time:** 2026-07-07 01:35 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-021

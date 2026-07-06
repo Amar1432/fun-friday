@@ -1,17 +1,17 @@
 # Active Task
 
-## FFH-022: Configure Authentication Module
+## FFH-023: Configure JWT Infrastructure
 
 ### Description
 
-Create authentication module.
+Prepare application JWT support.
 
 ### Acceptance Criteria
 
-- [ ] Authentication module exists (AuthModule).
-- [ ] Authentication service exists (AuthService).
-- [ ] Authentication controller exists (AuthController).
-- [ ] Module loads successfully.
+- [ ] JWT secret configurable (via environment variable).
+- [ ] Token expiration configurable (via environment variable).
+- [ ] Signing service implemented (e.g. JwtService/TokenService).
+- [ ] Verification service implemented.
 
 ---
 
