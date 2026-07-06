@@ -11,9 +11,15 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const prisma = new PrismaClient();
 
-  await verifyDatabaseConnection(prisma, logger);
+  try {
+    await verifyDatabaseConnection(prisma, logger);
+  } finally {
+    await prisma.$disconnect();
+  }
 
   const app = await NestFactory.create(AppModule);
+
+  app.enableShutdownHooks();
 
   app.enableCors(createCorsOptions());
 
