@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 00:56 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-014
+
+- **What Changed:** Created `apps/api/src/common/filters/global-exception.filter.ts` to implement a global exception filter. Registered the filter globally in `apps/api/src/main.ts` and in E2E test bootstrap in `apps/api/test/app.e2e-spec.ts`. Standardized validation errors under a `"VALIDATION_ERROR"` code block with list of error messages in a `details` array. Standardized regular HTTP exceptions to match the error envelope, mapping them to uppercase snake-case string codes. Hid stack traces in production for internal server errors while maintaining them in development. Created test endpoints in `AppController` and expanded unit/E2E test assertions to verify all behaviors.
+- **Why:** To satisfy validation and error serialization requirements of the API, providing consistent JSON error envelopes, concealing development/debug info in production environment, and asserting correct behavior through automated E2E tests.
+- **What's Next:** Start `FFH-015: Configure API Logging` to configure structured request logging in NestJS API.
+
+---
+
 **Date/Time:** 2026-07-07 00:53 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-013

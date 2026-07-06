@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { BadRequestException } from '@nestjs/common';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -45,6 +46,18 @@ describe('AppController', () => {
         success: true,
         data: payload,
       });
+    });
+  });
+
+  describe('testError', () => {
+    it('should throw Error', () => {
+      expect(() => appController.testError()).toThrow('Test internal error');
+    });
+  });
+
+  describe('testHttpError', () => {
+    it('should throw BadRequestException', () => {
+      expect(() => appController.testHttpError()).toThrow(BadRequestException);
     });
   });
 });

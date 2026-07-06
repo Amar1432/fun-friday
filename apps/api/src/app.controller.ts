@@ -1,4 +1,10 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  BadRequestException,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { TestValidationDto } from './test-validation.dto';
 
@@ -33,5 +39,15 @@ export class AppController {
       success: true,
       data: body,
     };
+  }
+
+  @Get('test-error')
+  testError() {
+    throw new Error('Test internal error');
+  }
+
+  @Get('test-http-error')
+  testHttpError() {
+    throw new BadRequestException('Custom HTTP error message');
   }
 }

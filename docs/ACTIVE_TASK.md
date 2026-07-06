@@ -1,17 +1,22 @@
 # Active Task
 
-## FFH-014: Configure Global Exception Handling
+## FFH-015: Configure API Logging
 
 ### Description
 
-Create consistent API error responses.
+Add structured request logging.
 
 ### Acceptance Criteria
 
-- Global exception filter configured.
-- Validation errors are standardized.
-- Internal server errors return consistent format.
-- Stack traces hidden in production.
+Logs include:
+
+- Method
+- URL
+- Status
+- Response time
+- Request ID
+
+Logging works in development.
 
 ---
 
