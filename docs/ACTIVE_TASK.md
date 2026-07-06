@@ -1,17 +1,18 @@
 # Active Task
 
-## FFH-016: Configure CORS
+## FFH-017: Configure Prisma
 
 ### Description
 
-Allow frontend communication.
+Initialize Prisma.
 
 ### Acceptance Criteria
 
-- Frontend origin configurable.
-- Credentials supported.
-- Invalid origins rejected.
+- Prisma initialized.
+- Schema directory configured.
+- Prisma client generated.
+- Generation succeeds.
 
 ---
 
-# Epic 3 — Backend Foundation
+# Epic 4 — Database Layer

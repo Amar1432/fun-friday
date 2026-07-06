@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:08 (Local Time)
+**Agent:** Codex
+**Ticket:** FFH-016
+
+- **What Changed:** Added a shared NestJS CORS configuration sourced from `FRONTEND_ORIGIN`, enabled it during API bootstrap, allowed credentialed requests from the exact configured HTTP(S) origin, and explicitly rejected other browser origins. Added E2E coverage for allowed preflight headers and invalid-origin rejection.
+- **Why:** To allow the configured frontend to communicate with the API using credentials while preventing cross-origin access from unapproved sites.
+- **What's Next:** Start `FFH-017: Configure Prisma` to initialize Prisma, configure the schema directory, and verify client generation.
+
+---
+
 **Date/Time:** 2026-07-07 01:02 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-015

@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { GlobalExceptionFilter } from './../src/common/filters/global-exception.filter';
+import { createCorsOptions } from './../src/config/cors.config';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -14,6 +15,7 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.enableCors(createCorsOptions('http://localhost:3000'));
     app.setGlobalPrefix('api/v1', {
       exclude: ['health', 'api/v1/health'],
     });
@@ -200,6 +202,31 @@ describe('AppController (e2e)', () => {
       expect(res.headers['x-request-id']).toBe(customId);
       const body = res.body as { success: boolean };
       expect(body.success).toBe(false);
+    });
+  });
+
+  describe('CORS', () => {
+    it('allows the configured frontend origin with credentials', async () => {
+      const res = await request(app.getHttpServer())
+        .options('/health')
+        .set('Origin', 'http://localhost:3000')
+        .set('Access-Control-Request-Method', 'GET')
+        .expect(204);
+
+      expect(res.headers['access-control-allow-origin']).toBe(
+        'http://localhost:3000',
+      );
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
+    });
+
+    it('rejects origins other than the configured frontend origin', async () => {
+      const res = await request(app.getHttpServer())
+        .options('/health')
+        .set('Origin', 'https://malicious.example')
+        .set('Access-Control-Request-Method', 'GET')
+        .expect(500);
+
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
     });
   });
 
