@@ -1,34 +1,27 @@
 # Active Task
 
-**Ticket:** FFH-008
-**Title:** Scaffold Next.js Application
+**Ticket:** FFH-009
+**Title:** Configure Tailwind CSS
 **Status:** Completed
 
 ## Objective
 
-Create and configure the frontend Next.js application under apps/web, ensuring TypeScript and App Router are enabled, and verifying that the application starts and builds successfully.
+Install and configure Tailwind CSS to provide a consistent, utility-first styling system for the Next.js frontend.
 
 ## Execution Requirements
 
-1. **Next.js Scaffold:** Next.js application exists under `apps/web`.
-2. **TypeScript:** TypeScript is enabled and integrated.
-3. **App Router:** App Router is enabled.
-4. **Local Running:** Application starts successfully.
-5. **Build Check:** Production build succeeds.
+1. **Installation:** Install `tailwindcss`, `postcss`, and `autoprefixer` as devDependencies in `apps/web`. (Completed)
+2. **Configuration:** Initialize the Tailwind configuration and ensure `tailwind.config.ts` is correctly pointing to your source files. (Completed)
+3. **Global Styles:** Configure the `globals.css` file to include the Tailwind directives (`@tailwind base`, `@tailwind components`, `@tailwind utilities`). (Completed)
+4. **Validation:** Ensure the Next.js development server correctly renders Tailwind styles and a production build (`pnpm build` inside `apps/web`) completes successfully. (Completed)
 
 ## Progress
 
-- [x] Next.js application exists under `apps/web`.
-- [x] TypeScript enabled and integrated.
-- [x] App Router enabled.
-- [x] Application starts successfully.
-- [x] Production build succeeds.
+- [x] Installed `tailwindcss`, `postcss`, and `autoprefixer` as devDependencies in `apps/web`.
+- [x] Initialized `tailwind.config.ts` pointing to the source directories.
+- [x] Configured the `@tailwind` base directives in `globals.css`.
+- [x] Verified the production build (`pnpm build`) and lint/typecheck steps pass monorepo-wide.
 
 ## Completion
 
-The frontend Next.js application at `apps/web` has been verified against all acceptance criteria:
-
-- The structure contains `apps/web/app/` with Next.js App Router layout and pages.
-- TypeScript integration is verified and extends the shared monorepo tsconfig.
-- Production build compiles successfully under Turbopack.
-- Local development server starts correctly on port 3000.
+Tailwind CSS is now fully configured for the frontend application at `apps/web`, successfully resolving and loading the tailwind configuration.
