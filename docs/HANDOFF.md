@@ -2,6 +2,15 @@
 
 *(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)*
 
+**Date/Time:** 2026-07-06 23:45 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-001
+* **What Changed:** Scaffolded Next.js App Router (TypeScript + Tailwind) in `apps/web` and NestJS in `apps/api` (strict mode, pnpm). Fixed a floating promise warning in `apps/api/src/main.ts`. Configured the `engines` Node requirement in root `package.json` and resolved all monorepo dependencies into a single workspace root lockfile via `pnpm install`. Verified clean compile (`pnpm build`) and lint (`pnpm lint`) across both apps.
+* **Why:** To correctly initialize the monorepo workspace in line with Sprint 1 goals.
+* **What's Next:** Work on `FFH-002: Configure Monorepo Directory Structure` to set up common packages and configurations.
+
+***
+
 **Date/Time:** [Insert Timestamp]
 **Agent:** Human 
 **Ticket:** Setup

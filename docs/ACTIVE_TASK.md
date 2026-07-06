@@ -2,6 +2,7 @@
 
 **Ticket:** FFH-001
 **Title:** Initialize pnpm Workspace
+**Status:** COMPLETED
 
 ## Objective
 Use your local CLI capabilities to bootstrap the foundation of the monorepo. You need to generate the Next.js frontend and NestJS backend within their respective directories.
