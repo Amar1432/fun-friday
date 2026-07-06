@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:45 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-023
+
+- **What Changed:** Installed `@nestjs/jwt` in `apps/api` and updated `.env`/`.env.example` with `JWT_EXPIRATION`. Created `TokenService` at `apps/api/src/auth/token.service.ts` for signing/verifying JWTs. Configured `JwtModule` asynchronously in `AuthModule`. Wrote tests in `token.service.spec.ts` and updated E2E testing framework to load environment variables.
+- **Why:** To fulfill JWT capabilities needed for SSO session generation and verification.
+- **What's Next:** Start `FFH-024: Configure Google OAuth Provider` to implement NestJS Google SSO integration.
+
+---
+
 **Date/Time:** 2026-07-07 01:40 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-022

@@ -1,17 +1,18 @@
 # Active Task
 
-## FFH-023: Configure JWT Infrastructure
+## FFH-024: Configure Google OAuth Provider
 
 ### Description
 
-Prepare application JWT support.
+Enable Google SSO.
 
 ### Acceptance Criteria
 
-- [ ] JWT secret configurable (via environment variable).
-- [ ] Token expiration configurable (via environment variable).
-- [ ] Signing service implemented (e.g. JwtService/TokenService).
-- [ ] Verification service implemented.
+- [ ] Google OAuth provider configured (credentials, settings).
+- [ ] Callback endpoint exists.
+- [ ] User profile parsed.
+- [ ] Existing users identified correctly.
+- [ ] New users created automatically.
 
 ---
 
