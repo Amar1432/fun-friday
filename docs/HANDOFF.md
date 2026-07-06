@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 00:25 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-006
+
+- **What Changed:** Installed `husky` and `lint-staged` at the monorepo root. Added `eslint` at version `^9` in root `devDependencies` for compatibility with next/api package eslint configs. Configured `lint-staged` rules in `package.json` to sequentially run `eslint --fix` and `prettier --write` for `web` and `api` applications, and run `prettier --write` on config/common files. Created `"typecheck"` scripts in `apps/web` and `apps/api` using `tsc --noEmit`, and updated the husky `pre-commit` hook to run `pnpm typecheck && pnpm exec lint-staged`.
+- **Why:** To satisfy Sprint 1 requirements to enforce type-safety, code styling, and linting rules automatically before any code is committed.
+- **What's Next:** Start `FFH-007: Configure Environment Variable Strategy` to centralize and standardize environment configuration.
+
+---
+
 **Date/Time:** 2026-07-07 00:18 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-005

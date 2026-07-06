@@ -1,19 +1,18 @@
 # Active Task
 
-**Ticket:** FFH-006
-**Title:** Configure Git Hooks
+**Ticket:** FFH-007
+**Title:** Configure Environment Variable Strategy
 
 ## Objective
 
-Prevent commits that break code standards by verifying type checking, linting, and formatting on pre-commit hooks.
+Standardize environment configuration across the monorepo for the root, frontend, and backend.
 
 ## Execution Requirements
 
-1. **Tool Setup:** Install and configure husky and/or lint-staged (or another light pre-commit hook framework) in the monorepo root.
-2. **Pre-commit Script:** Add a pre-commit hook that runs the linter (`pnpm lint`) and formatting check (`pnpm format`).
-3. **Commit Guard:** Ensure the commit is blocked if linting or formatting checks fail.
-4. **Verification:** Verify that formatting is run and checked on files staged for commit.
+1. **Environment Templates:** Create environment templates (e.g. `.env.example`) for the monorepo root, apps/web, and apps/api.
+2. **Documentation:** Document the purpose and expected format of each environment variable.
+3. **Security:** Ensure sensitive values are excluded from version control (configured in `.gitignore`).
 
 ## Completion
 
-Once the git hooks are configured and successfully run before commits, update `docs/HANDOFF.md` with your status and close the session.
+Once environment variable templates are created and verified, update `docs/HANDOFF.md` with your status and close the session.
