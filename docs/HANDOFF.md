@@ -2,6 +2,15 @@
 
 *(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)*
 
+**Date/Time:** 2026-07-07 00:08 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-004
+* **What Changed:** Created `@fun-friday/eslint-config` package under `packages/eslint-config` exporting base, next, and nest configurations. Configured base config with global ignores and standard recommended rules; next config extending base and `eslint-config-next`; nest config extending base, `typescript-eslint`, and `eslint-plugin-prettier`. Updated `apps/web` and `apps/api` to use the shared configs, added `@fun-friday/eslint-config` as a workspace devDependency, and verified successful lint checks and builds across the monorepo.
+* **Why:** To satisfy Sprint 1 requirements for reusable, consistent ESLint configurations across the monorepo.
+* **What's Next:** Start `FFH-005: Configure Prettier` to define project-wide formatting rules.
+
+***
+
 **Date/Time:** 2026-07-07 00:03 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-003
