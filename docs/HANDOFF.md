@@ -2,6 +2,26 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 00:34 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-008
+
+- **What Changed:** Verified Next.js app setup under `apps/web`. Checked TypeScript compatibility, App Router setup, compiled the production build using Next.js Turbopack compiler (`next build`), and validated local server startup on port 3000.
+- **Why:** To satisfy Sprint 1 requirements to verify that the Next.js scaffold is fully operational and builds cleanly without warnings or errors.
+- **What's Next:** Start `FFH-009: Configure Tailwind CSS` to install and configure Tailwind for the frontend application.
+
+---
+
+**Date/Time:** 2026-07-07 00:30 (Local Time)
+**Agent:** Codex
+**Ticket:** FFH-007
+
+- **What Changed:** Added documented environment templates at the monorepo root, `apps/web`, and `apps/api`. Defined the root Prisma connection, public frontend runtime values, and backend runtime, PostgreSQL, Redis, JWT, and CORS values with expected formats. Updated root and frontend ignore rules so environment files remain excluded while `.env.example` templates are trackable.
+- **Why:** To standardize environment configuration for local development and deployment without exposing credentials in version control.
+- **What's Next:** Start `FFH-008: Scaffold Next.js Application` and verify the existing frontend scaffold against its acceptance criteria.
+
+---
+
 **Date/Time:** 2026-07-07 00:25 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-006
