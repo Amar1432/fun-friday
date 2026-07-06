@@ -6,8 +6,11 @@ coverage
 .next
 .turbo
 
+# Environment files contain local credentials and must never be committed.
 .env
-.env.local
+.env.*
+!.env.example
+!**/.env.example
 
 .DS_Store
 .idea
