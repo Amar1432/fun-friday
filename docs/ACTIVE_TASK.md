@@ -1,17 +1,17 @@
 # Active Task
 
-## FFH-017: Configure Prisma
+## FFH-018: Configure PostgreSQL Connection
 
 ### Description
 
-Initialize Prisma.
+Connect Prisma to PostgreSQL.
 
 ### Acceptance Criteria
 
-- Prisma initialized.
-- Schema directory configured.
-- Prisma client generated.
-- Generation succeeds.
+- [ ] Database URL configured.
+- [ ] Connection verified.
+- [ ] Startup succeeds.
+- [ ] Connection errors handled gracefully.
 
 ---
 

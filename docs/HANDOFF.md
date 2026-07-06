@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:13 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-017
+
+- **What Changed:** Initialized Prisma schema at `prisma/schema.prisma` with enums and models specified in `docs/DATABASE.md`. Installed `prisma@6` CLI and `@prisma/client@6` at the workspace root and within `apps/api` to resolve pnpm dependency resolution constraints. Added `db:generate` and `postinstall` scripts to root `package.json`. Successfully ran `pnpm prisma generate` to generate the client.
+- **Why:** To scaffold the persistent storage layer setup and verify Prisma CLI/Client compilation before configuring database connections.
+- **What's Next:** Start `FFH-018: Configure PostgreSQL Connection` to configure `DATABASE_URL`, verify connection on startup, and handle database connection errors.
+
+---
+
 **Date/Time:** 2026-07-07 01:08 (Local Time)
 **Agent:** Codex
 **Ticket:** FFH-016
