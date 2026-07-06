@@ -1,8 +1,10 @@
+import 'dotenv/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+
 import { GlobalExceptionFilter } from './../src/common/filters/global-exception.filter';
 import { createCorsOptions } from './../src/config/cors.config';
 
