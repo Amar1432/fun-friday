@@ -2,6 +2,15 @@
 
 *(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)*
 
+**Date/Time:** 2026-07-07 00:03 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-003
+* **What Changed:** Created `@fun-friday/tsconfig` package under `packages/tsconfig` containing `base.json`, `nextjs.json`, and `nestjs.json`. Created a root `tsconfig.json` extending the shared base. Updated both `apps/web` and `apps/api` to extend the shared tsconfigs, added `@fun-friday/tsconfig` as a workspace dependency, and enabled path aliases, strict mode, and incremental compilation. Verified clean build and lint across the monorepo.
+* **Why:** To satisfy Sprint 1 requirements for reusable, consistent TypeScript configurations between frontend and backend.
+* **What's Next:** Start `FFH-004: Configure Shared ESLint` to provide a reusable lint configuration.
+
+***
+
 **Date/Time:** 2026-07-06 23:54 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-002

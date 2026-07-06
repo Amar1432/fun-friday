@@ -1,21 +1,17 @@
 # Active Task
 
-**Ticket:** FFH-002
-**Title:** Configure Monorepo Directory Structure
+**Ticket:** FFH-003
+**Title:** Configure Shared TypeScript Settings
 **Status:** COMPLETED
 
 ## Objective
-Create the standard project folder layout for our `pnpm` monorepo. The `apps/web` and `apps/api` directories were successfully scaffolded in the previous step. Your goal now is to set up the remaining structural directories, specifically the shared workspace packages.
+Create reusable TypeScript configurations across the monorepo to ensure consistency between the frontend and backend.
 
 ## Execution Requirements
-1. **Verify Root Directories:** Ensure `apps/`, `packages/`, `prisma/`, `docs/`, and `scripts/` exist at the root level.
-2. **Scaffold Packages:** Inside the `packages/` directory, create the following empty subdirectories:
-   - `config`
-   - `types`
-   - `ui`
-   - `eslint-config`
-   - `tsconfig`
-3. **No Dummy Code:** Do not create placeholder files or dummy code inside these new directories. Your task is strictly to establish the directory structure.
+1. **Root Config:** Ensure a base TypeScript configuration exists at the root level.
+2. **Shared Package:** Set up the `packages/tsconfig` directory as a proper package with its own `package.json`.
+3. **Extend Configs:** Ensure that both `apps/web` (Frontend) and `apps/api` (Backend) extend this shared configuration.
+4. **Compiler Options:** The configuration must support path aliases, have strict mode enabled, and enable incremental compilation.
 
 ## Completion
-Once the directory tree matches the acceptance criteria, update `docs/HANDOFF.md` with your status and close the session.
+Once the TypeScript configurations are set up and both apps compile without type errors, update `docs/HANDOFF.md` with your status and close the session.
