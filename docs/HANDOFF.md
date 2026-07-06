@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 01:35 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-021
+
+- **What Changed:** Created global `DatabaseModule` and `PrismaService` in `apps/api/src/database`, wrapping `PrismaClient` with lifecycle hooks. Integrated `DatabaseModule` into `AppModule` and enabled graceful shutdown hooks in `main.ts` while cleaning up the verification client connection. Wrote unit tests in `prisma.service.spec.ts`.
+- **Why:** To make the database client accessible throughout NestJS via dependency injection and ensure correct lifecycle handling.
+- **What's Next:** Start `FFH-022: Configure Authentication Module` to scaffold the authentication controllers, services, and modules in NestJS.
+
+---
+
 **Date/Time:** 2026-07-07 01:30 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-020
