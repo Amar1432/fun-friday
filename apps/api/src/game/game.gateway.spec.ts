@@ -13,6 +13,7 @@ describe('GameGateway', () => {
   const prismaMock = {
     room: {
       findUnique: jest.fn(),
+      update: jest.fn(),
     },
     game: {
       findUnique: jest.fn(),
@@ -1722,6 +1723,205 @@ describe('GameGateway', () => {
 
       expect(result.valid).toBe(false);
       if (!result.valid) expect(result.code).toBe('GAME_HAS_NO_QUESTIONS');
+    });
+  });
+
+  describe('handleStartGame', () => {
+    interface StartMockSocket {
+      id: string;
+      data: {
+        user?: { sub: string; name: string; role: string };
+        roomCode?: string;
+      };
+      emit: jest.Mock;
+    }
+
+    let mockSocket: StartMockSocket;
+    let mockServer: { to: jest.Mock; in: jest.Mock };
+
+    const mockRoom = {
+      id: 'room-id-123',
+      code: 'ROOM12',
+      status: 'LOBBY',
+      hostId: 'host-123',
+    };
+
+    const mockGame = {
+      id: 'game-id-123',
+      name: 'Test Game',
+      _count: { questions: 10 },
+    };
+
+    const expectLastErrorCode = (
+      emitMock: jest.Mock,
+      expectedCode: string,
+    ): void => {
+      const calls = emitMock.mock.calls as unknown[][];
+      const lastPayload = calls[calls.length - 1]?.[1] as
+        { error?: { code?: string } } | undefined;
+      expect(lastPayload?.error?.code).toBe(expectedCode);
+    };
+
+    beforeEach(() => {
+      mockSocket = {
+        id: 'socket-host-123',
+        data: {
+          user: { sub: 'host-123', name: 'Host', role: 'host' },
+        },
+        emit: jest.fn(),
+      };
+
+      const hostSocket = {
+        id: 'socket-host-123',
+        data: { user: { sub: 'host-123', role: 'host' } },
+      };
+
+      mockServer = {
+        to: jest.fn().mockReturnValue({ emit: jest.fn() }),
+        in: jest.fn().mockReturnValue({
+          fetchSockets: jest.fn().mockResolvedValue([hostSocket]),
+        }),
+      };
+      gateway.server = mockServer as unknown as Server;
+    });
+
+    it('should reject when payload is missing fields', async () => {
+      await expect(
+        gateway.handleStartGame(mockSocket as unknown as Socket, {
+          roomId: '',
+          gameId: '',
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+    });
+
+    it('should reject when caller is not a host', async () => {
+      mockSocket.data.user = { sub: 'guest-123', name: 'Guest', role: 'guest' };
+
+      await expect(
+        gateway.handleStartGame(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          gameId: 'game-id-123',
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'UNAUTHORIZED');
+    });
+
+    it('should reject when socket is unauthenticated', async () => {
+      mockSocket.data.user = undefined;
+
+      await expect(
+        gateway.handleStartGame(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          gameId: 'game-id-123',
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'UNAUTHORIZED');
+    });
+
+    it('should reject when room does not exist', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(null);
+
+      await expect(
+        gateway.handleStartGame(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          gameId: 'game-id-123',
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'ROOM_NOT_FOUND');
+    });
+
+    it('should reject when host does not own the room', async () => {
+      prismaMock.room.findUnique.mockResolvedValue({
+        ...mockRoom,
+        hostId: 'other-host',
+      });
+
+      await expect(
+        gateway.handleStartGame(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          gameId: 'game-id-123',
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'UNAUTHORIZED');
+    });
+
+    it('should reject when precondition validation fails', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      // No players in room — should fail NOT_ENOUGH_PLAYERS
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
+
+      await expect(
+        gateway.handleStartGame(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          gameId: 'game-id-123',
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'NOT_ENOUGH_PLAYERS');
+    });
+
+    it('should update room status, write Redis state, and emit GameStarted on success', async () => {
+      const toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+        in: jest.fn().mockReturnValue({
+          fetchSockets: jest.fn().mockResolvedValue([
+            {
+              id: 'socket-host-123',
+              data: { user: { sub: 'host-123', role: 'host' } },
+            },
+          ]),
+        }),
+      } as unknown as Server;
+
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      prismaMock.room.update.mockResolvedValue({
+        ...mockRoom,
+        status: 'IN_PROGRESS',
+      });
+      prismaMock.game.findUnique.mockResolvedValue(mockGame);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': JSON.stringify({
+          id: 'player-1',
+          displayName: 'P1',
+          score: 0,
+          isReady: true,
+        }),
+      });
+
+      await gateway.handleStartGame(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        gameId: 'game-id-123',
+      });
+
+      // Prisma room status updated
+      expect(prismaMock.room.update).toHaveBeenCalledWith({
+        where: { id: 'room-id-123' },
+        data: { status: 'IN_PROGRESS' },
+      });
+
+      // Redis metadata written
+      expect(redisRoomRepositoryMock.updateRoomMetadata).toHaveBeenCalledWith(
+        'ROOM12',
+        {
+          status: 'IN_PROGRESS',
+          gameId: 'game-id-123',
+          totalRounds: '10',
+          currentRoundIndex: '0',
+        },
+      );
+
+      // GameStarted emitted to the room
+      expect(toEmitMock).toHaveBeenCalledWith('GameStarted', {
+        gameId: 'game-id-123',
+        totalRounds: 10,
+      });
+
+      // No error emitted
+      expect(mockSocket.emit).not.toHaveBeenCalledWith(
+        'error',
+        expect.any(Object),
+      );
     });
   });
 });

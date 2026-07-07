@@ -152,6 +152,125 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage('StartGame')
+  async handleStartGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { roomId: string; gameId: string },
+  ): Promise<void> {
+    if (!payload?.roomId || !payload?.gameId) {
+      const err = new WsException('roomId and gameId are required');
+      client.emit('error', {
+        success: false,
+        error: { code: 'BAD_REQUEST', message: err.message },
+      });
+      throw err;
+    }
+
+    const clientData = client.data as {
+      user?: TokenPayload;
+      roomCode?: string;
+    };
+    const user = clientData.user;
+
+    // Only the host can start a game
+    if (!user || user.role !== 'host') {
+      const err = new WsException('Only the host can start the game');
+      client.emit('error', {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: err.message },
+      });
+      throw err;
+    }
+
+    try {
+      // Look up the room to get its code
+      const room = await this.prisma.room.findUnique({
+        where: { id: payload.roomId },
+      });
+
+      if (!room) {
+        const err = new WsException('Room does not exist');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      // Verify the host owns this room
+      if (room.hostId !== user.sub) {
+        const err = new WsException('You are not the host of this room');
+        client.emit('error', {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: err.message },
+        });
+        throw err;
+      }
+
+      const roomCode = room.code.toUpperCase();
+
+      // Run all precondition checks
+      const validation = await this.validateGameStart(
+        roomCode,
+        payload.gameId,
+        user.sub,
+      );
+
+      if (!validation.valid) {
+        const err = new WsException(validation.message);
+        client.emit('error', {
+          success: false,
+          error: { code: validation.code, message: validation.message },
+        });
+        throw err;
+      }
+
+      // Fetch the game with its question count for totalRounds
+      const game = await this.prisma.game.findUnique({
+        where: { id: payload.gameId },
+        include: { _count: { select: { questions: true } } },
+      });
+
+      // game is guaranteed non-null at this point (validateGameStart checked it)
+      const totalRounds = game!._count.questions;
+
+      // Transition room status to IN_PROGRESS in PostgreSQL
+      await this.prisma.room.update({
+        where: { id: payload.roomId },
+        data: { status: 'IN_PROGRESS' },
+      });
+
+      // Write initial game state to Redis metadata
+      await this.redisRoomRepository.updateRoomMetadata(roomCode, {
+        status: 'IN_PROGRESS',
+        gameId: payload.gameId,
+        totalRounds: totalRounds.toString(),
+        currentRoundIndex: '0',
+      });
+
+      // Emit GameStarted to all clients in the room
+      this.server.to(roomCode).emit('GameStarted', {
+        gameId: payload.gameId,
+        totalRounds,
+      });
+
+      this.logger.log(
+        `Game started in room ${roomCode} by host ${user.sub}. gameId=${payload.gameId}, totalRounds=${totalRounds}`,
+      );
+    } catch (error) {
+      if (error instanceof WsException) throw error;
+
+      const message =
+        error instanceof Error ? error.message : 'Failed to start game';
+      const err = new WsException(message);
+      client.emit('error', {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: err.message },
+      });
+      throw err;
+    }
+  }
+
   /**
    * Validates all preconditions required before a game can start.
    *
