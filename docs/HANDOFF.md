@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 10:45 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-027
+
+- **What Changed:** Added comprehensive unit and integration tests in `apps/api/src/auth/token.service.spec.ts` using `JwtModule` with a real secret to verify token signing, validation, claims validation (ensuring sub, email, and name are present), and signature rejection of tampered/incorrectly signed tokens. Verified type checking and linting pass monorepo-wide.
+- **Why:** To fulfill the active ticket's acceptance criteria, guaranteeing that the application access token is signed correctly, expires as configured, and holds the required user claims.
+- **What's Next:** Start `FFH-028: Protect Authenticated Endpoints` to implement the JWT guard on protected NestJS endpoints.
+
+---
+
 **Date/Time:** 2026-07-07 10:40 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-026

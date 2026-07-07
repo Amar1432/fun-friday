@@ -1,17 +1,19 @@
 # Active Task
 
-## FFH-026: Persist Host User
+## FFH-027: Issue Application JWT
 
 ### Description
 
-Store authenticated hosts.
+Generate application access token.
 
 ### Acceptance Criteria
 
-- [x] User record created on first login.
-- [x] Existing user reused.
-- [x] Duplicate users prevented.
-- [x] Email uniqueness enforced.
+- [x] JWT contains:
+  - [x] User ID (sub)
+  - [x] Email
+  - [x] Name
+- [x] Expiration configured.
+- [x] Signing verified.
 
 ---
 
