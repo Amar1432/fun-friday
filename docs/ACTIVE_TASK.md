@@ -1,19 +1,15 @@
 # Active Task
 
-## FFH-053: Implement QuestionStarted Event
+## FFH-054: Implement Timer Engine
 
 ### Description
 
-Broadcast new round information.
+Create the server-side countdown system.
 
 ### Acceptance Criteria
 
-Players receive:
-
-- Round number
-- Question identifier
-- Prompt
-- Metadata
-- Allowed response duration
-
-Correct answer is never included.
+- Timer begins automatically when round starts.
+- Timer executes on the server only.
+- Timer state is stored in Redis.
+- Timer accuracy remains consistent.
+- Timer stops correctly at expiration.

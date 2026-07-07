@@ -2,6 +2,22 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 16:04 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-053
+
+- **What Changed:**
+  - Implemented the `startRound` helper method in `GameGateway` that fetches the question for the specified round index from Redis, persists a new `Round` record in PostgreSQL via `this.prisma.round.create`, updates Redis room metadata (`currentRoundIndex`, `currentRoundId`, `currentQuestionId`, `questionStartedAt`, `timerDuration`, and `timerRemaining`), and broadcasts the `QuestionStarted` event to all clients in the room code namespace.
+  - Linked `startRound(roomCode, 0)` in `handleStartGame` to automatically initialize the first round upon starting the game.
+  - Implemented `@SubscribeMessage('NextRound')` handler to allow the host to advance the game to subsequent rounds. It verifies host permissions, checks game in-progress status, verifies if rounds remain, and calls `startRound`.
+  - Updated unit tests in `game.gateway.spec.ts` to mock the PostgreSQL `Round` creation and check that the correct Redis updates are performed and the `QuestionStarted` event is emitted.
+  - Wrote comprehensive unit tests for `startRound` and `handleNextRound` in `game.gateway.spec.ts`.
+  - All 169 unit tests passed, type checking and lint checks completed successfully.
+- **Why:** To satisfy all acceptance criteria for FFH-053: initialize rounds, persist round details in PostgreSQL, manage round metadata in Redis, and broadcast `QuestionStarted` (excluding the correct answer) to connected players.
+- **What's Next:** Start `FFH-054: Implement Timer Engine`.
+
+---
+
 **Date/Time:** 2026-07-07 16:01 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-052
