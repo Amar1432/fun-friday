@@ -2,6 +2,22 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 11:43 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-037
+
+- **What Changed:**
+  - Installed `ioredis` in `apps/api` application.
+  - Created global `RedisModule` ([redis.module.ts](file:///Users/amarjeet/Desktop/experiments/fun-friday/apps/api/src/redis/redis.module.ts)) and `RedisService` ([redis.service.ts](file:///Users/amarjeet/Desktop/experiments/fun-friday/apps/api/src/redis/redis.service.ts)) to manage client connectivity, auto-reconnection (exponential backoff strategy), lifecycle hooks (`onModuleInit` with a timeout guard to avoid startup blocking, `onModuleDestroy` with safe socket disconnection), and health checks.
+  - Injected `RedisService` in `AppService` ([app.service.ts](file:///Users/amarjeet/Desktop/experiments/fun-friday/apps/api/src/app.service.ts)) and exposed its connection status under `redis` key in health check. Made health check endpoints in `AppController` ([app.controller.ts](file:///Users/amarjeet/Desktop/experiments/fun-friday/apps/api/src/app.controller.ts)) asynchronous.
+  - Wrote comprehensive unit tests ([redis.service.spec.ts](file:///Users/amarjeet/Desktop/experiments/fun-friday/apps/api/src/redis/redis.service.spec.ts)) asserting startup verification, mock connection/ping/disconnect flows, error logging, and health checking.
+  - Updated E2E test assertions in [app.e2e-spec.ts](file:///Users/amarjeet/Desktop/experiments/fun-friday/apps/api/test/app.e2e-spec.ts) to verify that health checks validate Redis connectivity.
+  - Resolved all TypeScript and ESLint warnings (require-await, unbound-method, any-casts, open handles) ensuring type safety and clean test output.
+- **Why:** To integrate Redis into the NestJS backend as the primary ephemeral state store for the real-time engine and satisfy all acceptance criteria for FFH-037.
+- **What's Next:** Start `FFH-038: Create Redis Service` to support standard read/write/delete/expiration wrappers on the service.
+
+---
+
 **Date/Time:** 2026-07-07 11:20 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Tickets:** FFH-034, FFH-035, FFH-036

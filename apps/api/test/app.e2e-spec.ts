@@ -43,12 +43,18 @@ describe('AppController (e2e)', () => {
     const res = await request(app.getHttpServer()).get('/health').expect(200);
     const body = res.body as {
       success: boolean;
-      data: { status: string; timestamp: string; uptime: number };
+      data: {
+        status: string;
+        timestamp: string;
+        uptime: number;
+        redis: string;
+      };
     };
     expect(body.success).toBe(true);
     expect(body.data.status).toBe('ok');
     expect(body.data.timestamp).toBeDefined();
     expect(body.data.uptime).toBeGreaterThanOrEqual(0);
+    expect(['up', 'down']).toContain(body.data.redis);
   });
 
   it('/api/v1/health (GET)', async () => {
@@ -57,12 +63,18 @@ describe('AppController (e2e)', () => {
       .expect(200);
     const body = res.body as {
       success: boolean;
-      data: { status: string; timestamp: string; uptime: number };
+      data: {
+        status: string;
+        timestamp: string;
+        uptime: number;
+        redis: string;
+      };
     };
     expect(body.success).toBe(true);
     expect(body.data.status).toBe('ok');
     expect(body.data.timestamp).toBeDefined();
     expect(body.data.uptime).toBeGreaterThanOrEqual(0);
+    expect(['up', 'down']).toContain(body.data.redis);
   });
 
   describe('/api/v1/test-validation (POST)', () => {

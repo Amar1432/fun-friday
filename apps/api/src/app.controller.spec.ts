@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BadRequestException } from '@nestjs/common';
+import { RedisService } from './redis/redis.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -9,7 +10,15 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        AppService,
+        {
+          provide: RedisService,
+          useValue: {
+            isHealthy: jest.fn().mockResolvedValue(true),
+          },
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
@@ -22,16 +31,16 @@ describe('AppController', () => {
   });
 
   describe('health', () => {
-    it('should return health status', () => {
-      const response = appController.getHealth();
+    it('should return health status', async () => {
+      const response = await appController.getHealth();
       expect(response.success).toBe(true);
       expect(response.data.status).toBe('ok');
       expect(response.data.timestamp).toBeDefined();
       expect(response.data.uptime).toBeGreaterThanOrEqual(0);
     });
 
-    it('should return health status for v1 path', () => {
-      const response = appController.getHealthV1();
+    it('should return health status for v1 path', async () => {
+      const response = await appController.getHealthV1();
       expect(response.success).toBe(true);
       expect(response.data.status).toBe('ok');
       expect(response.data.timestamp).toBeDefined();

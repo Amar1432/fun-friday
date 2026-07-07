@@ -18,18 +18,18 @@ export class AppController {
   }
 
   @Get('health')
-  getHealth() {
+  async getHealth() {
     return {
       success: true,
-      data: this.appService.getHealth(),
+      data: await this.appService.getHealth(),
     };
   }
 
   @Get('api/v1/health')
-  getHealthV1() {
+  async getHealthV1() {
     return {
       success: true,
-      data: this.appService.getHealth(),
+      data: await this.appService.getHealth(),
     };
   }
 

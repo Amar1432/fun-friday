@@ -1,27 +1,14 @@
-# Active Tasks
+# Active Task
 
-## FFH-034: Configure Testing Framework ✅
+**Ticket:** FFH-038
+**Title:** Create Redis Service
 
-- [x] Frontend test runner configured (Jest + jsdom + Testing Library).
-- [x] Backend test runner configured (Jest + coverage).
-- [x] Sample tests execute successfully (`app/page.spec.tsx` and NestJS specs).
-- [x] Coverage reporting enabled.
+## Objective
 
-## FFH-035: Configure GitHub Actions ✅
+Extend `RedisService` to support standard read, write, delete, and expiration operations for application-wide usage.
 
-- [x] CI pipeline workflow created (`.github/workflows/ci.yml`).
-- [x] Pipeline performs:
-  - [x] Install dependencies
-  - [x] Type checking
-  - [x] Linting
-  - [x] Testing
-  - [x] Production build
-- [x] Local verification of steps completed successfully.
+## Execution Requirements
 
-## FFH-036: Verify Full Project Build ✅
-
-- [x] Local verification of Sprint 1 DoD finished. All build and lint steps pass.
-
----
-
-# Epic 7 — Quality & CI
+1. **Operations Support:** Add strongly-typed helper methods for standard Redis operations (e.g., `set`, `get`, `del`, `expire`, etc.) on the Redis client.
+2. **Lifecycle and Connection Management:** Maintain the singleton connection and ensure other modules use this service instead of creating independent connections.
+3. **Unit Tests:** Add comprehensive unit tests in `redis.service.spec.ts` covering these new operations.

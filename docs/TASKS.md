@@ -675,3 +675,562 @@ Sprint 1 is complete when:
 - Linting passes.
 - Tests execute successfully.
 - Production builds succeed for both applications.
+
+# Sprint 2 — Core Game Loop & Real-Time Engine
+
+**Sprint Goal**
+
+Implement the real-time multiplayer engine using Socket.IO and Redis. All transient game state (rooms, players, timers, rounds, scores, and live events) will be managed in Redis. PostgreSQL remains the source of truth only for persistent data before and after gameplay.
+
+---
+
+# Epic 8 — Redis Infrastructure
+
+---
+
+## FFH-037: Configure Redis Connection
+
+### Description
+
+Integrate Redis into the NestJS application as the primary ephemeral state store.
+
+### Acceptance Criteria
+
+- Redis connection is established during application startup.
+- Connection settings are configurable through environment variables.
+- Connection failures are logged clearly.
+- Automatic reconnection strategy is configured.
+- Application starts successfully when Redis is available.
+- Health checks can verify Redis connectivity.
+
+---
+
+## FFH-038: Create Redis Service
+
+### Description
+
+Create a centralized Redis service for application-wide usage.
+
+### Acceptance Criteria
+
+- Redis service is injectable throughout the application.
+- Read, write, delete, and expiration operations are supported.
+- Connection lifecycle is managed cleanly.
+- No module creates independent Redis connections.
+
+---
+
+## FFH-039: Define Redis Room State Schema
+
+### Description
+
+Design the Redis data structures used during active gameplay.
+
+### Acceptance Criteria
+
+State definitions exist for:
+
+- Room
+- Connected players
+- Player readiness
+- Current round
+- Current question
+- Timer
+- Leaderboard
+- Submitted answers
+- Active game status
+
+All structures are documented and consistent across services.
+
+---
+
+## FFH-040: Implement Redis Room Repository
+
+### Description
+
+Create a repository layer for room state operations.
+
+### Acceptance Criteria
+
+Repository supports:
+
+- Create room state
+- Read room state
+- Update room state
+- Delete room state
+- Set expiration
+- Atomic updates where required
+
+No business logic exists inside the repository.
+
+---
+
+# Epic 9 — Socket.IO Foundation
+
+---
+
+## FFH-041: Configure Socket.IO Gateway
+
+### Description
+
+Create the primary WebSocket gateway for the application.
+
+### Acceptance Criteria
+
+- Gateway initializes successfully.
+- Namespace configuration matches project architecture.
+- CORS configuration matches frontend requirements.
+- Client connections are accepted.
+- Client disconnections are detected.
+- Gateway startup is logged.
+
+---
+
+## FFH-042: Configure Socket Authentication
+
+### Description
+
+Authenticate WebSocket connections using JWT.
+
+### Acceptance Criteria
+
+- Host JWT validation is supported.
+- Guest JWT validation is supported.
+- Invalid tokens are rejected.
+- Expired tokens are rejected.
+- Authenticated identity is available throughout the socket lifecycle.
+
+---
+
+## FFH-043: Implement Socket Event Logging
+
+### Description
+
+Provide structured logging for all socket activity.
+
+### Acceptance Criteria
+
+Logs include:
+
+- Socket ID
+- Player ID
+- Room ID
+- Event name
+- Timestamp
+- Processing duration
+
+Sensitive information is never logged.
+
+---
+
+# Epic 10 — Room Lifecycle
+
+---
+
+## FFH-044: Implement JoinRoom Event
+
+### Description
+
+Implement the JoinRoom WebSocket event defined in ROOM_PROTOCOL.md.
+
+### Acceptance Criteria
+
+- Authenticated player joins room successfully.
+- Room existence is validated.
+- Room capacity rules are enforced.
+- Duplicate connections are handled correctly.
+- Player state is stored in Redis.
+- Other clients receive the appropriate room update event.
+- Invalid requests return protocol-compliant error events.
+
+---
+
+## FFH-045: Implement LeaveRoom Event
+
+### Description
+
+Implement the LeaveRoom event.
+
+### Acceptance Criteria
+
+- Player is removed from Redis room state.
+- Socket leaves the room.
+- Remaining players receive updated room state.
+- Empty rooms are cleaned up according to lifecycle rules.
+- Host disconnect behavior follows protocol definition.
+
+---
+
+## FFH-046: Implement Player Reconnection
+
+### Description
+
+Support reconnecting players after temporary connection loss.
+
+### Acceptance Criteria
+
+- Existing player identity is restored.
+- Previous session state is recovered.
+- Duplicate player records are not created.
+- Active game state is synchronized after reconnection.
+- Player receives current room state immediately after reconnect.
+
+---
+
+## FFH-047: Implement Connection Cleanup
+
+### Description
+
+Handle unexpected socket disconnects.
+
+### Acceptance Criteria
+
+- Temporary disconnects are distinguished from intentional leaves.
+- Player status is updated appropriately.
+- Room state remains consistent.
+- Cleanup executes only after configured timeout.
+- Orphaned connections are removed safely.
+
+---
+
+# Epic 11 — Lobby Management
+
+---
+
+## FFH-048: Implement PlayerReady Event
+
+### Description
+
+Implement the PlayerReady event defined in ROOM_PROTOCOL.md.
+
+### Acceptance Criteria
+
+- Ready status is stored in Redis.
+- Player readiness can be toggled.
+- Duplicate updates are ignored.
+- Room state changes are broadcast.
+- Host receives updated readiness information.
+
+---
+
+## FFH-049: Implement RoomStateUpdated Broadcast
+
+### Description
+
+Broadcast complete room state whenever lobby state changes.
+
+### Acceptance Criteria
+
+Broadcast includes:
+
+- Connected players
+- Ready status
+- Host information
+- Room status
+- Player count
+
+Payload matches ROOM_PROTOCOL.md.
+
+---
+
+## FFH-050: Validate Game Start Preconditions
+
+### Description
+
+Verify lobby requirements before gameplay begins.
+
+### Acceptance Criteria
+
+Validation includes:
+
+- Host connected
+- Minimum player count
+- Required ready players
+- Room status
+- Valid game configuration
+
+Failures return protocol-compliant error events.
+
+---
+
+# Epic 12 — Game Lifecycle
+
+---
+
+## FFH-051: Implement StartGame Event
+
+### Description
+
+Implement the StartGame event.
+
+### Acceptance Criteria
+
+- Only host can start game.
+- Preconditions are validated.
+- Room status changes appropriately.
+- Initial game state is created in Redis.
+- First round initialization begins.
+- Clients receive protocol-compliant event.
+
+---
+
+## FFH-052: Load Question Set into Redis
+
+### Description
+
+Prepare game questions before gameplay begins.
+
+### Acceptance Criteria
+
+- Questions are loaded from PostgreSQL.
+- Question ordering follows game configuration.
+- Correct answers remain server-side only.
+- Redis stores required runtime state.
+- Duplicate question loading is prevented.
+
+---
+
+## FFH-053: Implement QuestionStarted Event
+
+### Description
+
+Broadcast new round information.
+
+### Acceptance Criteria
+
+Players receive:
+
+- Round number
+- Question identifier
+- Prompt
+- Metadata
+- Allowed response duration
+
+Correct answer is never included.
+
+---
+
+## FFH-054: Implement Timer Engine
+
+### Description
+
+Create the server-side countdown system.
+
+### Acceptance Criteria
+
+- Timer begins automatically when round starts.
+- Timer executes on the server only.
+- Timer state is stored in Redis.
+- Timer accuracy remains consistent.
+- Timer stops correctly at expiration.
+
+---
+
+## FFH-055: Implement TimerTick Broadcast
+
+### Description
+
+Broadcast timer updates during active rounds.
+
+### Acceptance Criteria
+
+- Tick interval matches ROOM_PROTOCOL.md.
+- Remaining time is synchronized.
+- All connected clients receive updates.
+- Broadcasts stop immediately after timer completion.
+
+---
+
+## FFH-056: Implement Round Completion
+
+### Description
+
+Complete a round after timer expiration.
+
+### Acceptance Criteria
+
+- Timer stops.
+- Late answers are rejected.
+- Final scoring begins.
+- Next game state transition is triggered.
+- Clients receive protocol-compliant completion event.
+
+---
+
+# Epic 13 — Answer Processing
+
+---
+
+## FFH-057: Implement SubmitAnswer Event
+
+### Description
+
+Implement the SubmitAnswer event defined in ROOM_PROTOCOL.md.
+
+### Acceptance Criteria
+
+- Only one answer per player per round is accepted.
+- Duplicate submissions are rejected.
+- Response time is captured.
+- Answer stored in Redis.
+- Submission acknowledgement returned.
+- Invalid submissions return protocol-compliant error events.
+
+---
+
+## FFH-058: Validate Submitted Answers
+
+### Description
+
+Evaluate submitted answers.
+
+### Acceptance Criteria
+
+Validation includes:
+
+- Correctness
+- Round status
+- Submission timing
+- Player eligibility
+
+Evaluation occurs server-side only.
+
+---
+
+## FFH-059: Calculate Player Scores
+
+### Description
+
+Compute scores for completed rounds.
+
+### Acceptance Criteria
+
+Scoring considers:
+
+- Correct answer
+- Response time
+- Existing score
+
+Redis leaderboard updates atomically.
+
+---
+
+## FFH-060: Persist Completed Round Data
+
+### Description
+
+Flush completed round information to PostgreSQL.
+
+### Acceptance Criteria
+
+Persisted data includes:
+
+- Player answers
+- Correctness
+- Response time
+- Round reference
+
+Redis remains authoritative until persistence completes successfully.
+
+---
+
+## FFH-061: Implement LeaderboardUpdated Broadcast
+
+### Description
+
+Broadcast updated leaderboard after scoring.
+
+### Acceptance Criteria
+
+Leaderboard includes:
+
+- Player
+- Rank
+- Score
+- Score delta (if defined by protocol)
+
+Ordering is deterministic.
+
+Payload matches ROOM_PROTOCOL.md.
+
+---
+
+# Epic 14 — Game Completion
+
+---
+
+## FFH-062: Implement Game Completion Flow
+
+### Description
+
+Handle end-of-game state transitions.
+
+### Acceptance Criteria
+
+- Final leaderboard generated.
+- Room status updated.
+- Redis game state finalized.
+- Clients receive completion event.
+- Post-game persistence begins.
+
+---
+
+## FFH-063: Cleanup Redis Game State
+
+### Description
+
+Remove expired game data after completion.
+
+### Acceptance Criteria
+
+- Temporary Redis keys removed.
+- Active timers cleared.
+- Socket room cleaned.
+- Expiration policy applied.
+- No orphaned state remains.
+
+---
+
+# Epic 15 — Reliability & Validation
+
+---
+
+## FFH-064: Implement Protocol Validation
+
+### Description
+
+Validate all incoming WebSocket payloads.
+
+### Acceptance Criteria
+
+- Every incoming event validates against protocol DTOs.
+- Invalid payloads return standardized error events.
+- Unexpected fields are rejected.
+- Validation is applied consistently across all events.
+
+---
+
+## FFH-065: Implement Socket Integration Tests
+
+### Description
+
+Create automated integration tests covering the complete real-time game flow.
+
+### Acceptance Criteria
+
+Tests verify:
+
+- Connection
+- Authentication
+- JoinRoom
+- LeaveRoom
+- Reconnect
+- PlayerReady
+- StartGame
+- QuestionStarted
+- TimerTick
+- SubmitAnswer
+- LeaderboardUpdated
+- Game completion
+
+All tests pass successfully in CI.
