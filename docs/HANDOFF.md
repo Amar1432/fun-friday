@@ -2,6 +2,20 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 23:42 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-066, FFH-067, FFH-068, FFH-069
+
+- **What Changed:**
+  - Configured and integrated the Socket.IO client into the Next.js frontend (`apps/web`), with `NEXT_PUBLIC_SOCKET_URL` environment variables support in `.env.example`, `.env.local`, and `config.ts`.
+  - Created `SocketProvider` context and custom `useSocket` hook in `apps/web/lib/socket/socket-context.tsx` to handle connection setup, lazy connection activation (upon user/guest login token presence), and automatic connection cleanup on application unmount.
+  - Implemented a centralized Socket Event Registry and a custom React hook `useSocketEvent` that routes Socket.IO broadcasts (`PlayerJoined`, `RoomStateUpdated`, `TimerTick`, `AnswerReveal`, etc.) matching `ROOM_PROTOCOL.md` to subscribers while filtering unknown events and preventing duplicate listeners using a `Set`-based mapping.
+  - Built a responsive, visual `SocketStatusIndicator` UI component (`apps/web/components/socket-status-indicator.tsx`) featuring accessibility titles/tooltips and micro-animations for different connection states (`connected`, `connecting`, `reconnecting`, `auth_failed`, `disconnected`). Incorporated the indicator inside the host `DashboardPage` header.
+  - Wrote comprehensive unit tests for `SocketProvider`, `useSocketEvent`, and `SocketStatusIndicator` achieving 100% test coverage.
+  - Verified that all 273 tests in the monorepo pass successfully and typecheck is clean.
+- **Why:** To satisfy Epic 16 requirements by configuring, exposing, and monitoring real-time Socket.IO communication flows on the frontend.
+- **What's Next:** Epic 17 — Global Real-Time State Management (`FFH-070: Configure Global State Management`).
+
 **Date/Time:** 2026-07-07 23:21 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-065

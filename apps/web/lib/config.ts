@@ -47,10 +47,16 @@ const rawAppName = getEnv(
   'NEXT_PUBLIC_APP_NAME',
   'Fun Friday Hub',
 );
+const rawSocketUrl = getEnv(
+  process.env.NEXT_PUBLIC_SOCKET_URL,
+  'NEXT_PUBLIC_SOCKET_URL',
+  'http://localhost:3001',
+);
 
 // Validate URLs
 const apiUrl = validateUrl(rawApiUrl, 'NEXT_PUBLIC_API_URL');
 const authCallbackUrl = validateUrl(rawAuthCallbackUrl, 'NEXT_PUBLIC_AUTH_CALLBACK_URL');
+const socketUrl = validateUrl(rawSocketUrl, 'NEXT_PUBLIC_SOCKET_URL');
 const appName = rawAppName;
 
 // SSO Client IDs (optional — empty string means SSO is not configured)
@@ -60,6 +66,7 @@ const microsoftClientId = getOptionalEnv(process.env.NEXT_PUBLIC_MICROSOFT_CLIEN
 export const config = {
   apiUrl,
   authCallbackUrl,
+  socketUrl,
   appName,
   googleClientId,
   microsoftClientId,

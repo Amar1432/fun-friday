@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/auth-context';
 import { config } from '@/lib/config';
+import { SocketStatusIndicator } from '@/components/socket-status-indicator';
 
 export default function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
@@ -65,6 +66,7 @@ export default function DashboardPage() {
 
           {/* User Profile and Actions */}
           <div className="flex items-center gap-6">
+            <SocketStatusIndicator />
             <div className="hidden md:flex flex-col text-right">
               <span className="text-sm font-semibold text-white">{user.name}</span>
               <span className="text-xs text-slate-400">{user.email}</span>
