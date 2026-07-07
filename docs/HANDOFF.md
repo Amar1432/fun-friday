@@ -2,6 +2,91 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 15:22 (Local Time)
+**Agent:** Kiro
+**Ticket:** FFH-048
+
+- **What Changed:**
+  - Implemented `handlePlayerReady` WebSocket handler in `apps/api/src/game/game.gateway.ts` for the `PlayerReady` event with payload `{ roomId: string, playerId: string }`.
+  - Validates payload fields are present; returns `BAD_REQUEST` if missing.
+  - Verifies the authenticated socket user matches `playerId` so players can only toggle their own status; returns `UNAUTHORIZED` if mismatched.
+  - Validates guest token `roomId` matches payload `roomId`; returns `UNAUTHORIZED` on mismatch.
+  - Verifies room exists in PostgreSQL; returns `ROOM_NOT_FOUND` if absent.
+  - Verifies player exists in Redis room state via `getPlayers`; returns `PLAYER_NOT_FOUND` if absent.
+  - Parses existing player JSON from Redis, toggles `isReady` boolean, and writes back via `setPlayer`.
+  - Fetches updated players map and broadcasts `RoomStateUpdated` to all clients in the room via `server.to(roomCode).emit`.
+  - Added 9 unit tests in `apps/api/src/game/game.gateway.spec.ts` covering: missing payload, unauthenticated socket, identity mismatch, token room mismatch, room not found, player not found, toggle false→true, toggle true→false, multiple rapid toggles.
+  - Verified with `pnpm --dir apps/api test` — all 135 tests pass across 14 test suites.
+- **Why:** To complete FFH-048 — implementing the PlayerReady event so lobby ready state is stored in Redis and broadcast to all room members including the host.
+- **What's Next:** Start `FFH-049: Implement RoomStateUpdated Broadcast`.
+
+---
+
+**Date/Time:** 2026-07-07 15:18 (Local Time)
+**Agent:** Kiro
+**Ticket:** FFH-047
+
+- **What Changed:**
+  - Added `disconnectTimers` Map to `GameGateway` to track pending cleanup timers keyed by `playerId`.
+  - Updated `handleDisconnect` to schedule a 30-second grace period cleanup for guest players who were actively in a room. Hosts and unauthenticated sockets are ignored. A disconnection timestamp is written to Redis metadata immediately via `updateRoomMetadata`.
+  - Implemented private `executeCleanup` method that fires after the grace period: removes player from Redis (`removePlayer`), emits `PlayerLeft` to the room, then either emits `RoomStateUpdated` with the remaining players or deletes the room state if it is now empty.
+  - Added `clearTimeout` / `disconnectTimers.delete` in `handleReconnectRequest` (before the player is restored) so reconnecting players are not removed.
+  - Added `clearTimeout` / `disconnectTimers.delete` in `handleLeaveRoom` (before `removePlayer`) so intentional leaves do not trigger a second removal after the grace period.
+  - Added `updateRoomMetadata` to the `redisRoomRepositoryMock` in the test file so the mock reflects the full repository interface.
+  - Added 9 new unit tests in `game.gateway.spec.ts`:
+    - `handleDisconnect`: host no-op, guest without room no-op, guest with room schedules timer + marks metadata, cleanup execution after 30s grace period (broadcasts `PlayerLeft` + `RoomStateUpdated`), empty-room deletion.
+    - `handleReconnectRequest`: timer cancelled on successful reconnect.
+    - `handleLeaveRoom`: timer cancelled on intentional leave.
+  - Verified with `pnpm --dir apps/api test` — all 126 tests pass across 14 test suites.
+- **Why:** To complete FFH-047 by distinguishing temporary disconnects from intentional leaves, preserving room state during the grace period, and safely removing orphaned players after timeout.
+- **What's Next:** Start `FFH-048: Implement PlayerReady Event`.
+
+---
+
+**Date/Time:** 2026-07-07 14:51 (Local Time)
+**Agent:** Codex
+**Ticket:** FFH-046
+
+- **What Changed:**
+  - Implemented `ReconnectRequest` event in `apps/api/src/game/game.gateway.ts` to restore player sessions after temporary disconnects using payload `{ playerId, roomId }`.
+  - Added strict reconnect validation: payload shape checks, authenticated identity match, room ownership checks for guests, and room existence checks.
+  - Added duplicate socket handling during reconnect by disconnecting older sockets for the same `playerId` before joining the new socket.
+  - Added Redis-backed state synchronization and `StateSync` emission containing room status, players snapshot, and leaderboard to rehydrate client state without creating duplicate player entries.
+  - Added reconnect-focused unit tests in `apps/api/src/game/game.gateway.spec.ts` covering invalid payloads, identity mismatch, successful state sync, and missing-player rejection.
+  - Verified behavior with `pnpm --dir apps/api test -- src/game/game.gateway.spec.ts` and full API tests via `pnpm --dir apps/api test`.
+- **Why:** To complete FFH-046 by making reconnections deterministic, secure, and stateful using Redis as the runtime source of truth.
+- **What's Next:** Start `FFH-047: Implement Connection Cleanup`.
+
+---
+
+**Date/Time:** 2026-07-07 14:49 (Local Time)
+**Agent:** Codex
+**Ticket:** FFH-045
+
+- **What Changed:**
+  - Implemented `LeaveRoom` WebSocket handler in `apps/api/src/game/game.gateway.ts` with protocol-aligned validation and authorization checks for both guest and host sessions.
+  - Added room leave lifecycle behavior: socket leaves Socket.IO room, player is removed from Redis (`removePlayer`), `PlayerLeft` broadcast is emitted, and `RoomStateUpdated` is emitted to remaining clients.
+  - Added empty-room cleanup by deleting Redis room state when the last player exits.
+  - Added comprehensive unit tests in `apps/api/src/game/game.gateway.spec.ts` covering payload validation, successful leave flow, and last-player cleanup.
+  - Verified with test runs: `pnpm --dir apps/api test -- src/game/game.gateway.spec.ts` and full `pnpm --dir apps/api test`.
+- **Why:** To complete FFH-045 room lifecycle behavior so lobby presence remains consistent across sockets and Redis, including cleanup safety for empty rooms.
+- **What's Next:** Start `FFH-046: Implement Player Reconnection`.
+
+---
+
+**Date/Time:** 2026-07-07 14:47 (Local Time)
+**Agent:** Codex
+**Ticket:** FFH-044
+
+- **What Changed:**
+  - Verified and completed `JoinRoom` WebSocket flow in `apps/api/src/game/game.gateway.ts` against protocol acceptance criteria: authenticated join, room existence validation, room capacity enforcement, duplicate connection handling, Redis player persistence, and room broadcast updates (`PlayerJoined`, `RoomStateUpdated`).
+  - Confirmed gateway unit coverage in `apps/api/src/game/game.gateway.spec.ts` for all critical success and failure paths including protocol-compliant error emission (`BAD_REQUEST`, `UNAUTHORIZED`, `ROOM_NOT_FOUND`, `ROOM_CLOSED`, `ROOM_FULL`, `INTERNAL_SERVER_ERROR`).
+  - Executed backend test suite successfully to validate integration with current codebase state.
+- **Why:** To close Epic 10 ticket FFH-044 with verified behavior and test-backed confidence before moving to room leave lifecycle.
+- **What's Next:** Start `FFH-045: Implement LeaveRoom Event`.
+
+---
+
 **Date/Time:** 2026-07-07 12:05 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Tickets:** FFH-041, FFH-042, FFH-043
