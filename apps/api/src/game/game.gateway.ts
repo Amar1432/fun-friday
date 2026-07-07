@@ -595,10 +595,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     try {
-      const answers = await this.redisRoomRepository.getAnswers(
-        roomCode,
-        roundId,
-      );
+      const answers =
+        (await this.redisRoomRepository.getAnswers(roomCode, roundId)) || {};
 
       const playerIds = Object.keys(answers);
 
