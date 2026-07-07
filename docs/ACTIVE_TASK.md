@@ -1,24 +1,23 @@
 # Active Task
 
-## FFH-070: Configure Global State Management
+## FFH-076: Build Create Room Screen
 
 ### Description
 
-Create the application's global real-time state layer.
+Allow hosts to create new game rooms.
 
 ### Acceptance Criteria
 
-- [ ] Global state includes:
-  - [ ] Current user
-  - [ ] Current room
-  - [ ] Connected players
-  - [ ] Game status
-  - [ ] Current round
-  - [ ] Timer
-  - [ ] Leaderboard
-  - [ ] Connection status
-- [ ] State is accessible from any page.
+Screen includes:
+
+- [ ] Create room action
+- [ ] Loading state
+- [ ] Error state
+- [ ] Success feedback
+- [ ] Generated room code
+
+Navigation proceeds to lobby after creation.
 
 ### Status
 
-In Progress.
+Pending.

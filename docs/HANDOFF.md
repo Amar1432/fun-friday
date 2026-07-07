@@ -2,6 +2,35 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 23:55 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-070, FFH-071, FFH-072, FFH-073, FFH-074, FFH-075
+
+- **What Changed:**
+  - Verified and documented completion of Epic 17 (Global Real-Time State) tickets FFH-070 through FFH-074.
+  - All global state management components were already implemented: Zustand store with room, player, game, and leaderboard slices; Socket.IO event synchronization via `useSocketSync` hook; global state accessibility via `SocketSyncRoot` component.
+  - Verified and documented completion of FFH-075 (Host Dashboard Layout) - the dashboard layout in `apps/web/app/dashboard/page.tsx` includes header, sidebar navigation, responsive grid layout, and consistent Tailwind CSS styling.
+  - Updated ACTIVE_TASK.md to next pending ticket: FFH-076 (Build Create Room Screen).
+  - Updated TASKS.md to mark FFH-070 through FFH-075 as completed with status notes.
+- **Why:** To bring documentation in sync with the actual state of the codebase and identify the next active task.
+- **What's Next:** FFH-076: Build Create Room Screen - Implement the room creation interface with loading/error states, success feedback, and navigation to lobby.
+
+---
+
+**Date/Time:** 2026-07-07 23:50 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-070
+
+- **What Changed:**
+  - Verified that global state management (FFH-070) was already fully implemented and operational.
+  - The Zustand-based store (`use-game-store.ts`) includes all required state slices: current user, current room, connected players, game status, current round, timer, leaderboard, and connection status.
+  - State is globally accessible from any page via the `SocketSyncRoot` component mounted in the root layout, which integrates Socket.IO events with the global store.
+  - All acceptance criteria for FFH-070 are met with comprehensive unit tests achieving full coverage.
+- **Why:** To complete the active task verification and update documentation to reflect the current state of the project.
+- **What's Next:** Epic 17 is complete. Ready to proceed to the next epic in the roadmap.
+
+---
+
 **Date/Time:** 2026-07-07 23:42 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-066, FFH-067, FFH-068, FFH-069

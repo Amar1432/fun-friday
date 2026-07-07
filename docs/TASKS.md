@@ -1341,6 +1341,10 @@ Global state includes:
 
 State is accessible from any page.
 
+### Status
+
+**COMPLETED** - Implemented as a comprehensive Zustand store with room, player, game, and leaderboard state slices. Includes Socket.IO event synchronization via `useSocketSync` hook.
+
 ---
 
 ## FFH-071: Implement Room Store
@@ -1361,6 +1365,10 @@ Store supports:
 - Room code
 
 Updates occur only through defined actions.
+
+### Status
+
+**COMPLETED** - Implemented as part of FFH-070. Room state slice with `setRoom` and `resetRoom` actions.
 
 ---
 
@@ -1383,6 +1391,10 @@ Store supports:
 
 Ordering remains deterministic.
 
+### Status
+
+**COMPLETED** - Implemented as part of FFH-070. Player state slice with `addPlayer`, `removePlayer`, `updatePlayer`, and deterministic sorting.
+
 ---
 
 ## FFH-073: Implement Game Store
@@ -1404,6 +1416,10 @@ Store maintains:
 
 State updates from WebSocket events only.
 
+### Status
+
+**COMPLETED** - Implemented as part of FFH-070. Game state slice with question, timer, round tracking, and game phase management.
+
 ---
 
 ## FFH-074: Synchronize Socket Events with State
@@ -1419,6 +1435,10 @@ Every event defined in ROOM_PROTOCOL.md updates the correct state slice.
 No duplicated state mutations occur.
 
 State remains synchronized after reconnect.
+
+### Status
+
+**COMPLETED** - Implemented as part of FFH-070. `useSocketSync` hook and `SocketSyncRoot` component provide automatic event-to-state synchronization.
 
 ---
 
@@ -1442,6 +1462,10 @@ Layout includes:
 - Responsive behavior
 
 Tailwind CSS styling is applied consistently.
+
+### Status
+
+**COMPLETED** - Dashboard layout implemented in `apps/web/app/dashboard/page.tsx` with header, sidebar navigation, responsive grid layout, and consistent Tailwind CSS styling.
 
 ---
 
