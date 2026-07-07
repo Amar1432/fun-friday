@@ -2,6 +2,53 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 20:50 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-061
+
+- **What Changed:**
+  - Implemented the `LeaderboardUpdated` event broadcast logic at the end of a round:
+    - Added `broadcastLeaderboard(roomCode)` helper method in `GameGateway` that fetches the ranked leaderboard from Redis sorted set and details of participants from the players map.
+    - Deterministically orders entries by score descending, then by `displayName` ascending, then by `playerId` ascending. This ensures identical scores result in a stable rank order.
+    - Broadcasts the ranked array containing `{ rank: number, playerId: string, displayName: string, score: number, streak: number }` to all clients in the room namespace.
+    - Handles corrupted player JSON profiles gracefully by defaulting fields.
+    - Added call to `broadcastLeaderboard` as **Step 8** in the `completeRound` flow.
+  - Added unit test suite for `broadcastLeaderboard` in `game.gateway.spec.ts` to assert correct deterministic sorting, ranking, structure, and fallback default values.
+  - Fixed defensive fallback check `|| {}` inside Kiro's `persistRoundAnswers` answers retrieval to prevent type errors/crashing in tests when Redis `getAnswers` returns nullish.
+  - Verified linter, formatter, typecheck, and all 203 tests passed.
+- **Why:** To satisfy all acceptance criteria for FFH-061: broadcast ranked updates matching `ROOM_PROTOCOL.md` to all connected clients under deterministic ordering.
+- **What's Next:** Start `FFH-062: Implement Game Completion Flow`.
+
+---
+
+**Date/Time:** 2026-07-07 20:41 (Local Time)
+**Agent:** Kiro
+**Ticket:** FFH-060
+
+- **What Changed:**
+  - Implemented `persistRoundAnswers(roomCode, roundId)` method in `GameGateway`:
+    - Reads all submitted answers from the Redis answers hash (`room:{roomCode}:answers:{roundId}`) via `redisRoomRepository.getAnswers`.
+    - Returns early with no DB call if no answers exist.
+    - Iterates entries, skipping any with unparseable JSON or structurally incomplete fields (missing `answerText`, `responseTime`, or `isCorrect`) — each skip is logged as a warning.
+    - Bulk-inserts all valid rows into the `Answer` PostgreSQL table via `prisma.answer.createMany` with `skipDuplicates: true` so re-runs on retry are idempotent.
+    - The `playerId` key in Redis equals `Prisma Player.id` (set during `AuthService.registerGuest`) — no secondary lookup required.
+    - Entire operation is wrapped in a try/catch: any DB failure is logged but does not throw, keeping round completion unblocked. Redis remains authoritative until persistence succeeds.
+  - Wired `persistRoundAnswers` as **step 7** in `completeRound`, called after `calculateAndApplyScores` so scores are committed to Redis before answers are written to Postgres.
+  - Added `answer.createMany` mock to `prismaMock` in `game.gateway.spec.ts`.
+  - Wrote 7 unit tests for `persistRoundAnswers`:
+    1. Happy path — bulk-creates all valid rows with correct field mapping.
+    2. Empty Redis answers — returns early, `createMany` not called.
+    3. Malformed JSON entries — skipped, valid ones still persisted.
+    4. Incomplete parsed fields — entries missing required types skipped.
+    5. All entries malformed — no-op, `createMany` not called.
+    6. DB write failure — resolves without throwing (non-fatal).
+    7. `skipDuplicates: true` always passed — idempotency assertion.
+  - All 201 unit tests pass across 14 suites, typecheck and lint clean. Committed `e0d65a6`.
+- **Why:** To satisfy all acceptance criteria for FFH-060: persist player answers (text, correctness, response time, round reference) to PostgreSQL after scoring, while keeping Redis authoritative until persistence completes.
+- **What's Next:** Start `FFH-061: Implement LeaderboardUpdated Broadcast`.
+
+---
+
 **Date/Time:** 2026-07-07 17:02 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-059

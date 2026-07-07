@@ -1,18 +1,20 @@
 # Active Task
 
-## FFH-060: Persist Completed Round Data
+## FFH-061: Implement LeaderboardUpdated Broadcast
 
 ### Description
 
-Flush completed round information to PostgreSQL.
+Broadcast updated leaderboard after scoring.
 
 ### Acceptance Criteria
 
-Persisted data includes:
+Leaderboard includes:
 
-- Player answers
-- Correctness
-- Response time
-- Round reference
+- Player
+- Rank
+- Score
+- Score delta (if defined by protocol)
 
-Redis remains authoritative until persistence completes successfully.
+Ordering is deterministic.
+
+Payload matches ROOM_PROTOCOL.md.
