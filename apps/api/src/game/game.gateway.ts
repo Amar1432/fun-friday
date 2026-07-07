@@ -9,11 +9,20 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseInterceptors } from '@nestjs/common';
+import { Logger, UseInterceptors, UsePipes } from '@nestjs/common';
 import { TokenService, TokenPayload } from '../auth/token.service';
 import { SocketLoggingInterceptor } from '../common/interceptors/socket-logging.interceptor';
+import { WsValidationPipe } from '../common/pipes/ws-validation.pipe';
 import { PrismaService } from '../database/prisma.service';
 import { RedisRoomRepository } from '../redis/redis-room.repository';
+import { JoinRoomDto } from './dto/join-room.dto';
+import { LeaveRoomDto } from './dto/leave-room.dto';
+import { PlayerReadyDto } from './dto/player-ready.dto';
+import { ReconnectRequestDto } from './dto/reconnect-request.dto';
+import { StartGameDto } from './dto/start-game.dto';
+import { NextRoundDto } from './dto/next-round.dto';
+import { EndGameDto } from './dto/end-game.dto';
+import { SubmitAnswerDto } from './dto/submit-answer.dto';
 
 /** Grace period (ms) before an unexpectedly disconnected player is removed. */
 const DISCONNECT_CLEANUP_DELAY_MS = 30_000;
@@ -159,19 +168,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('StartGame')
+  @UsePipes(new WsValidationPipe())
   async handleStartGame(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomId: string; gameId: string },
+    @MessageBody() payload: StartGameDto,
   ): Promise<void> {
-    if (!payload?.roomId || !payload?.gameId) {
-      const err = new WsException('roomId and gameId are required');
-      client.emit('error', {
-        success: false,
-        error: { code: 'BAD_REQUEST', message: err.message },
-      });
-      throw err;
-    }
-
     const clientData = client.data as {
       user?: TokenPayload;
       roomCode?: string;
@@ -809,19 +810,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('NextRound')
+  @UsePipes(new WsValidationPipe())
   async handleNextRound(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomId: string },
+    @MessageBody() payload: NextRoundDto,
   ): Promise<void> {
-    if (!payload?.roomId) {
-      const err = new WsException('roomId is required');
-      client.emit('error', {
-        success: false,
-        error: { code: 'BAD_REQUEST', message: err.message },
-      });
-      throw err;
-    }
-
     const clientData = client.data as {
       user?: TokenPayload;
       roomCode?: string;
@@ -911,19 +904,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('EndGame')
+  @UsePipes(new WsValidationPipe())
   async handleEndGame(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomId: string },
+    @MessageBody() payload: EndGameDto,
   ): Promise<void> {
-    if (!payload?.roomId) {
-      const err = new WsException('roomId is required');
-      client.emit('error', {
-        success: false,
-        error: { code: 'BAD_REQUEST', message: err.message },
-      });
-      throw err;
-    }
-
     const clientData = client.data as {
       user?: TokenPayload;
       roomCode?: string;
@@ -1121,32 +1106,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('SubmitAnswer')
+  @UsePipes(new WsValidationPipe())
   async handleSubmitAnswer(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    payload: {
-      roomId: string;
-      questionId: string;
-      answer: string;
-      responseTimeMs: number;
-    },
+    @MessageBody() payload: SubmitAnswerDto,
   ): Promise<void> {
-    if (
-      !payload?.roomId ||
-      !payload?.questionId ||
-      payload?.answer === undefined ||
-      payload?.responseTimeMs === undefined
-    ) {
-      const err = new WsException(
-        'roomId, questionId, answer, and responseTimeMs are required',
-      );
-      client.emit('error', {
-        success: false,
-        error: { code: 'BAD_REQUEST', message: err.message },
-      });
-      throw err;
-    }
-
     const clientData = client.data as {
       user?: TokenPayload;
       roomCode?: string;
@@ -1507,23 +1471,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('JoinRoom')
+  @UsePipes(new WsValidationPipe())
   async handleJoinRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    payload: { roomCode: string; displayName?: string; guestToken?: string },
+    @MessageBody() payload: JoinRoomDto,
   ): Promise<void> {
-    if (!payload || !payload.roomCode) {
-      const err = new WsException('Room code is required');
-      client.emit('error', {
-        success: false,
-        error: {
-          code: 'BAD_REQUEST',
-          message: err.message,
-        },
-      });
-      throw err;
-    }
-
     const roomCode = payload.roomCode.toUpperCase();
     const clientData = client.data as {
       user?: TokenPayload;
@@ -1724,22 +1676,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('LeaveRoom')
+  @UsePipes(new WsValidationPipe())
   async handleLeaveRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomId: string; playerId: string },
+    @MessageBody() payload: LeaveRoomDto,
   ): Promise<void> {
-    if (!payload?.roomId || !payload?.playerId) {
-      const err = new WsException('roomId and playerId are required');
-      client.emit('error', {
-        success: false,
-        error: {
-          code: 'BAD_REQUEST',
-          message: err.message,
-        },
-      });
-      throw err;
-    }
-
     const clientData = client.data as {
       user?: TokenPayload;
       roomCode?: string;
@@ -1879,22 +1820,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('ReconnectRequest')
+  @UsePipes(new WsValidationPipe())
   async handleReconnectRequest(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { playerId: string; roomId: string },
+    @MessageBody() payload: ReconnectRequestDto,
   ): Promise<void> {
-    if (!payload?.playerId || !payload?.roomId) {
-      const err = new WsException('playerId and roomId are required');
-      client.emit('error', {
-        success: false,
-        error: {
-          code: 'BAD_REQUEST',
-          message: err.message,
-        },
-      });
-      throw err;
-    }
-
     const clientData = client.data as {
       user?: TokenPayload;
       roomCode?: string;
@@ -2047,22 +1977,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('PlayerReady')
+  @UsePipes(new WsValidationPipe())
   async handlePlayerReady(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomId: string; playerId: string },
+    @MessageBody() payload: PlayerReadyDto,
   ): Promise<void> {
-    if (!payload?.roomId || !payload?.playerId) {
-      const err = new WsException('roomId and playerId are required');
-      client.emit('error', {
-        success: false,
-        error: {
-          code: 'BAD_REQUEST',
-          message: err.message,
-        },
-      });
-      throw err;
-    }
-
     const clientData = client.data as {
       user?: TokenPayload;
       roomCode?: string;
