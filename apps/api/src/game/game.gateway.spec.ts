@@ -247,6 +247,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       gateway.handleDisconnect(mockSocket);
@@ -268,6 +269,8 @@ describe('GameGateway', () => {
         'RoomStateUpdated',
         expect.objectContaining({
           status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 1,
           players: [expect.objectContaining({ id: 'guest-456' })],
         }),
       );
@@ -415,6 +418,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
 
@@ -553,6 +557,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       await gateway.handleJoinRoom(mockSocket as unknown as Socket, {
@@ -579,6 +584,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       const fullPlayersMap: Record<string, string> = {};
@@ -615,6 +621,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
 
@@ -652,6 +659,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       const existingPlayer = {
@@ -693,6 +701,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
 
@@ -734,6 +743,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
       redisRoomRepositoryMock.getPlayers
         .mockResolvedValueOnce({})
@@ -752,6 +762,8 @@ describe('GameGateway', () => {
       expect(roomBroadcaster?.emit).toHaveBeenCalledWith(
         'RoomStateUpdated',
         expect.objectContaining({
+          hostId: 'host-123',
+          playerCount: 1,
           players: [expect.objectContaining({ id: 'guest-123' })],
         }),
       );
@@ -866,6 +878,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       await gateway.handleLeaveRoom(mockSocket as unknown as Socket, {
@@ -885,6 +898,8 @@ describe('GameGateway', () => {
         'RoomStateUpdated',
         expect.objectContaining({
           status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 1,
           players: [expect.objectContaining({ id: 'guest-456' })],
         }),
       );
@@ -1125,6 +1140,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
 
@@ -1159,6 +1175,7 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({
         'guest-123': JSON.stringify({
@@ -1357,6 +1374,7 @@ describe('GameGateway', () => {
 
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       await gateway.handlePlayerReady(mockSocket as unknown as Socket, {
@@ -1374,6 +1392,8 @@ describe('GameGateway', () => {
         'RoomStateUpdated',
         expect.objectContaining({
           status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 1,
           players: [
             expect.objectContaining({ id: 'guest-123', isReady: true }),
           ],
@@ -1420,6 +1440,7 @@ describe('GameGateway', () => {
 
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       await gateway.handlePlayerReady(mockSocket as unknown as Socket, {
@@ -1437,6 +1458,8 @@ describe('GameGateway', () => {
         'RoomStateUpdated',
         expect.objectContaining({
           status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 1,
           players: [
             expect.objectContaining({ id: 'guest-123', isReady: false }),
           ],
@@ -1488,6 +1511,7 @@ describe('GameGateway', () => {
 
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'LOBBY',
+        hostId: 'host-123',
       });
 
       // First toggle: false -> true

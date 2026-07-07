@@ -133,29 +133,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(roomCode).emit('PlayerLeft', { playerId });
 
       // Fetch updated room state and broadcast
-      const updatedPlayersMap =
-        await this.redisRoomRepository.getPlayers(roomCode);
-      const playersArray = Object.values(updatedPlayersMap)
-        .map((playerJson) => {
-          try {
-            return JSON.parse(playerJson) as Record<string, unknown>;
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
+      const roomStatePayload = await this.buildRoomStatePayload(roomCode);
 
       // Cleanup empty room
-      if (playersArray.length === 0) {
+      if (roomStatePayload.playerCount === 0) {
         await this.redisRoomRepository.deleteRoomState(roomCode);
         this.logger.log(`Room ${roomCode} is now empty and has been deleted`);
       } else {
-        const roomMeta =
-          await this.redisRoomRepository.getRoomMetadata(roomCode);
-        this.server.to(roomCode).emit('RoomStateUpdated', {
-          players: playersArray,
-          status: roomMeta?.status || 'LOBBY',
-        });
+        this.server.to(roomCode).emit('RoomStateUpdated', roomStatePayload);
       }
 
       this.logger.log(`Player ${playerId} removed from room ${roomCode}`);
@@ -165,6 +150,42 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         error instanceof Error ? error.stack : undefined,
       );
     }
+  }
+
+  /**
+   * Builds the complete RoomStateUpdated payload including players, ready status,
+   * host information, room status, and player count.
+   */
+  private async buildRoomStatePayload(
+    roomCode: string,
+    fallbackStatus: string = 'LOBBY',
+  ): Promise<{
+    players: Record<string, unknown>[];
+    status: string;
+    hostId: string | null;
+    playerCount: number;
+  }> {
+    const [playersMap, roomMeta] = await Promise.all([
+      this.redisRoomRepository.getPlayers(roomCode),
+      this.redisRoomRepository.getRoomMetadata(roomCode),
+    ]);
+
+    const players = Object.values(playersMap)
+      .map((playerJson) => {
+        try {
+          return JSON.parse(playerJson) as Record<string, unknown>;
+        } catch {
+          return null;
+        }
+      })
+      .filter((p): p is Record<string, unknown> => p !== null);
+
+    return {
+      players,
+      status: roomMeta?.status ?? fallbackStatus,
+      hostId: roomMeta?.hostId ?? null,
+      playerCount: players.length,
+    };
   }
 
   private extractToken(client: Socket): string | null {
@@ -378,22 +399,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       client.to(roomCode).emit('PlayerJoined', { player: playerState });
 
-      const updatedPlayersMap =
-        await this.redisRoomRepository.getPlayers(roomCode);
-      const playersArray = Object.values(updatedPlayersMap)
-        .map((pJson) => {
-          try {
-            return JSON.parse(pJson) as Record<string, unknown>;
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
-
-      this.server.to(roomCode).emit('RoomStateUpdated', {
-        players: playersArray,
+      const roomStatePayload = await this.buildRoomStatePayload(
+        roomCode,
         status,
-      });
+      );
+      this.server.to(roomCode).emit('RoomStateUpdated', roomStatePayload);
 
       this.logger.log(
         `Player ${playerState.displayName} (${playerId}) joined room ${roomCode}`,
@@ -535,25 +545,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!isHost) {
         const updatedPlayersMap =
           await this.redisRoomRepository.getPlayers(roomCode);
-        const playersArray = Object.values(updatedPlayersMap)
-          .map((playerJson) => {
-            try {
-              return JSON.parse(playerJson) as Record<string, unknown>;
-            } catch {
-              return null;
-            }
-          })
-          .filter(Boolean);
+        const remainingCount = Object.keys(updatedPlayersMap).length;
 
-        if (playersArray.length === 0) {
+        if (remainingCount === 0) {
           await this.redisRoomRepository.deleteRoomState(roomCode);
         } else {
-          const roomMeta =
-            await this.redisRoomRepository.getRoomMetadata(roomCode);
-          this.server.to(roomCode).emit('RoomStateUpdated', {
-            players: playersArray,
-            status: roomMeta?.status || room.status,
-          });
+          const roomStatePayload = await this.buildRoomStatePayload(
+            roomCode,
+            room.status,
+          );
+          this.server.to(roomCode).emit('RoomStateUpdated', roomStatePayload);
         }
       }
 
@@ -883,24 +884,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       // Broadcast updated room state to all clients in the room
-      const updatedPlayersMap =
-        await this.redisRoomRepository.getPlayers(roomCode);
-      const playersArray = Object.values(updatedPlayersMap)
-        .map((pJson) => {
-          try {
-            return JSON.parse(pJson) as Record<string, unknown>;
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
-
-      const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
-
-      this.server.to(roomCode).emit('RoomStateUpdated', {
-        players: playersArray,
-        status: roomMeta?.status || room.status,
-      });
+      const roomStatePayload = await this.buildRoomStatePayload(
+        roomCode,
+        room.status,
+      );
+      this.server.to(roomCode).emit('RoomStateUpdated', roomStatePayload);
 
       this.logger.log(
         `Player ${payload.playerId} in room ${roomCode} toggled ready status to ${playerState.isReady}`,
