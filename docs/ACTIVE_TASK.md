@@ -1,30 +1,20 @@
 # Active Task
 
-## FFH-065: Implement Socket Integration Tests
+## FFH-066: Configure Socket.IO Client
 
 ### Description
 
-Create automated integration tests covering the complete real-time game flow.
+Integrate the Socket.IO client into the Next.js application.
 
 ### Acceptance Criteria
 
-Tests verify:
-
-- [x] Connection
-- [x] Authentication
-- [x] JoinRoom
-- [x] LeaveRoom
-- [x] Reconnect
-- [x] PlayerReady
-- [x] StartGame
-- [x] QuestionStarted
-- [x] TimerTick
-- [x] SubmitAnswer
-- [x] LeaderboardUpdated
-- [x] Game completion
-
-All tests pass successfully in CI.
+- [ ] Socket.IO client dependency is installed.
+- [ ] Connection URL is configurable through environment variables.
+- [ ] Connection is established only when required.
+- [ ] Automatic reconnection is enabled.
+- [ ] Connection status is exposed to the application.
+- [ ] Development and production configurations are supported.
 
 ### Status
 
-Completed. All tests are passing successfully. Ready for handoff.
+In Progress.
