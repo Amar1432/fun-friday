@@ -1,14 +1,30 @@
 # Active Task
 
-## FFH-064: Implement Protocol Validation
+## FFH-065: Implement Socket Integration Tests
 
 ### Description
 
-Validate all incoming WebSocket payloads using NestJS `ValidationPipe` and `class-validator` decorators.
+Create automated integration tests covering the complete real-time game flow.
 
 ### Acceptance Criteria
 
-- All incoming WebSocket event payloads validated using `class-validator`.
-- Invalid payloads rejected with a structured error event before any business logic runs.
-- Validation DTOs created for all `@SubscribeMessage` handlers.
-- Unit tests cover both valid and invalid payload scenarios.
+Tests verify:
+
+- [x] Connection
+- [x] Authentication
+- [x] JoinRoom
+- [x] LeaveRoom
+- [x] Reconnect
+- [x] PlayerReady
+- [x] StartGame
+- [x] QuestionStarted
+- [x] TimerTick
+- [x] SubmitAnswer
+- [x] LeaderboardUpdated
+- [x] Game completion
+
+All tests pass successfully in CI.
+
+### Status
+
+Completed. All tests are passing successfully. Ready for handoff.

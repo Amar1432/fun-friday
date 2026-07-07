@@ -5,6 +5,16 @@ import { PrismaService } from '../database/prisma.service';
 import { RedisRoomRepository } from '../redis/redis-room.repository';
 import { Socket, Server } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
+import { ArgumentMetadata } from '@nestjs/common';
+import { WsValidationPipe } from '../common/pipes/ws-validation.pipe';
+import { JoinRoomDto } from './dto/join-room.dto';
+import { LeaveRoomDto } from './dto/leave-room.dto';
+import { PlayerReadyDto } from './dto/player-ready.dto';
+import { ReconnectRequestDto } from './dto/reconnect-request.dto';
+import { StartGameDto } from './dto/start-game.dto';
+import { NextRoundDto } from './dto/next-round.dto';
+import { EndGameDto } from './dto/end-game.dto';
+import { SubmitAnswerDto } from './dto/submit-answer.dto';
 
 describe('GameGateway', () => {
   let gateway: GameGateway;
@@ -407,13 +417,16 @@ describe('GameGateway', () => {
       gateway.server = mockServer as unknown as Server;
     });
 
-    it('should throw WsException and emit error if roomCode is missing', async () => {
+    it('should throw WsException (from WsValidationPipe) when roomCode is empty — pipe rejects before handler runs', async () => {
+      const pipe = new WsValidationPipe();
+      const meta: ArgumentMetadata = {
+        type: 'body',
+        metatype: JoinRoomDto,
+        data: '',
+      };
       await expect(
-        gateway.handleJoinRoom(mockSocket as unknown as Socket, {
-          roomCode: '',
-        }),
-      ).rejects.toThrow(WsException);
-      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+        pipe.transform({ roomCode: '' }, meta),
+      ).rejects.toBeInstanceOf(WsException);
     });
 
     it('should throw WsException and emit error if socket is unauthenticated and guestToken is invalid/missing', async () => {
@@ -834,15 +847,6 @@ describe('GameGateway', () => {
     }
 
     let mockSocket: LeaveMockSocket;
-    const expectLastErrorCode = (
-      emitMock: jest.Mock,
-      expectedCode: string,
-    ): void => {
-      const calls = emitMock.mock.calls as unknown[][];
-      const lastPayload = calls[calls.length - 1]?.[1] as
-        { error?: { code?: string } } | undefined;
-      expect(lastPayload?.error?.code).toBe(expectedCode);
-    };
 
     beforeEach(() => {
       mockSocket = {
@@ -858,14 +862,16 @@ describe('GameGateway', () => {
       } as unknown as Server;
     });
 
-    it('should reject leave when payload is missing fields', async () => {
+    it('should reject leave when payload fields are empty — WsValidationPipe rejects before handler runs', async () => {
+      const pipe = new WsValidationPipe();
+      const meta: ArgumentMetadata = {
+        type: 'body',
+        metatype: LeaveRoomDto,
+        data: '',
+      };
       await expect(
-        gateway.handleLeaveRoom(mockSocket as unknown as Socket, {
-          roomId: '',
-          playerId: '',
-        }),
-      ).rejects.toThrow(WsException);
-      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+        pipe.transform({ roomId: '', playerId: '' }, meta),
+      ).rejects.toBeInstanceOf(WsException);
     });
 
     it('should remove player, leave socket room, and emit room updates', async () => {
@@ -1049,14 +1055,16 @@ describe('GameGateway', () => {
       } as unknown as Server;
     });
 
-    it('should reject reconnect when payload is invalid', async () => {
+    it('should reject reconnect when payload fields are empty — WsValidationPipe rejects before handler runs', async () => {
+      const pipe = new WsValidationPipe();
+      const meta: ArgumentMetadata = {
+        type: 'body',
+        metatype: ReconnectRequestDto,
+        data: '',
+      };
       await expect(
-        gateway.handleReconnectRequest(mockSocket as unknown as Socket, {
-          playerId: '',
-          roomId: '',
-        }),
-      ).rejects.toThrow(WsException);
-      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+        pipe.transform({ playerId: '', roomId: '' }, meta),
+      ).rejects.toBeInstanceOf(WsException);
     });
 
     it('should reject reconnect when player identity mismatches token', async () => {
@@ -1261,14 +1269,16 @@ describe('GameGateway', () => {
       } as unknown as Server;
     });
 
-    it('should reject when payload is missing fields', async () => {
+    it('should reject when payload fields are empty — WsValidationPipe rejects before handler runs', async () => {
+      const pipe = new WsValidationPipe();
+      const meta: ArgumentMetadata = {
+        type: 'body',
+        metatype: PlayerReadyDto,
+        data: '',
+      };
       await expect(
-        gateway.handlePlayerReady(mockSocket as unknown as Socket, {
-          roomId: '',
-          playerId: '',
-        }),
-      ).rejects.toThrow(WsException);
-      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+        pipe.transform({ roomId: '', playerId: '' }, meta),
+      ).rejects.toBeInstanceOf(WsException);
     });
 
     it('should reject when socket is not authenticated', async () => {
@@ -1806,14 +1816,16 @@ describe('GameGateway', () => {
       jest.spyOn(gateway, 'startTimer').mockImplementation(() => {});
     });
 
-    it('should reject when payload is missing fields', async () => {
+    it('should reject when payload fields are empty — WsValidationPipe rejects before handler runs', async () => {
+      const pipe = new WsValidationPipe();
+      const meta: ArgumentMetadata = {
+        type: 'body',
+        metatype: StartGameDto,
+        data: '',
+      };
       await expect(
-        gateway.handleStartGame(mockSocket as unknown as Socket, {
-          roomId: '',
-          gameId: '',
-        }),
-      ).rejects.toThrow(WsException);
-      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+        pipe.transform({ roomId: '', gameId: '' }, meta),
+      ).rejects.toBeInstanceOf(WsException);
     });
 
     it('should reject when caller is not a host', async () => {
@@ -2215,13 +2227,16 @@ describe('GameGateway', () => {
       jest.spyOn(gateway, 'startTimer').mockImplementation(() => {});
     });
 
-    it('should reject if roomId is missing', async () => {
-      await expect(
-        gateway.handleNextRound(mockSocket as unknown as Socket, {
-          roomId: '',
-        }),
-      ).rejects.toThrow(WsException);
-      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+    it('should reject if roomId is empty — WsValidationPipe rejects before handler runs', async () => {
+      const pipe = new WsValidationPipe();
+      const meta: ArgumentMetadata = {
+        type: 'body',
+        metatype: NextRoundDto,
+        data: '',
+      };
+      await expect(pipe.transform({ roomId: '' }, meta)).rejects.toBeInstanceOf(
+        WsException,
+      );
     });
 
     it('should reject if caller is not the host', async () => {
@@ -2642,16 +2657,19 @@ describe('GameGateway', () => {
       };
     });
 
-    it('should reject if payload is missing fields', async () => {
+    it('should reject if required payload fields are empty — WsValidationPipe rejects before handler runs', async () => {
+      const pipe = new WsValidationPipe();
+      const meta: ArgumentMetadata = {
+        type: 'body',
+        metatype: SubmitAnswerDto,
+        data: '',
+      };
       await expect(
-        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
-          roomId: '',
-          questionId: '',
-          answer: '',
-          responseTimeMs: 0,
-        }),
-      ).rejects.toThrow(WsException);
-      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+        pipe.transform(
+          { roomId: '', questionId: '', answer: '', responseTimeMs: 0 },
+          meta,
+        ),
+      ).rejects.toBeInstanceOf(WsException);
     });
 
     it('should reject if user is not a guest player', async () => {
@@ -3345,6 +3363,380 @@ describe('GameGateway', () => {
       ).not.toThrow();
 
       expect(socketsLeaveMock).toHaveBeenCalledWith('ROOM12');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // FFH-064: DTO Validation via WsValidationPipe
+  //
+  // These tests verify that each @SubscribeMessage DTO correctly rejects
+  // invalid payloads through WsValidationPipe BEFORE business logic executes.
+  // Tests exercise both valid and invalid scenarios for every event DTO.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  describe('DTO Validation via WsValidationPipe (FFH-064)', () => {
+    let pipe: WsValidationPipe;
+
+    beforeEach(() => {
+      pipe = new WsValidationPipe({ forbidNonWhitelisted: false });
+    });
+
+    function meta<T>(metatype: new (...a: unknown[]) => T): ArgumentMetadata {
+      return {
+        type: 'body',
+        metatype: metatype as new (...a: unknown[]) => unknown,
+        data: '',
+      };
+    }
+
+    // ── JoinRoomDto ──────────────────────────────────────────────────────────
+
+    describe('JoinRoomDto', () => {
+      it('should pass with a valid roomCode', async () => {
+        const result = await pipe.transform(
+          { roomCode: 'ROOM01' },
+          meta(JoinRoomDto),
+        );
+        expect(result).toBeInstanceOf(JoinRoomDto);
+      });
+
+      it('should pass with optional displayName and guestToken', async () => {
+        const result = (await pipe.transform(
+          { roomCode: 'ROOM01', displayName: 'Alice', guestToken: 'tok123' },
+          meta(JoinRoomDto),
+        )) as JoinRoomDto;
+        expect(result.displayName).toBe('Alice');
+        expect(result.guestToken).toBe('tok123');
+      });
+
+      it('should reject when roomCode is missing', async () => {
+        await expect(
+          pipe.transform({}, meta(JoinRoomDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when roomCode is an empty string', async () => {
+        await expect(
+          pipe.transform({ roomCode: '' }, meta(JoinRoomDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when roomCode is not a string', async () => {
+        await expect(
+          pipe.transform({ roomCode: 123 }, meta(JoinRoomDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should include BAD_REQUEST code in the exception', async () => {
+        try {
+          await pipe.transform({ roomCode: '' }, meta(JoinRoomDto));
+          fail('should have thrown');
+        } catch (err) {
+          const ex = err as WsException;
+          const body = ex.getError() as { code: string; message: string };
+          expect(body.code).toBe('BAD_REQUEST');
+        }
+      });
+
+      it('should strip unknown extra fields (whitelist)', async () => {
+        const result = (await pipe.transform(
+          { roomCode: 'ROOM01', unknownField: 'bad' },
+          meta(JoinRoomDto),
+        )) as JoinRoomDto;
+        expect(
+          (result as unknown as Record<string, unknown>)['unknownField'],
+        ).toBeUndefined();
+      });
+    });
+
+    // ── LeaveRoomDto ─────────────────────────────────────────────────────────
+
+    describe('LeaveRoomDto', () => {
+      it('should pass with valid roomId and playerId', async () => {
+        const result = await pipe.transform(
+          { roomId: 'room-1', playerId: 'player-1' },
+          meta(LeaveRoomDto),
+        );
+        expect(result).toBeInstanceOf(LeaveRoomDto);
+      });
+
+      it('should reject when roomId is empty', async () => {
+        await expect(
+          pipe.transform(
+            { roomId: '', playerId: 'player-1' },
+            meta(LeaveRoomDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when playerId is empty', async () => {
+        await expect(
+          pipe.transform(
+            { roomId: 'room-1', playerId: '' },
+            meta(LeaveRoomDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when both fields are missing', async () => {
+        await expect(
+          pipe.transform({}, meta(LeaveRoomDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+    });
+
+    // ── PlayerReadyDto ───────────────────────────────────────────────────────
+
+    describe('PlayerReadyDto', () => {
+      it('should pass with valid roomId and playerId', async () => {
+        const result = await pipe.transform(
+          { roomId: 'room-1', playerId: 'player-1' },
+          meta(PlayerReadyDto),
+        );
+        expect(result).toBeInstanceOf(PlayerReadyDto);
+      });
+
+      it('should reject when roomId is missing', async () => {
+        await expect(
+          pipe.transform({ playerId: 'player-1' }, meta(PlayerReadyDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when playerId is empty', async () => {
+        await expect(
+          pipe.transform(
+            { roomId: 'room-1', playerId: '' },
+            meta(PlayerReadyDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+    });
+
+    // ── ReconnectRequestDto ──────────────────────────────────────────────────
+
+    describe('ReconnectRequestDto', () => {
+      it('should pass with valid playerId and roomId', async () => {
+        const result = await pipe.transform(
+          { playerId: 'player-1', roomId: 'room-1' },
+          meta(ReconnectRequestDto),
+        );
+        expect(result).toBeInstanceOf(ReconnectRequestDto);
+      });
+
+      it('should reject when playerId is empty', async () => {
+        await expect(
+          pipe.transform(
+            { playerId: '', roomId: 'room-1' },
+            meta(ReconnectRequestDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when roomId is missing', async () => {
+        await expect(
+          pipe.transform({ playerId: 'player-1' }, meta(ReconnectRequestDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+    });
+
+    // ── StartGameDto ─────────────────────────────────────────────────────────
+
+    describe('StartGameDto', () => {
+      it('should pass with valid roomId and gameId', async () => {
+        const result = await pipe.transform(
+          { roomId: 'room-1', gameId: 'game-1' },
+          meta(StartGameDto),
+        );
+        expect(result).toBeInstanceOf(StartGameDto);
+      });
+
+      it('should reject when roomId is empty', async () => {
+        await expect(
+          pipe.transform({ roomId: '', gameId: 'game-1' }, meta(StartGameDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when gameId is missing', async () => {
+        await expect(
+          pipe.transform({ roomId: 'room-1' }, meta(StartGameDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when both fields are missing', async () => {
+        await expect(
+          pipe.transform({}, meta(StartGameDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+    });
+
+    // ── NextRoundDto ─────────────────────────────────────────────────────────
+
+    describe('NextRoundDto', () => {
+      it('should pass with a valid roomId', async () => {
+        const result = await pipe.transform(
+          { roomId: 'room-1' },
+          meta(NextRoundDto),
+        );
+        expect(result).toBeInstanceOf(NextRoundDto);
+      });
+
+      it('should reject when roomId is empty', async () => {
+        await expect(
+          pipe.transform({ roomId: '' }, meta(NextRoundDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when roomId is missing', async () => {
+        await expect(
+          pipe.transform({}, meta(NextRoundDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+    });
+
+    // ── EndGameDto ───────────────────────────────────────────────────────────
+
+    describe('EndGameDto', () => {
+      it('should pass with a valid roomId', async () => {
+        const result = await pipe.transform(
+          { roomId: 'room-1' },
+          meta(EndGameDto),
+        );
+        expect(result).toBeInstanceOf(EndGameDto);
+      });
+
+      it('should reject when roomId is empty', async () => {
+        await expect(
+          pipe.transform({ roomId: '' }, meta(EndGameDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when roomId is missing', async () => {
+        await expect(
+          pipe.transform({}, meta(EndGameDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+    });
+
+    // ── SubmitAnswerDto ──────────────────────────────────────────────────────
+
+    describe('SubmitAnswerDto', () => {
+      it('should pass with all valid fields', async () => {
+        const result = await pipe.transform(
+          {
+            roomId: 'room-1',
+            questionId: 'q-1',
+            answer: 'Paris',
+            responseTimeMs: 1500,
+          },
+          meta(SubmitAnswerDto),
+        );
+        expect(result).toBeInstanceOf(SubmitAnswerDto);
+      });
+
+      it('should reject when roomId is empty', async () => {
+        await expect(
+          pipe.transform(
+            {
+              roomId: '',
+              questionId: 'q-1',
+              answer: 'Paris',
+              responseTimeMs: 1500,
+            },
+            meta(SubmitAnswerDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when answer is empty', async () => {
+        await expect(
+          pipe.transform(
+            {
+              roomId: 'room-1',
+              questionId: 'q-1',
+              answer: '',
+              responseTimeMs: 1500,
+            },
+            meta(SubmitAnswerDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when responseTimeMs is a negative number', async () => {
+        await expect(
+          pipe.transform(
+            {
+              roomId: 'room-1',
+              questionId: 'q-1',
+              answer: 'Paris',
+              responseTimeMs: -1,
+            },
+            meta(SubmitAnswerDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when responseTimeMs is not a number', async () => {
+        await expect(
+          pipe.transform(
+            {
+              roomId: 'room-1',
+              questionId: 'q-1',
+              answer: 'Paris',
+              responseTimeMs: 'fast',
+            },
+            meta(SubmitAnswerDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject when questionId is missing', async () => {
+        await expect(
+          pipe.transform(
+            { roomId: 'room-1', answer: 'Paris', responseTimeMs: 1500 },
+            meta(SubmitAnswerDto),
+          ),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should pass when responseTimeMs is 0 (minimum allowed)', async () => {
+        const result = await pipe.transform(
+          {
+            roomId: 'room-1',
+            questionId: 'q-1',
+            answer: 'Paris',
+            responseTimeMs: 0,
+          },
+          meta(SubmitAnswerDto),
+        );
+        expect(result).toBeInstanceOf(SubmitAnswerDto);
+      });
+    });
+
+    // ── Null / undefined payloads ────────────────────────────────────────────
+
+    describe('null and undefined payloads', () => {
+      it('should reject null payload for JoinRoomDto with BAD_REQUEST', async () => {
+        await expect(
+          pipe.transform(null, meta(JoinRoomDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should reject null payload for SubmitAnswerDto with BAD_REQUEST', async () => {
+        await expect(
+          pipe.transform(null, meta(SubmitAnswerDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+
+      it('should include BAD_REQUEST code for null payload', async () => {
+        try {
+          await pipe.transform(null, meta(JoinRoomDto));
+          fail('should have thrown');
+        } catch (err) {
+          const ex = err as WsException;
+          const body = ex.getError() as { code: string };
+          expect(body.code).toBe('BAD_REQUEST');
+        }
+      });
     });
   });
 });

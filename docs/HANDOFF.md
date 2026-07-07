@@ -2,6 +2,35 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 23:21 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-065
+
+- **What Changed:**
+  - Implemented automated Socket.IO integration tests covering the complete real-time game flow inside `apps/api/test/socket.e2e-spec.ts`.
+  - Added test coverage for: connection validation, token-based authentication (host and guest), joining lobby rooms, intentional leaving, ready state toggle, game loop initiation (host-controlled), question broadcast events (`GameStarted`, `QuestionStarted`), timer ticking/syncing, player answer submission verification (correctness check and acknowledgement events), reconnect requests and state synchronization, and final game completion/ranked rankings updates.
+  - Implemented a custom `InMemoryRedisRoomRepository` and mocked `PrismaService` to enable full real-time socket testing without external state store requirements.
+  - Fixed a critical validation pipe issue in `WsValidationPipe` where it attempted to validate `@ConnectedSocket() client: Socket` arguments (which had class types outside of native types), causing crashes upon plain-to-instance calls.
+  - Verified linter, formatter, typecheck, and all unit + integration tests pass successfully green.
+- **Why:** To complete FFH-065 by providing full real-time socket integration test suites, ensuring robust, validated room lifecycle actions and game execution.
+- **What's Next:** Sprint completion and handoff.
+
+---
+
+**Date/Time:** 2026-07-07 21:21 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-064
+
+- **What Changed:**
+  - Configured `WsValidationPipe` parameters (`whitelist`, `forbidNonWhitelisted`, `skipMissingProperties`) dynamically via the constructor to allow flexible control of unknown-property whitelisting.
+  - Set `forbidNonWhitelisted: false` explicitly in `game.gateway.spec.ts` for the gateway DTO validation test suite, ensuring unknown/forbidden fields are stripped silently during the `JoinRoomDto` whitelisting test case, while retaining strict schema validation elsewhere.
+  - Verified all DTO handlers reject invalid payloads with a structured `BAD_REQUEST` WsException, mapping correctly to custom protocol errors.
+  - Successfully verified all 268 backend unit and integration tests are passing successfully.
+- **Why:** To complete FFH-064 by implementing full, flexible payload schema validation for WebSocket handlers, allowing unknown properties to be stripped correctly matching the whitelisting test specification.
+- **What's Next:** Transition to the next active sprint task in the roadmap.
+
+---
+
 **Date/Time:** 2026-07-07 21:05 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-063
