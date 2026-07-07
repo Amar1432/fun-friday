@@ -1,14 +1,17 @@
 # Active Task
 
-## FFH-056: Implement Round Completion
+## FFH-059: Calculate Player Scores
 
 ### Description
 
-Complete a round after timer expiration.
+Compute scores for completed rounds.
 
 ### Acceptance Criteria
 
-- Timer stops.
-- Late answers are rejected.
-- Final scoring begins.
-- Next game state transition is triggered.
+Scoring considers:
+
+- Correct answer
+- Response time
+- Existing score
+
+Redis leaderboard updates atomically.

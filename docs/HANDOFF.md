@@ -2,6 +2,72 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 16:21 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-058
+
+- **What Changed:**
+  - Added timing and correctness validations to `handleSubmitAnswer` inside `GameGateway`:
+    - Validates answer correctness on the server-side by checking the parsed question response value against the correct answer stored in Redis (performs trimmed and case-insensitive matching).
+    - Enforces strict timing validations based on wall-clock elapsed time: checks `Date.now() - questionStartedAt` against `timerDuration` (from Redis room metadata) allowing a 1-second grace period for network latency and client/server clock skew. Rejects late submissions with `ROUND_ALREADY_COMPLETED` error.
+    - Persists correctness result `isCorrect` inside Redis answers hash.
+  - Added unit test cases to verify wall-clock timing validation in `game.gateway.spec.ts`.
+  - Verified linter, formatter, typecheck, and all 190 tests passed.
+- **Why:** To satisfy all acceptance criteria for FFH-058: evaluate correctness, check round status/submission timing (wall-clock based), and verify player eligibility server-side.
+- **What's Next:** Start `FFH-059: Calculate Player Scores`.
+
+---
+
+**Date/Time:** 2026-07-07 16:20 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-057
+
+- **What Changed:**
+  - Implemented `@SubscribeMessage('SubmitAnswer')` handler in `GameGateway` to process client answer submissions.
+    - Validates payload fields (`roomId`, `questionId`, `answer`, `responseTimeMs`). Returns `BAD_REQUEST` if invalid.
+    - Validates that the submitter is a `guest` player (hosts are not allowed to submit answers) and that the token `roomId` matches the payload `roomId`. Returns `UNAUTHORIZED` if invalid.
+    - Resolves the room in the database and retrieves room metadata from Redis. Returns `ROOM_NOT_FOUND` if missing.
+    - Verifies that the room status is `IN_PROGRESS` (`ROOM_NOT_IN_PROGRESS`), the round has not completed (`ROUND_ALREADY_COMPLETED` if `roundStatus === 'COMPLETE'`), and that the active question matches the payload question ID (`QUESTION_MISMATCH`).
+    - Verifies that the player has not already submitted an answer for this round using `redisRoomRepository.getAnswers`. Returns `DUPLICATE_SUBMISSION` if they have.
+    - Evaluates correctness by comparing the submission with the correct answer from Redis in a case-insensitive, trimmed manner (addressing FFH-058 partially).
+    - Saves the submission JSON-serialized as `{"answerText": string, "responseTime": number, "isCorrect": boolean}` under `room:{roomCode}:answers:{roundId}` using `redisRoomRepository.setAnswer`.
+    - Returns `SubmitAnswerAck` event back to the submitting client.
+  - Reset `roundStatus` to `'IN_PROGRESS'` inside `startRound` to ensure submissions are active for new rounds.
+  - Added mocks for `getAnswers` and `setAnswer` inside `redisRoomRepositoryMock` in `game.gateway.spec.ts`.
+  - Wrote 11 comprehensive unit tests for `handleSubmitAnswer` in `game.gateway.spec.ts` covering validation edge cases, authorization checks, late-submission gating, duplicate answer rejections, correctness evaluations, Redis persistence, and socket ACKs.
+  - All 189 unit tests passed, type checking and lint checks completed successfully.
+- **Why:** To satisfy all acceptance criteria for FFH-057: single answer acceptance per player per round, duplicate submission gating, response time capturing, Redis persistence, and client ack/error responses.
+- **What's Next:** Start `FFH-058: Validate Submitted Answers`.
+
+---
+
+**Date/Time:** 2026-07-07 16:15 (Local Time)
+**Agent:** Kiro
+**Ticket:** FFH-056
+
+- **What Changed:**
+  - Implemented `completeRound(roomCode)` method in `GameGateway`:
+    - **Step 1 — Stop timer immediately:** Calls `stopTimer(roomCode)` as the very first action so no further `TimerTick` broadcasts fire after round expiration.
+    - **Step 2 — Gate late submissions:** Writes `roundStatus: 'COMPLETE'` to Redis metadata via `updateRoomMetadata`. FFH-057 (`SubmitAnswer`) will read this flag to reject late answers.
+    - **Step 3 — Fetch correct answer:** Retrieves the current question from Redis by `currentRoundIndex` to get the `answer` field (server-side only, never sent to clients during the round).
+    - **Step 4 — Persist round end:** Updates `Round.endedAt` in PostgreSQL via `prisma.round.update`. This is wrapped in its own try/catch — a DB failure is logged but does not abort the broadcast (Redis is authoritative during active gameplay).
+    - **Step 5 — Broadcast `AnswerReveal`:** Emits `{ correctAnswer, questionId, roundId }` to all clients in the room via `server.to(roomCode).emit`.
+  - Wired `completeRound` into `startTimer`: when `remaining <= 0` in the tick loop, `completeRound(roomCode)` is called instead of the previous bare `stopTimer(roomCode)`.
+  - Added `round.update` mock to `prismaMock` in the test suite.
+  - Wrote 6 unit tests for `completeRound` in `game.gateway.spec.ts`:
+    1. Happy path — all fields present, timer stops, Redis marked COMPLETE, PostgreSQL updated, `AnswerReveal` broadcast.
+    2. Missing question from Redis — `correctAnswer: null` still broadcast.
+    3. Missing room metadata — early return, no broadcast.
+    4. PostgreSQL update failure — `AnswerReveal` still broadcast (non-fatal).
+    5. Missing `currentRoundId` — PostgreSQL update skipped, broadcast proceeds.
+    6. `stopTimer` called before any async work — ordering assertion.
+  - Updated `Timer Engine` suite to provide required `completeRound` mocks when advancing past expiry.
+  - All 178 unit tests pass, typecheck and lint clean.
+- **Why:** To satisfy all acceptance criteria for FFH-056: timer stops, late answers are rejectable (roundStatus flag), final scoring can begin (correct answer revealed), and next game state transition is triggered.
+- **What's Next:** Start `FFH-057: Implement SubmitAnswer Event`.
+
+---
+
 **Date/Time:** 2026-07-07 16:09 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-055
