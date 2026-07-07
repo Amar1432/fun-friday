@@ -2,6 +2,27 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 15:46 (Local Time)
+**Agent:** Kiro
+**Ticket:** FFH-050
+
+- **What Changed:**
+  - Implemented `validateGameStart` method in `GameGateway` that validates all 5 game start preconditions in order:
+    1. Room exists and is in `LOBBY` status (via Prisma `room.findUnique`).
+    2. Host socket is connected to the room (verified by calling `server.in(roomCode).fetchSockets()` and checking for a socket with `user.sub === hostId` and `user.role === 'host'`).
+    3. Minimum player count met (at least 1 player in Redis `getPlayers` map).
+    4. All players are ready (`isReady === true` for every player in the map).
+    5. Game exists in DB with at least one question (via Prisma `game.findUnique` with `_count.questions`).
+  - Returns a discriminated union: `{ valid: true }` on success or `{ valid: false, code: string, message: string }` on failure, with protocol-compliant error codes (`ROOM_NOT_FOUND`, `ROOM_NOT_IN_LOBBY`, `HOST_NOT_CONNECTED`, `NOT_ENOUGH_PLAYERS`, `PLAYERS_NOT_READY`, `GAME_NOT_FOUND`, `GAME_HAS_NO_QUESTIONS`).
+  - Extended `prismaMock` in test suite to include `game.findUnique` mock.
+  - Wrote 10 unit tests covering the success path and all 7 failure scenarios.
+  - Verified with `pnpm --dir apps/api test` — all 144 tests pass across 14 test suites.
+  - Committed changes (commit `1e499f0`) with pre-commit hooks passing.
+- **Why:** To complete FFH-050 by implementing comprehensive game start validation that will be called by the `StartGame` event handler (FFH-051).
+- **What's Next:** Start `FFH-051: Implement StartGame Event`.
+
+---
+
 **Date/Time:** 2026-07-07 15:40 (Local Time)
 **Agent:** Kiro
 **Ticket:** FFH-049

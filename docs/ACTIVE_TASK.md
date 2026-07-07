@@ -1,19 +1,16 @@
 # Active Task
 
-## FFH-050: Validate Game Start Preconditions
+## FFH-051: Implement StartGame Event
 
 ### Description
 
-Verify lobby requirements before gameplay begins.
+Implement the StartGame event.
 
 ### Acceptance Criteria
 
-Validation includes:
-
-- Host connected
-- Minimum player count
-- Required ready players
-- Room status
-- Valid game configuration
-
-Failures return protocol-compliant error events.
+- Only host can start game.
+- Preconditions are validated.
+- Room status changes appropriately.
+- Initial game state is created in Redis.
+- First round initialization begins.
+- Clients receive protocol-compliant event.
