@@ -33,6 +33,7 @@ describe('RedisRoomRepository', () => {
       zrevrange: jest.fn(),
       keys: jest.fn(),
       del: jest.fn(),
+      exists: jest.fn(),
     };
 
     const mockRedisService = {
@@ -266,6 +267,101 @@ describe('RedisRoomRepository', () => {
       expect(mockRedisClient.hgetall).toHaveBeenCalledWith(
         'room:ABCDEF:answers:round-1',
       );
+    });
+  });
+
+  describe('loadQuestions', () => {
+    const mockQuestions = [
+      {
+        id: 'q-1',
+        prompt: 'Prompt 1',
+        answer: 'Ans 1',
+        difficulty: 'MEDIUM',
+        category: 'Cat 1',
+        metadata: { hint: 'Hint 1' },
+      },
+      {
+        id: 'q-2',
+        prompt: 'Prompt 2',
+        answer: 'Ans 2',
+        difficulty: 'EASY',
+        category: 'Cat 2',
+        metadata: null,
+      },
+    ];
+
+    it('should return false if questions are already loaded', async () => {
+      (mockRedisClient.exists as jest.Mock).mockResolvedValue(1);
+      const result = await repository.loadQuestions('ABCDEF', mockQuestions);
+      expect(result).toBe(false);
+      expect(mockRedisClient.exists).toHaveBeenCalledWith(
+        'room:ABCDEF:questions',
+      );
+      expect(mockRedisClient.pipeline).not.toHaveBeenCalled();
+    });
+
+    it('should load questions and return true if key does not exist', async () => {
+      (mockRedisClient.exists as jest.Mock).mockResolvedValue(0);
+      const result = await repository.loadQuestions('ABCDEF', mockQuestions);
+      expect(result).toBe(true);
+      expect(mockRedisClient.exists).toHaveBeenCalledWith(
+        'room:ABCDEF:questions',
+      );
+      expect(mockRedisClient.pipeline).toHaveBeenCalled();
+      expect(mockPipeline.hset).toHaveBeenCalledWith('room:ABCDEF:questions', {
+        '0': JSON.stringify(mockQuestions[0]),
+        '1': JSON.stringify(mockQuestions[1]),
+      });
+      expect(mockPipeline.expire).toHaveBeenCalledWith(
+        'room:ABCDEF:questions',
+        86400,
+      );
+      expect(mockPipeline.exec).toHaveBeenCalled();
+    });
+  });
+
+  describe('getQuestion', () => {
+    it('should return parsed question if found', async () => {
+      const mockQuestion = { id: 'q-1', prompt: 'P1', answer: 'A1' };
+      (mockRedisClient.hget as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockQuestion),
+      );
+
+      const result = await repository.getQuestion('ABCDEF', 0);
+      expect(result).toEqual(mockQuestion);
+      expect(mockRedisClient.hget).toHaveBeenCalledWith(
+        'room:ABCDEF:questions',
+        '0',
+      );
+    });
+
+    it('should return null if not found', async () => {
+      (mockRedisClient.hget as jest.Mock).mockResolvedValue(null);
+      const result = await repository.getQuestion('ABCDEF', 0);
+      expect(result).toBeNull();
+    });
+
+    it('should return null if json is invalid', async () => {
+      (mockRedisClient.hget as jest.Mock).mockResolvedValue('invalid-json');
+      const result = await repository.getQuestion('ABCDEF', 0);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('hasQuestions', () => {
+    it('should return true if key exists', async () => {
+      (mockRedisClient.exists as jest.Mock).mockResolvedValue(1);
+      const result = await repository.hasQuestions('ABCDEF');
+      expect(result).toBe(true);
+      expect(mockRedisClient.exists).toHaveBeenCalledWith(
+        'room:ABCDEF:questions',
+      );
+    });
+
+    it('should return false if key does not exist', async () => {
+      (mockRedisClient.exists as jest.Mock).mockResolvedValue(0);
+      const result = await repository.hasQuestions('ABCDEF');
+      expect(result).toBe(false);
     });
   });
 });

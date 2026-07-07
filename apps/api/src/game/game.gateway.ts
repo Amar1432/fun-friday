@@ -234,6 +234,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // game is guaranteed non-null at this point (validateGameStart checked it)
       const totalRounds = game!._count.questions;
 
+      // Fetch questions from PostgreSQL ordered by ID ascending
+      const questions = await this.prisma.question.findMany({
+        where: { gameId: payload.gameId },
+        orderBy: { id: 'asc' },
+      });
+
+      // Load questions into Redis to prepare gameplay state
+      await this.redisRoomRepository.loadQuestions(roomCode, questions);
+
       // Transition room status to IN_PROGRESS in PostgreSQL
       await this.prisma.room.update({
         where: { id: payload.roomId },

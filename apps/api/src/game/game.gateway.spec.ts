@@ -18,6 +18,9 @@ describe('GameGateway', () => {
     game: {
       findUnique: jest.fn(),
     },
+    question: {
+      findMany: jest.fn(),
+    },
   };
 
   const redisRoomRepositoryMock = {
@@ -31,6 +34,9 @@ describe('GameGateway', () => {
     deleteRoomState: jest.fn(),
     updateLeaderboardScore: jest.fn(),
     getLeaderboard: jest.fn(),
+    loadQuestions: jest.fn(),
+    getQuestion: jest.fn(),
+    hasQuestions: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -1874,12 +1880,31 @@ describe('GameGateway', () => {
         }),
       } as unknown as Server;
 
+      const mockQuestions = [
+        {
+          id: 'q-1',
+          prompt: 'P1',
+          answer: 'A1',
+          difficulty: 'EASY',
+          category: 'C1',
+          metadata: {},
+        },
+        {
+          id: 'q-2',
+          prompt: 'P2',
+          answer: 'A2',
+          difficulty: 'MEDIUM',
+          category: 'C2',
+          metadata: null,
+        },
+      ];
       prismaMock.room.findUnique.mockResolvedValue(mockRoom);
       prismaMock.room.update.mockResolvedValue({
         ...mockRoom,
         status: 'IN_PROGRESS',
       });
       prismaMock.game.findUnique.mockResolvedValue(mockGame);
+      prismaMock.question.findMany.mockResolvedValue(mockQuestions);
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({
         'player-1': JSON.stringify({
           id: 'player-1',
@@ -1888,11 +1913,24 @@ describe('GameGateway', () => {
           isReady: true,
         }),
       });
+      redisRoomRepositoryMock.loadQuestions.mockResolvedValue(true);
 
       await gateway.handleStartGame(mockSocket as unknown as Socket, {
         roomId: 'room-id-123',
         gameId: 'game-id-123',
       });
+
+      // Prisma question findMany called
+      expect(prismaMock.question.findMany).toHaveBeenCalledWith({
+        where: { gameId: 'game-id-123' },
+        orderBy: { id: 'asc' },
+      });
+
+      // Redis loadQuestions called
+      expect(redisRoomRepositoryMock.loadQuestions).toHaveBeenCalledWith(
+        'ROOM12',
+        mockQuestions,
+      );
 
       // Prisma room status updated
       expect(prismaMock.room.update).toHaveBeenCalledWith({
@@ -1922,6 +1960,50 @@ describe('GameGateway', () => {
         'error',
         expect.any(Object),
       );
+    });
+
+    it('should proceed successfully even if questions are already loaded in Redis', async () => {
+      const toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+        in: jest.fn().mockReturnValue({
+          fetchSockets: jest.fn().mockResolvedValue([
+            {
+              id: 'socket-host-123',
+              data: { user: { sub: 'host-123', role: 'host' } },
+            },
+          ]),
+        }),
+      } as unknown as Server;
+
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      prismaMock.room.update.mockResolvedValue({
+        ...mockRoom,
+        status: 'IN_PROGRESS',
+      });
+      prismaMock.game.findUnique.mockResolvedValue(mockGame);
+      prismaMock.question.findMany.mockResolvedValue([]);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': JSON.stringify({
+          id: 'player-1',
+          displayName: 'P1',
+          score: 0,
+          isReady: true,
+        }),
+      });
+      redisRoomRepositoryMock.loadQuestions.mockResolvedValue(false); // Duplicate question loading prevented (already loaded)
+
+      await gateway.handleStartGame(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        gameId: 'game-id-123',
+      });
+
+      expect(redisRoomRepositoryMock.loadQuestions).toHaveBeenCalled();
+      expect(prismaMock.room.update).toHaveBeenCalled();
+      expect(toEmitMock).toHaveBeenCalledWith('GameStarted', {
+        gameId: 'game-id-123',
+        totalRounds: 10,
+      });
     });
   });
 });

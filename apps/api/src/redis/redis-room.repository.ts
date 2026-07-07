@@ -1,6 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from './redis.service';
 
+export interface RedisQuestion {
+  id: string;
+  prompt: string;
+  answer: string;
+  difficulty: string;
+  category: string | null;
+  metadata: unknown;
+}
+
 @Injectable()
 export class RedisRoomRepository {
   private readonly logger = new Logger(RedisRoomRepository.name);
@@ -21,6 +30,10 @@ export class RedisRoomRepository {
 
   private getAnswersKey(roomCode: string, roundId: string): string {
     return `room:${roomCode.toUpperCase()}:answers:${roundId}`;
+  }
+
+  private getQuestionsKey(roomCode: string): string {
+    return `room:${roomCode.toUpperCase()}:questions`;
   }
 
   /**
@@ -216,5 +229,73 @@ export class RedisRoomRepository {
     const client = this.redisService.getClient();
     const answersKey = this.getAnswersKey(roomCode, roundId);
     return client.hgetall(answersKey);
+  }
+
+  /**
+   * Stores the list of questions in Redis.
+   * To prevent duplicate question loading, we check if the key already exists.
+   * Returns true if questions were loaded successfully, false if they were already loaded.
+   */
+  async loadQuestions(
+    roomCode: string,
+    questions: RedisQuestion[],
+  ): Promise<boolean> {
+    const client = this.redisService.getClient();
+    const questionsKey = this.getQuestionsKey(roomCode);
+
+    // Check if questions are already loaded (to prevent duplicates)
+    const exists = await client.exists(questionsKey);
+    if (exists === 1) {
+      return false;
+    }
+
+    const pipeline = client.pipeline();
+    const questionsHash: Record<string, string> = {};
+    questions.forEach((q, index) => {
+      questionsHash[index.toString()] = JSON.stringify({
+        id: q.id,
+        prompt: q.prompt,
+        answer: q.answer,
+        difficulty: q.difficulty,
+        category: q.category,
+        metadata: q.metadata,
+      });
+    });
+
+    pipeline.hset(questionsKey, questionsHash);
+    // Align with 24 hours TTL for rooms
+    pipeline.expire(questionsKey, 86400);
+    await pipeline.exec();
+    return true;
+  }
+
+  /**
+   * Retrieves a question by its 0-based round index.
+   */
+  async getQuestion(
+    roomCode: string,
+    roundIndex: number,
+  ): Promise<RedisQuestion | null> {
+    const client = this.redisService.getClient();
+    const questionsKey = this.getQuestionsKey(roomCode);
+    const questionJson = await client.hget(questionsKey, roundIndex.toString());
+    if (!questionJson) {
+      return null;
+    }
+    try {
+      return JSON.parse(questionJson) as RedisQuestion;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Checks if questions are loaded for a room.
+   */
+  async hasQuestions(roomCode: string): Promise<boolean> {
+    const client = this.redisService.getClient();
+    const questionsKey = this.getQuestionsKey(roomCode);
+    const exists = await client.exists(questionsKey);
+    return exists === 1;
   }
 }
