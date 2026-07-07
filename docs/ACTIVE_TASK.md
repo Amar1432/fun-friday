@@ -1,22 +1,22 @@
 # Active Task
 
-## FFH-076: Build Create Room Screen
+## FFH-077: Build Room Information Panel
 
 ### Description
 
-Allow hosts to create new game rooms.
+Display room metadata.
 
 ### Acceptance Criteria
 
-Screen includes:
+Panel displays:
 
-- [ ] Create room action
-- [ ] Loading state
-- [ ] Error state
-- [ ] Success feedback
-- [ ] Generated room code
+- [ ] Room code
+- [ ] Room status
+- [ ] Connected players
+- [ ] Host information
+- [ ] Current game state
 
-Navigation proceeds to lobby after creation.
+Values update automatically.
 
 ### Status
 

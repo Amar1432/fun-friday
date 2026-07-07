@@ -26,6 +26,17 @@ export interface SsoLoginResponse {
   };
 }
 
+export interface Room {
+  id: string;
+  code: string;
+  status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+  createdAt: string;
+}
+
+export interface CreateRoomResponse {
+  room: Room;
+}
+
 // ---------------------------------------------------------------------------
 // Core Fetch Wrapper
 // ---------------------------------------------------------------------------
@@ -72,6 +83,21 @@ export async function ssoLogin(
   const envelope = await request<ApiResponse<SsoLoginResponse>>('/auth/sso/login', {
     method: 'POST',
     body: JSON.stringify({ provider, idToken }),
+  });
+  return envelope.data;
+}
+
+// ---------------------------------------------------------------------------
+// Room Endpoints
+// ---------------------------------------------------------------------------
+
+export async function createRoom(token: string): Promise<CreateRoomResponse> {
+  const envelope = await request<ApiResponse<CreateRoomResponse>>('/rooms', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({}),
   });
   return envelope.data;
 }

@@ -197,7 +197,10 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            <button className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-5 py-3 rounded-xl font-semibold text-sm shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
+            <Link
+              href="/room/create"
+              className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-5 py-3 rounded-xl font-semibold text-sm shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -207,7 +210,7 @@ export default function DashboardPage() {
                 />
               </svg>
               Create New Room
-            </button>
+            </Link>
           </div>
 
           {/* Tab Specific Views */}
@@ -230,9 +233,12 @@ export default function DashboardPage() {
                   live.
                 </p>
               </div>
-              <button className="px-4 py-2 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-sm font-semibold rounded-xl text-slate-300 hover:text-white transition-colors cursor-pointer">
+              <Link
+                href="/room/create"
+                className="px-4 py-2 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-sm font-semibold rounded-xl text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
                 Create Room
-              </button>
+              </Link>
             </div>
           )}
 

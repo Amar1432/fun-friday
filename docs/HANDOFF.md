@@ -2,6 +2,28 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-08 00:15 (Local Time)
+**Agent:** Devin
+**Ticket:** FFH-076
+
+- **What Changed:**
+  - Implemented create room API integration in `apps/web/lib/api.ts` with `createRoom` function and related TypeScript interfaces (`Room`, `CreateRoomResponse`).
+  - Built complete create room screen UI component at `apps/web/app/room/create/page.tsx` with:
+    - Create room action button with loading state during API call
+    - Error state display with user-friendly error messages
+    - Success feedback screen showing generated room code
+    - Copy room code to clipboard functionality
+    - Auto-navigation to lobby after 3 seconds on success
+    - Manual navigation option to skip the delay
+  - Created basic lobby page at `apps/web/app/lobby/[roomCode]/page.tsx` as the navigation target after room creation.
+  - Updated dashboard page to link both "Create New Room" buttons to the new create room page.
+  - Added comprehensive unit tests for the create room page covering all states and interactions.
+  - All tests pass (29 total), typecheck and lint checks are clean.
+- **Why:** To satisfy all acceptance criteria for FFH-076: provide hosts with a complete room creation interface including loading/error states, success feedback with room code display, and automatic navigation to lobby.
+- **What's Next:** Ready to proceed to the next active task in the roadmap (likely FFH-077 or related lobby functionality).
+
+---
+
 **Date/Time:** 2026-07-07 23:55 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-070, FFH-071, FFH-072, FFH-073, FFH-074, FFH-075
