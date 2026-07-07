@@ -1,17 +1,18 @@
 # Active Task
 
-## FFH-059: Calculate Player Scores
+## FFH-060: Persist Completed Round Data
 
 ### Description
 
-Compute scores for completed rounds.
+Flush completed round information to PostgreSQL.
 
 ### Acceptance Criteria
 
-Scoring considers:
+Persisted data includes:
 
-- Correct answer
+- Player answers
+- Correctness
 - Response time
-- Existing score
+- Round reference
 
-Redis leaderboard updates atomically.
+Redis remains authoritative until persistence completes successfully.

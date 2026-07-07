@@ -2,6 +2,24 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 17:02 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-059
+
+- **What Changed:**
+  - Implemented the scoring calculation logic when a round completes:
+    - Added `updatePlayerScores(roomCode, scoreUpdates)` method in `RedisRoomRepository` that performs pipelined, atomic `HSET` (updates player cumulative score in `players` hash) and `ZADD` (updates score in `leaderboard` ZSET) operations for all scoring players.
+    - Implemented `calculateAndApplyScores(roomCode, roundId, timerDuration)` helper in `GameGateway` that calculates points awarded to players: 1000 base points for a correct answer plus a speed bonus of up to 500 points (using formula: `Math.max(0, Math.floor((1 - responseTimeSec / timerDuration) * 500))`).
+    - Defensively handles corrupted/invalid player JSON profiles gracefully by logging individual errors without aborting calculation for other players.
+    - Added a step to invoke `calculateAndApplyScores` at the end of `completeRound` in `GameGateway` after the `AnswerReveal` broadcast.
+  - Added unit test cases for `updatePlayerScores` in `redis-room.repository.spec.ts` (verifying pipelined Redis transaction operations).
+  - Added unit test cases for `calculateAndApplyScores` in `game.gateway.spec.ts` (verifying points arithmetic, speed bonus scaling, and corrupted player JSON handling).
+  - Verified linter, formatter, typecheck, and all 194 tests passed successfully.
+- **Why:** To satisfy all acceptance criteria for FFH-059: compute round scores taking into account correctness, response time, and existing score, and update the Redis leaderboard atomically.
+- **What's Next:** Start `FFH-060: Award Points and Speed Bonus`.
+
+---
+
 **Date/Time:** 2026-07-07 16:21 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-058
