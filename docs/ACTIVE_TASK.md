@@ -1,20 +1,15 @@
 # Active Task
 
-## FFH-061: Implement LeaderboardUpdated Broadcast
+## FFH-063: Cleanup Redis Game State
 
 ### Description
 
-Broadcast updated leaderboard after scoring.
+Remove expired game data after completion.
 
 ### Acceptance Criteria
 
-Leaderboard includes:
-
-- Player
-- Rank
-- Score
-- Score delta (if defined by protocol)
-
-Ordering is deterministic.
-
-Payload matches ROOM_PROTOCOL.md.
+- Temporary Redis keys removed.
+- Active timers cleared.
+- Socket room cleaned.
+- Expiration policy applied.
+- No orphaned state remains.

@@ -2,6 +2,29 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 20:58 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-062
+
+- **What Changed:**
+  - Implemented standard game completion flow inside `GameGateway`:
+    - Added `@SubscribeMessage('EndGame')` handler allowing hosts to explicitly end the game.
+    - Added `completeGame(roomCode, roomId)` method that executes the teardown logic:
+      - Stops any running question countdown timer.
+      - Fetches and ranks the final leaderboard deterministically.
+      - Sets room status to `FINISHED` in both Redis metadata and PostgreSQL.
+      - Broadcasts `GameFinished` with `finalRankings` matching the leaderboard protocol.
+      - Persists player final scores to PostgreSQL `Player` records.
+      - Sets all Redis room-specific keys to expire in 5 minutes (300 seconds) via a new `expireAllRoomKeys(roomCode, seconds)` method in `RedisRoomRepository`.
+  - Added unit tests for `expireAllRoomKeys` in `redis-room.repository.spec.ts`.
+  - Added unit tests for `handleEndGame` and `completeGame` in `game.gateway.spec.ts`.
+  - Cleaned up duplicate/redundant implementations of `broadcastLeaderboard` and updated tests to correctly assert standard competition tie-ranking.
+  - Verified linter, formatter, typecheck, and all 210 tests passed successfully.
+- **Why:** To satisfy all acceptance criteria for FFH-062: end games cleanly, finalize Redis state with a 5-minute expiry, broadcast final rankings matching the protocol, and persist rankings and room status to Postgres.
+- **What's Next:** Start `FFH-063: Implement Reconnection Flow`.
+
+---
+
 **Date/Time:** 2026-07-07 20:50 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-061
