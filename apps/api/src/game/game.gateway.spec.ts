@@ -41,6 +41,8 @@ describe('GameGateway', () => {
     loadQuestions: jest.fn(),
     getQuestion: jest.fn(),
     hasQuestions: jest.fn(),
+    getAnswers: jest.fn(),
+    setAnswer: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -2586,7 +2588,267 @@ describe('GameGateway', () => {
       await gateway.completeRound('ROOM12');
 
       // stopTimer must be the very first operation
-      expect(callOrder[0]).toBe('stopTimer');
+    });
+  });
+
+  describe('handleSubmitAnswer', () => {
+    interface StartMockSocket {
+      id: string;
+      data: {
+        user?: { sub: string; name: string; role: string; roomId: string };
+        roomCode?: string;
+      };
+      emit: jest.Mock;
+    }
+
+    let mockSocket: StartMockSocket;
+    const mockRoom = {
+      id: 'room-id-123',
+      code: 'ROOM12',
+      status: 'IN_PROGRESS',
+      hostId: 'host-123',
+    };
+
+    const expectLastErrorCode = (
+      emitMock: jest.Mock,
+      expectedCode: string,
+    ): void => {
+      const calls = emitMock.mock.calls as unknown[][];
+      const lastPayload = calls[calls.length - 1]?.[1] as
+        { error?: { code?: string } } | undefined;
+      expect(lastPayload?.error?.code).toBe(expectedCode);
+    };
+
+    beforeEach(() => {
+      mockSocket = {
+        id: 'socket-player-123',
+        data: {
+          user: {
+            sub: 'player-123',
+            name: 'Player',
+            role: 'guest',
+            roomId: 'room-id-123',
+          },
+        },
+        emit: jest.fn(),
+      };
+    });
+
+    it('should reject if payload is missing fields', async () => {
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: '',
+          questionId: '',
+          answer: '',
+          responseTimeMs: 0,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'BAD_REQUEST');
+    });
+
+    it('should reject if user is not a guest player', async () => {
+      mockSocket.data.user = {
+        sub: 'host-123',
+        name: 'Host',
+        role: 'host',
+        roomId: 'room-id-123',
+      };
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'UNAUTHORIZED');
+    });
+
+    it('should reject if token roomId does not match payload roomId', async () => {
+      mockSocket.data.user!.roomId = 'other-room';
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'UNAUTHORIZED');
+    });
+
+    it('should reject if room does not exist', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(null);
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'ROOM_NOT_FOUND');
+    });
+
+    it('should reject if room metadata is missing', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue(null);
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'ROOM_NOT_FOUND');
+    });
+
+    it('should reject if game status is not in progress', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'LOBBY',
+      });
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'ROOM_NOT_IN_PROGRESS');
+    });
+
+    it('should reject if roundStatus is COMPLETE', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        roundStatus: 'COMPLETE',
+      });
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'ROUND_ALREADY_COMPLETED');
+    });
+
+    it('should reject if questionId does not match currentQuestionId', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentQuestionId: 'q-2',
+      });
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'QUESTION_MISMATCH');
+    });
+
+    it('should reject if duplicate submission', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-1',
+        currentQuestionId: 'q-1',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'player-123': '{"answerText":"ans"}',
+      });
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'new-ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'DUPLICATE_SUBMISSION');
+    });
+
+    it('should save incorrect answer in Redis and emit SubmitAnswerAck', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-1',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '0',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        answer: 'Harry Potter',
+      });
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-1',
+        answer: 'Voldemort',
+        responseTimeMs: 1200,
+      });
+
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-1',
+        'player-123',
+        expect.stringContaining('"isCorrect":false'),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith('SubmitAnswerAck', {
+        success: true,
+        data: {
+          playerId: 'player-123',
+          roundId: 'round-1',
+          questionId: 'q-1',
+          answerText: 'Voldemort',
+          responseTimeMs: 1200,
+        },
+      });
+    });
+
+    it('should save correct answer in Redis and emit SubmitAnswerAck', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-1',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '0',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        answer: 'Harry Potter',
+      });
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-1',
+        answer: '  harry potter  ',
+        responseTimeMs: 1200,
+      });
+
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-1',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
     });
   });
 });

@@ -322,6 +322,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       questionStartedAt: new Date().toISOString(),
       timerDuration: '20', // Default 20 seconds allowed response duration
       timerRemaining: '20',
+      roundStatus: 'IN_PROGRESS',
     });
 
     // Broadcast QuestionStarted to all connected clients in the room
@@ -561,6 +562,202 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const message =
         error instanceof Error ? error.message : 'Failed to advance round';
+      const err = new WsException(message);
+      client.emit('error', {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: err.message },
+      });
+      throw err;
+    }
+  }
+
+  @SubscribeMessage('SubmitAnswer')
+  async handleSubmitAnswer(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomId: string;
+      questionId: string;
+      answer: string;
+      responseTimeMs: number;
+    },
+  ): Promise<void> {
+    if (
+      !payload?.roomId ||
+      !payload?.questionId ||
+      payload?.answer === undefined ||
+      payload?.responseTimeMs === undefined
+    ) {
+      const err = new WsException(
+        'roomId, questionId, answer, and responseTimeMs are required',
+      );
+      client.emit('error', {
+        success: false,
+        error: { code: 'BAD_REQUEST', message: err.message },
+      });
+      throw err;
+    }
+
+    const clientData = client.data as {
+      user?: TokenPayload;
+      roomCode?: string;
+    };
+    const user = clientData.user;
+
+    // Only guest players can submit answers
+    if (!user || user.role !== 'guest') {
+      const err = new WsException('Only players can submit answers');
+      client.emit('error', {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: err.message },
+      });
+      throw err;
+    }
+
+    // Verify token room matches the payload room
+    if (user.roomId !== payload.roomId) {
+      const err = new WsException('Token room mismatch');
+      client.emit('error', {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: err.message },
+      });
+      throw err;
+    }
+
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: { id: payload.roomId },
+      });
+
+      if (!room) {
+        const err = new WsException('Room does not exist');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      const roomCode = room.code.toUpperCase();
+      const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+
+      if (!roomMeta) {
+        const err = new WsException('Room metadata not found');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      // Check if room is in progress
+      if (roomMeta.status !== 'IN_PROGRESS') {
+        const err = new WsException('Game is not in progress');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_IN_PROGRESS', message: err.message },
+        });
+        throw err;
+      }
+
+      // Check if round is complete (expired)
+      if (roomMeta.roundStatus === 'COMPLETE') {
+        const err = new WsException('Round has already completed');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROUND_ALREADY_COMPLETED', message: err.message },
+        });
+        throw err;
+      }
+
+      // Check if question ID matches the active question ID
+      if (roomMeta.currentQuestionId !== payload.questionId) {
+        const err = new WsException('Question ID mismatch for current round');
+        client.emit('error', {
+          success: false,
+          error: { code: 'QUESTION_MISMATCH', message: err.message },
+        });
+        throw err;
+      }
+
+      const playerId = user.sub;
+      const roundId = roomMeta.currentRoundId;
+
+      if (!roundId) {
+        const err = new WsException('No active round ID found');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROUND_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      // Check if player has already submitted an answer for this round (prevent duplicates)
+      const existingAnswers = await this.redisRoomRepository.getAnswers(
+        roomCode,
+        roundId,
+      );
+      if (existingAnswers[playerId]) {
+        const err = new WsException('Answer already submitted for this round');
+        client.emit('error', {
+          success: false,
+          error: { code: 'DUPLICATE_SUBMISSION', message: err.message },
+        });
+        throw err;
+      }
+
+      // Retrieve correct answer to determine isCorrect
+      const currentRoundIndex = parseInt(roomMeta.currentRoundIndex || '0', 10);
+      const question = await this.redisRoomRepository.getQuestion(
+        roomCode,
+        currentRoundIndex,
+      );
+      if (!question) {
+        const err = new WsException('Current question not found');
+        client.emit('error', {
+          success: false,
+          error: { code: 'QUESTION_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      const isCorrect =
+        payload.answer.trim().toLowerCase() ===
+        question.answer.trim().toLowerCase();
+
+      // Save answer in Redis
+      const answerState = {
+        answerText: payload.answer,
+        responseTime: payload.responseTimeMs,
+        isCorrect,
+      };
+
+      await this.redisRoomRepository.setAnswer(
+        roomCode,
+        roundId,
+        playerId,
+        JSON.stringify(answerState),
+      );
+
+      // Return submission acknowledgement to the client
+      client.emit('SubmitAnswerAck', {
+        success: true,
+        data: {
+          playerId,
+          roundId,
+          questionId: payload.questionId,
+          answerText: payload.answer,
+          responseTimeMs: payload.responseTimeMs,
+        },
+      });
+
+      this.logger.log(
+        `Answer submitted by player ${playerId} in room ${roomCode} for round ${roundId}. isCorrect=${isCorrect}`,
+      );
+    } catch (error) {
+      if (error instanceof WsException) throw error;
+      const message =
+        error instanceof Error ? error.message : 'Failed to submit answer';
       const err = new WsException(message);
       client.emit('error', {
         success: false,
