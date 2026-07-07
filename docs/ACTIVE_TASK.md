@@ -1,25 +1,17 @@
-# Active Tasks
+# Active Task
 
-## Epic 9 — Socket.IO Foundation ✅
+## FFH-044: Implement JoinRoom Event
 
-## FFH-041: Configure Socket.IO Gateway ✅
+### Description
 
-- [x] Gateway initializes successfully.
-- [x] Namespace configuration matches project architecture (root namespace).
-- [x] CORS configuration matches frontend requirements.
-- [x] Client connections are accepted.
-- [x] Client disconnections are detected.
-- [x] Gateway startup is logged.
+Implement the JoinRoom WebSocket event defined in ROOM_PROTOCOL.md.
 
-## FFH-042: Configure Socket Authentication ✅
+### Acceptance Criteria
 
-- [x] Host JWT validation is supported.
-- [x] Guest JWT validation is supported.
-- [x] Invalid tokens are rejected.
-- [x] Expired tokens are rejected.
-- [x] Authenticated identity is available throughout the socket lifecycle.
-
-## FFH-043: Implement Socket Event Logging ✅
-
-- [x] Structured logging of all socket events.
-- [x] Captured connection/disconnection logs and event performance.
+- Authenticated player joins room successfully.
+- Room existence is validated.
+- Room capacity rules are enforced.
+- Duplicate connections are handled correctly.
+- Player state is stored in Redis.
+- Other clients receive the appropriate room update event.
+- Invalid requests return protocol-compliant error events.
