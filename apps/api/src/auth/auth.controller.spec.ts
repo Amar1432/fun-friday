@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  const getHelloMock = jest.fn().mockReturnValue('mock-hello');
+  const ssoLoginMock = jest.fn();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -13,7 +13,7 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: {
-            getHello: getHelloMock,
+            ssoLogin: ssoLoginMock,
           },
         },
       ],
@@ -30,8 +30,22 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should delegate getHello to AuthService', () => {
-    expect(controller.getHello()).toBe('mock-hello');
-    expect(getHelloMock).toHaveBeenCalledTimes(1);
+  describe('ssoLogin', () => {
+    it('should return success envelope with SSO login result', async () => {
+      const mockResult = {
+        accessToken: 'jwt-token',
+        expiresIn: 86400,
+        user: { id: 'usr-123', name: 'John Doe', email: 'john@example.com' },
+      };
+      ssoLoginMock.mockResolvedValue(mockResult);
+
+      const result = await controller.ssoLogin({
+        provider: 'google',
+        idToken: 'valid-token',
+      });
+
+      expect(result).toEqual({ success: true, data: mockResult });
+      expect(ssoLoginMock).toHaveBeenCalledWith('google', 'valid-token');
+    });
   });
 });

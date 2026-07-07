@@ -3,6 +3,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TokenService } from './token.service';
+import { GoogleSsoProvider } from './providers/google-sso.provider';
+import { MicrosoftSsoProvider } from './providers/microsoft-sso.provider';
 
 @Module({
   imports: [
@@ -23,7 +25,12 @@ import { TokenService } from './token.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenService],
+  providers: [
+    AuthService,
+    TokenService,
+    GoogleSsoProvider,
+    MicrosoftSsoProvider,
+  ],
   exports: [TokenService],
 })
 export class AuthModule {}
