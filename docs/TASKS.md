@@ -1234,3 +1234,739 @@ Tests verify:
 - Game completion
 
 All tests pass successfully in CI.
+
+# Sprint 3 — Frontend Integration & Player/Host UI
+
+**Sprint Goal**
+
+Integrate the Next.js frontend with the real-time Socket.IO backend, establish a global client-side state architecture, and build the complete Host and Guest user interfaces required for the MVP gameplay experience.
+
+---
+
+# Epic 16 — Real-Time Frontend Infrastructure
+
+---
+
+## FFH-066: Configure Socket.IO Client
+
+### Description
+
+Integrate the Socket.IO client into the Next.js application.
+
+### Acceptance Criteria
+
+- Socket.IO client dependency is installed.
+- Connection URL is configurable through environment variables.
+- Connection is established only when required.
+- Automatic reconnection is enabled.
+- Connection status is exposed to the application.
+- Development and production configurations are supported.
+
+---
+
+## FFH-067: Create Socket Provider
+
+### Description
+
+Create a shared provider responsible for managing the socket connection.
+
+### Acceptance Criteria
+
+- Single socket instance exists per browser session.
+- Provider is accessible throughout the application.
+- Connection lifecycle is managed automatically.
+- Cleanup occurs on application unmount.
+- No duplicate socket connections are created.
+
+---
+
+## FFH-068: Implement Socket Event Registry
+
+### Description
+
+Centralize registration and cleanup of WebSocket event listeners.
+
+### Acceptance Criteria
+
+- Event listeners are registered from one location.
+- Duplicate listeners are prevented.
+- Listener cleanup occurs automatically.
+- Event names align with ROOM_PROTOCOL.md.
+- Unknown events are safely ignored.
+
+---
+
+## FFH-069: Build Connection Status Indicator
+
+### Description
+
+Display current socket connection state.
+
+### Acceptance Criteria
+
+UI supports:
+
+- Connecting
+- Connected
+- Reconnecting
+- Disconnected
+- Authentication failed
+
+Indicator updates automatically.
+
+---
+
+# Epic 17 — Global Real-Time State
+
+---
+
+## FFH-070: Configure Global State Management
+
+### Description
+
+Create the application's global real-time state layer.
+
+### Acceptance Criteria
+
+Global state includes:
+
+- Current user
+- Current room
+- Connected players
+- Game status
+- Current round
+- Timer
+- Leaderboard
+- Connection status
+
+State is accessible from any page.
+
+---
+
+## FFH-071: Implement Room Store
+
+### Description
+
+Manage room information inside global state.
+
+### Acceptance Criteria
+
+Store supports:
+
+- Room creation
+- Room updates
+- Room reset
+- Host information
+- Room status
+- Room code
+
+Updates occur only through defined actions.
+
+---
+
+## FFH-072: Implement Player Store
+
+### Description
+
+Manage connected player state.
+
+### Acceptance Criteria
+
+Store supports:
+
+- Add player
+- Remove player
+- Update player
+- Ready state
+- Score updates
+- Connection state
+
+Ordering remains deterministic.
+
+---
+
+## FFH-073: Implement Game Store
+
+### Description
+
+Track active gameplay state.
+
+### Acceptance Criteria
+
+Store maintains:
+
+- Current question
+- Current round
+- Timer
+- Submitted answer
+- Remaining time
+- Game phase
+
+State updates from WebSocket events only.
+
+---
+
+## FFH-074: Synchronize Socket Events with State
+
+### Description
+
+Connect incoming socket events to the global store.
+
+### Acceptance Criteria
+
+Every event defined in ROOM_PROTOCOL.md updates the correct state slice.
+
+No duplicated state mutations occur.
+
+State remains synchronized after reconnect.
+
+---
+
+# Epic 18 — Host Dashboard
+
+---
+
+## FFH-075: Build Host Dashboard Layout
+
+### Description
+
+Create the authenticated host workspace.
+
+### Acceptance Criteria
+
+Layout includes:
+
+- Header
+- Navigation
+- Main content area
+- Responsive behavior
+
+Tailwind CSS styling is applied consistently.
+
+---
+
+## FFH-076: Build Create Room Screen
+
+### Description
+
+Allow hosts to create new game rooms.
+
+### Acceptance Criteria
+
+Screen includes:
+
+- Create room action
+- Loading state
+- Error state
+- Success feedback
+- Generated room code
+
+Navigation proceeds to lobby after creation.
+
+---
+
+## FFH-077: Build Room Information Panel
+
+### Description
+
+Display room metadata.
+
+### Acceptance Criteria
+
+Panel displays:
+
+- Room code
+- Room status
+- Connected players
+- Host information
+- Current game state
+
+Values update automatically.
+
+---
+
+## FFH-078: Build Player List Component
+
+### Description
+
+Display all connected players.
+
+### Acceptance Criteria
+
+Player cards display:
+
+- Display name
+- Ready state
+- Score
+- Connection status
+
+List updates immediately from socket events.
+
+---
+
+## FFH-079: Build Lobby Controls
+
+### Description
+
+Provide host controls before gameplay begins.
+
+### Acceptance Criteria
+
+Controls include:
+
+- Start game
+- Player count
+- Ready player count
+
+Unavailable actions are visually disabled.
+
+---
+
+## FFH-080: Connect StartGame Event
+
+### Description
+
+Wire Start Game button to the Socket.IO event.
+
+### Acceptance Criteria
+
+- Button emits StartGame event.
+- Loading state displayed.
+- Duplicate clicks prevented.
+- Errors displayed appropriately.
+- Successful response transitions UI.
+
+---
+
+# Epic 19 — Guest Experience
+
+---
+
+## FFH-081: Build Join Room Screen
+
+### Description
+
+Create guest entry page.
+
+### Acceptance Criteria
+
+Screen contains:
+
+- Room code input
+- Display name input
+- Join button
+- Validation errors
+- Loading state
+
+Tailwind styling applied.
+
+---
+
+## FFH-082: Validate Join Form
+
+### Description
+
+Validate guest input before submission.
+
+### Acceptance Criteria
+
+Validation includes:
+
+- Room code format
+- Display name length
+- Empty fields
+- Invalid characters
+
+Invalid submissions never reach the server.
+
+---
+
+## FFH-083: Connect JoinRoom Flow
+
+### Description
+
+Wire guest join flow to authentication and WebSocket connection.
+
+### Acceptance Criteria
+
+Flow performs:
+
+- Guest authentication
+- Socket authentication
+- JoinRoom event
+- Room synchronization
+
+Successful joins navigate to waiting room.
+
+---
+
+## FFH-084: Build Waiting Room Screen
+
+### Description
+
+Display lobby while waiting for the game to begin.
+
+### Acceptance Criteria
+
+Screen displays:
+
+- Room code
+- Connected players
+- Ready status
+- Host information
+- Waiting message
+
+Updates occur in real time.
+
+---
+
+## FFH-085: Build Player Ready Control
+
+### Description
+
+Allow guests to toggle readiness.
+
+### Acceptance Criteria
+
+Ready control:
+
+- Toggles state
+- Emits PlayerReady event
+- Updates immediately
+- Prevents duplicate requests
+
+---
+
+# Epic 20 — Gameplay UI
+
+---
+
+## FFH-086: Build Game Screen Layout
+
+### Description
+
+Create the primary gameplay interface.
+
+### Acceptance Criteria
+
+Layout includes:
+
+- Question area
+- Timer
+- Answer area
+- Player status
+- Responsive layout
+
+Tailwind CSS used consistently.
+
+---
+
+## FFH-087: Build Question Display Component
+
+### Description
+
+Render the active question.
+
+### Acceptance Criteria
+
+Component displays:
+
+- Prompt
+- Metadata
+- Round number
+
+Correct answer is never rendered.
+
+---
+
+## FFH-088: Build Countdown Timer Component
+
+### Description
+
+Display remaining round time.
+
+### Acceptance Criteria
+
+Timer:
+
+- Updates from TimerTick events
+- Stops automatically
+- Resets each round
+- Handles reconnect correctly
+
+---
+
+## FFH-089: Build Answer Submission Component
+
+### Description
+
+Allow players to submit answers.
+
+### Acceptance Criteria
+
+Component supports:
+
+- Text input or game-specific interaction
+- Submit button
+- Disabled state after submission
+- Loading state
+
+Duplicate submissions prevented.
+
+---
+
+## FFH-090: Connect SubmitAnswer Event
+
+### Description
+
+Wire answer submission to Socket.IO.
+
+### Acceptance Criteria
+
+- SubmitAnswer event emitted.
+- Submission acknowledgement handled.
+- Errors displayed.
+- UI locked after successful submission.
+
+---
+
+## FFH-091: Display Round Completion State
+
+### Description
+
+Show transition after timer expiration.
+
+### Acceptance Criteria
+
+Screen displays:
+
+- Waiting message
+- Submission status
+- Transition indicator
+
+No additional submissions allowed.
+
+---
+
+# Epic 21 — Leaderboard
+
+---
+
+## FFH-092: Build Live Leaderboard Component
+
+### Description
+
+Display player rankings.
+
+### Acceptance Criteria
+
+Leaderboard displays:
+
+- Rank
+- Player name
+- Score
+- Score change (if available)
+
+Ordering matches backend.
+
+---
+
+## FFH-093: Synchronize Leaderboard Updates
+
+### Description
+
+Update leaderboard from LeaderboardUpdated events.
+
+### Acceptance Criteria
+
+Updates occur automatically.
+
+Animations do not affect ranking accuracy.
+
+No duplicate entries appear.
+
+---
+
+## FFH-094: Build Game Completion Screen
+
+### Description
+
+Display final game results.
+
+### Acceptance Criteria
+
+Screen includes:
+
+- Final rankings
+- Winner
+- Player scores
+- Return action
+
+Displayed after GameCompleted event.
+
+---
+
+# Epic 22 — Event Wiring
+
+---
+
+## FFH-095: Implement Incoming Event Handlers
+
+### Description
+
+Connect all incoming Socket.IO events to UI updates.
+
+### Acceptance Criteria
+
+Handlers exist for every event defined in ROOM_PROTOCOL.md.
+
+Each event updates the correct UI.
+
+Unhandled events are logged safely.
+
+---
+
+## FFH-096: Implement Outgoing Event Dispatcher
+
+### Description
+
+Centralize outgoing WebSocket event emission.
+
+### Acceptance Criteria
+
+Dispatcher supports:
+
+- JoinRoom
+- LeaveRoom
+- PlayerReady
+- StartGame
+- SubmitAnswer
+- Reconnect
+
+Components never emit socket events directly.
+
+---
+
+## FFH-097: Handle Socket Errors
+
+### Description
+
+Provide user-friendly error handling.
+
+### Acceptance Criteria
+
+Errors include:
+
+- Lost connection
+- Authentication failure
+- Invalid room
+- Invalid action
+- Server unavailable
+
+Recovery actions are displayed when applicable.
+
+---
+
+## FFH-098: Implement Reconnection Recovery UI
+
+### Description
+
+Recover gracefully after temporary network interruptions.
+
+### Acceptance Criteria
+
+Application:
+
+- Detects reconnection
+- Restores state
+- Synchronizes room
+- Removes stale UI
+- Displays reconnection status
+
+---
+
+# Epic 23 — Responsive UI & Polish
+
+---
+
+## FFH-099: Optimize Responsive Layouts
+
+### Description
+
+Ensure all interfaces function across supported viewport sizes.
+
+### Acceptance Criteria
+
+Pages verified:
+
+- Login
+- Host dashboard
+- Lobby
+- Waiting room
+- Gameplay
+- Leaderboard
+
+Layouts remain usable without horizontal scrolling.
+
+---
+
+## FFH-100: Add Loading, Empty & Error States
+
+### Description
+
+Complete all user feedback states.
+
+### Acceptance Criteria
+
+Every major screen includes:
+
+- Loading state
+- Empty state
+- Error state
+- Retry action where appropriate
+
+No blank screens remain.
+
+---
+
+## FFH-101: Implement Accessibility Improvements
+
+### Description
+
+Improve accessibility across the frontend.
+
+### Acceptance Criteria
+
+UI includes:
+
+- Keyboard navigation
+- Visible focus states
+- Semantic HTML
+- Accessible labels
+- Screen reader friendly controls
+
+---
+
+## FFH-102: Perform End-to-End Frontend Validation
+
+### Description
+
+Validate the complete frontend integration.
+
+### Acceptance Criteria
+
+Verified user journeys:
+
+- Host login
+- Room creation
+- Guest join
+- Waiting room
+- Player ready
+- Game start
+- Question display
+- Answer submission
+- Leaderboard updates
+- Game completion
+- Reconnection recovery
+
+All critical user flows complete successfully without blocking issues.
