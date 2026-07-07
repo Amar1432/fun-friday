@@ -368,8 +368,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
           });
 
           if (remaining <= 0) {
-            this.stopTimer(roomCode);
-            this.logger.log(`Timer expired for room ${roomCode}`);
+            // Timer has expired — trigger round completion (which also stops the timer)
+            await this.completeRound(roomCode);
           }
         } catch (err) {
           this.logger.error(
@@ -391,6 +391,80 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       clearInterval(interval);
       this.activeTimers.delete(roomCode);
       this.logger.log(`Timer stopped for room ${roomCode}`);
+    }
+  }
+
+  /**
+   * Completes the current round after timer expiration.
+   *
+   * Responsibilities:
+   * 1. Stops the countdown timer immediately (prevents further ticks).
+   * 2. Marks the round as COMPLETE in Redis metadata so late answers are rejected.
+   * 3. Fetches the correct answer for the current question from Redis.
+   * 4. Updates the Round record in PostgreSQL with endedAt timestamp.
+   * 5. Broadcasts AnswerReveal to all clients in the room.
+   */
+  async completeRound(roomCode: string): Promise<void> {
+    // Step 1 — Stop the timer so no further ticks fire after completion
+    this.stopTimer(roomCode);
+
+    this.logger.log(`Completing round for room ${roomCode}`);
+
+    try {
+      const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+
+      if (!roomMeta) {
+        this.logger.warn(
+          `completeRound called for room ${roomCode} but metadata not found — skipping`,
+        );
+        return;
+      }
+
+      const { currentRoundId, currentQuestionId } = roomMeta;
+
+      // Step 2 — Mark round as COMPLETE in Redis to gate late answer submissions (FFH-057)
+      await this.redisRoomRepository.updateRoomMetadata(roomCode, {
+        roundStatus: 'COMPLETE',
+      });
+
+      // Step 3 — Fetch the correct answer from the question stored in Redis
+      const currentRoundIndex = parseInt(roomMeta.currentRoundIndex ?? '0', 10);
+      const question = await this.redisRoomRepository.getQuestion(
+        roomCode,
+        currentRoundIndex,
+      );
+
+      const correctAnswer = question?.answer ?? null;
+
+      // Step 4 — Persist round end timestamp to PostgreSQL
+      if (currentRoundId) {
+        try {
+          await this.prisma.round.update({
+            where: { id: currentRoundId },
+            data: { endedAt: new Date() },
+          });
+        } catch (err) {
+          // Log but don't abort the broadcast — Redis is authoritative during gameplay
+          this.logger.error(
+            `Failed to update endedAt for round ${currentRoundId}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+
+      // Step 5 — Broadcast AnswerReveal to all clients
+      this.server.to(roomCode).emit('AnswerReveal', {
+        correctAnswer,
+        questionId: currentQuestionId ?? null,
+        roundId: currentRoundId ?? null,
+      });
+
+      this.logger.log(
+        `Round completed for room ${roomCode}. roundId=${currentRoundId ?? 'unknown'}, questionId=${currentQuestionId ?? 'unknown'}`,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Error completing round for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 

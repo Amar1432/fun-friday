@@ -23,6 +23,7 @@ describe('GameGateway', () => {
     },
     round: {
       create: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -2361,7 +2362,25 @@ describe('GameGateway', () => {
         secondsRemaining: 4,
       });
 
-      // Fast-forward another 4 seconds (total 5)
+      // Fast-forward another 4 seconds (total 5) — this will trigger completeRound
+      // Provide the mocks completeRound needs so it doesn't throw
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        currentRoundId: 'round-id-abc',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '0',
+        roundStatus: 'IN_PROGRESS',
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        prompt: 'P1',
+        answer: 'correct-answer',
+        difficulty: 'EASY',
+        category: null,
+        metadata: null,
+      });
+      prismaMock.round.update.mockResolvedValue({});
+
       await jest.advanceTimersByTimeAsync(4000);
 
       // Verify timer is stopped and removed at expiration
@@ -2393,6 +2412,181 @@ describe('GameGateway', () => {
       expect(gateway.activeTimers.has('ROOM12')).toBe(false);
 
       clearIntervalSpy.mockRestore();
+    });
+  });
+
+  describe('completeRound', () => {
+    let toEmitMock: jest.Mock;
+
+    beforeEach(() => {
+      toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+      } as unknown as Server;
+    });
+
+    it('should stop the timer, mark round as COMPLETE in Redis, update round endedAt in PostgreSQL, and emit AnswerReveal', async () => {
+      const stopTimerSpy = jest.spyOn(gateway, 'stopTimer');
+
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        currentRoundId: 'round-id-abc',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '0',
+        roundStatus: 'IN_PROGRESS',
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        prompt: 'P1',
+        answer: 'correct-answer',
+        difficulty: 'EASY',
+        category: null,
+        metadata: null,
+      });
+      prismaMock.round.update.mockResolvedValue({
+        id: 'round-id-abc',
+        endedAt: new Date(),
+      });
+
+      await gateway.completeRound('ROOM12');
+
+      // Timer is stopped immediately
+      expect(stopTimerSpy).toHaveBeenCalledWith('ROOM12');
+
+      // Redis marked as COMPLETE to gate late submissions
+      expect(redisRoomRepositoryMock.updateRoomMetadata).toHaveBeenCalledWith(
+        'ROOM12',
+        { roundStatus: 'COMPLETE' },
+      );
+
+      // PostgreSQL round endedAt updated
+      expect(prismaMock.round.update).toHaveBeenCalledWith({
+        where: { id: 'round-id-abc' },
+        data: { endedAt: expect.any(Date) as Date },
+      });
+
+      // AnswerReveal broadcast to all clients in room
+      expect(toEmitMock).toHaveBeenCalledWith('AnswerReveal', {
+        correctAnswer: 'correct-answer',
+        questionId: 'q-1',
+        roundId: 'round-id-abc',
+      });
+    });
+
+    it('should emit AnswerReveal with null correctAnswer when question is missing from Redis', async () => {
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        currentRoundId: 'round-id-abc',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '0',
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue(null);
+      prismaMock.round.update.mockResolvedValue({});
+
+      await gateway.completeRound('ROOM12');
+
+      expect(toEmitMock).toHaveBeenCalledWith('AnswerReveal', {
+        correctAnswer: null,
+        questionId: 'q-1',
+        roundId: 'round-id-abc',
+      });
+    });
+
+    it('should return early without broadcasting if room metadata is not found', async () => {
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue(null);
+
+      await gateway.completeRound('ROOM12');
+
+      expect(toEmitMock).not.toHaveBeenCalled();
+      expect(prismaMock.round.update).not.toHaveBeenCalled();
+    });
+
+    it('should still broadcast AnswerReveal even if PostgreSQL round update fails', async () => {
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        currentRoundId: 'round-id-abc',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '2',
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        prompt: 'P1',
+        answer: 'correct-answer',
+        difficulty: 'MEDIUM',
+        category: null,
+        metadata: null,
+      });
+      prismaMock.round.update.mockRejectedValue(
+        new Error('Database connection lost'),
+      );
+
+      // Should NOT throw — PostgreSQL failure is logged but non-fatal
+      await expect(gateway.completeRound('ROOM12')).resolves.not.toThrow();
+
+      // AnswerReveal is still emitted despite DB failure
+      expect(toEmitMock).toHaveBeenCalledWith('AnswerReveal', {
+        correctAnswer: 'correct-answer',
+        questionId: 'q-1',
+        roundId: 'round-id-abc',
+      });
+    });
+
+    it('should skip PostgreSQL update when currentRoundId is absent from Redis metadata', async () => {
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '0',
+        // currentRoundId deliberately absent
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        prompt: 'P1',
+        answer: 'answer-x',
+        difficulty: 'EASY',
+        category: null,
+        metadata: null,
+      });
+
+      await gateway.completeRound('ROOM12');
+
+      expect(prismaMock.round.update).not.toHaveBeenCalled();
+      expect(toEmitMock).toHaveBeenCalledWith('AnswerReveal', {
+        correctAnswer: 'answer-x',
+        questionId: 'q-1',
+        roundId: null,
+      });
+    });
+
+    it('should call stopTimer before any async work so late ticks cannot fire', async () => {
+      const callOrder: string[] = [];
+
+      jest
+        .spyOn(gateway, 'stopTimer')
+        .mockImplementation(() => callOrder.push('stopTimer'));
+
+      redisRoomRepositoryMock.getRoomMetadata.mockImplementation(() => {
+        callOrder.push('getRoomMetadata');
+        return Promise.resolve({
+          id: 'room-id-123',
+          currentRoundId: 'round-abc',
+          currentQuestionId: 'q-1',
+          currentRoundIndex: '0',
+        });
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        prompt: 'P',
+        answer: 'A',
+        difficulty: 'EASY',
+        category: null,
+        metadata: null,
+      });
+      prismaMock.round.update.mockResolvedValue({});
+
+      await gateway.completeRound('ROOM12');
+
+      // stopTimer must be the very first operation
+      expect(callOrder[0]).toBe('stopTimer');
     });
   });
 });
