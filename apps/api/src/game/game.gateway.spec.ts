@@ -43,6 +43,7 @@ describe('GameGateway', () => {
     hasQuestions: jest.fn(),
     getAnswers: jest.fn(),
     setAnswer: jest.fn(),
+    updatePlayerScores: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -2869,6 +2870,72 @@ describe('GameGateway', () => {
         'round-1',
         'player-123',
         expect.stringContaining('"isCorrect":true'),
+      );
+    });
+  });
+
+  describe('calculateAndApplyScores', () => {
+    it('should calculate correct points (base + speed bonus) and apply them atomically', async () => {
+      const playersMap = {
+        'p-1':
+          '{"id":"p-1","displayName":"Player 1","score":500,"isReady":true}',
+        'p-2':
+          '{"id":"p-2","displayName":"Player 2","score":100,"isReady":true}',
+        'p-3': '{"id":"p-3","displayName":"Player 3","score":0,"isReady":true}',
+      };
+
+      const answersMap = {
+        'p-1': '{"answerText":"ans","responseTime":5000,"isCorrect":true}', // 5s response, gets 1000 + 375 = 1375
+        'p-2': '{"answerText":"wrong","responseTime":2000,"isCorrect":false}', // incorrect, gets 0
+        // p-3 didn't submit
+      };
+
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue(playersMap);
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue(answersMap);
+
+      await gateway.calculateAndApplyScores('ROOM12', 'round-abc', '20');
+
+      expect(redisRoomRepositoryMock.updatePlayerScores).toHaveBeenCalledWith(
+        'ROOM12',
+        [
+          {
+            playerId: 'p-1',
+            newScore: 1875,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            playerJson: expect.stringContaining('"score":1875'),
+          },
+        ],
+      );
+    });
+
+    it('should handle corrupted player JSON gracefully without throwing', async () => {
+      const playersMap = {
+        'p-1': 'invalid-json',
+        'p-2':
+          '{"id":"p-2","displayName":"Player 2","score":100,"isReady":true}',
+      };
+
+      const answersMap = {
+        'p-2': '{"answerText":"ans","responseTime":0,"isCorrect":true}', // 0s response, gets 1500
+      };
+
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue(playersMap);
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue(answersMap);
+
+      await expect(
+        gateway.calculateAndApplyScores('ROOM12', 'round-abc', '20'),
+      ).resolves.not.toThrow();
+
+      expect(redisRoomRepositoryMock.updatePlayerScores).toHaveBeenCalledWith(
+        'ROOM12',
+        [
+          {
+            playerId: 'p-2',
+            newScore: 1600,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            playerJson: expect.stringContaining('"score":1600'),
+          },
+        ],
       );
     });
   });

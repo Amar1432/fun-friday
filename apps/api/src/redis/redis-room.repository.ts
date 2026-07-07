@@ -298,4 +298,25 @@ export class RedisRoomRepository {
     const exists = await client.exists(questionsKey);
     return exists === 1;
   }
+
+  /**
+   * Updates player scores in the players hash and leaderboard ZSET atomically using a Redis pipeline.
+   */
+  async updatePlayerScores(
+    roomCode: string,
+    scoreUpdates: { playerId: string; newScore: number; playerJson: string }[],
+  ): Promise<void> {
+    if (scoreUpdates.length === 0) return;
+
+    const client = this.redisService.getClient();
+    const playersKey = this.getPlayersKey(roomCode);
+    const leaderboardKey = this.getLeaderboardKey(roomCode);
+
+    const pipeline = client.pipeline();
+    for (const update of scoreUpdates) {
+      pipeline.hset(playersKey, update.playerId, update.playerJson);
+      pipeline.zadd(leaderboardKey, update.newScore, update.playerId);
+    }
+    await pipeline.exec();
+  }
 }

@@ -459,12 +459,116 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         roundId: currentRoundId ?? null,
       });
 
+      // Step 6 — Calculate and apply scores atomically
+      if (currentRoundId) {
+        await this.calculateAndApplyScores(
+          roomCode,
+          currentRoundId,
+          roomMeta.timerDuration,
+        );
+      }
+
       this.logger.log(
         `Round completed for room ${roomCode}. roundId=${currentRoundId ?? 'unknown'}, questionId=${currentQuestionId ?? 'unknown'}`,
       );
     } catch (err) {
       this.logger.error(
         `Error completing round for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  /**
+   * Calculates player round scores and updates Redis player state and leaderboard ZSET atomically.
+   */
+  async calculateAndApplyScores(
+    roomCode: string,
+    roundId: string,
+    timerDurationStr?: string,
+  ): Promise<void> {
+    this.logger.log(
+      `Calculating scores for room ${roomCode}, roundId ${roundId}`,
+    );
+
+    try {
+      const answers =
+        (await this.redisRoomRepository.getAnswers(roomCode, roundId)) || {};
+      const playersMap =
+        (await this.redisRoomRepository.getPlayers(roomCode)) || {};
+      const timerDuration = parseInt(timerDurationStr || '20', 10);
+
+      const basePoints = 1000;
+      const maxSpeedBonus = 500;
+      const scoreUpdates: {
+        playerId: string;
+        newScore: number;
+        playerJson: string;
+      }[] = [];
+
+      for (const [playerId, playerJson] of Object.entries(playersMap)) {
+        try {
+          const player = JSON.parse(playerJson) as {
+            id: string;
+            displayName: string;
+            score: number;
+            isReady: boolean;
+          };
+
+          const oldScore = typeof player.score === 'number' ? player.score : 0;
+          let pointsEarned = 0;
+
+          const answerJson = answers[playerId];
+          if (answerJson) {
+            const answer = JSON.parse(answerJson) as {
+              answerText: string;
+              responseTime: number;
+              isCorrect: boolean;
+            };
+
+            if (answer.isCorrect) {
+              const responseTimeSec = answer.responseTime / 1000;
+              const speedBonus = Math.max(
+                0,
+                Math.floor(
+                  (1 - responseTimeSec / timerDuration) * maxSpeedBonus,
+                ),
+              );
+              pointsEarned = basePoints + speedBonus;
+            }
+          }
+
+          if (pointsEarned > 0) {
+            const newScore = oldScore + pointsEarned;
+            player.score = newScore;
+            scoreUpdates.push({
+              playerId,
+              newScore,
+              playerJson: JSON.stringify(player),
+            });
+
+            this.logger.log(
+              `Player ${playerId} in room ${roomCode} earned ${pointsEarned} points. New score: ${newScore}`,
+            );
+          }
+        } catch (err) {
+          this.logger.error(
+            `Error processing score for player ${playerId}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+
+      if (scoreUpdates.length > 0) {
+        await this.redisRoomRepository.updatePlayerScores(
+          roomCode,
+          scoreUpdates,
+        );
+        this.logger.log(
+          `Applied score updates atomically for ${scoreUpdates.length} players in room ${roomCode}`,
+        );
+      }
+    } catch (err) {
+      this.logger.error(
+        `Failed to calculate and apply scores for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }

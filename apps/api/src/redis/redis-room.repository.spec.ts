@@ -11,6 +11,7 @@ describe('RedisRoomRepository', () => {
     expire: jest.Mock;
     hdel: jest.Mock;
     zrem: jest.Mock;
+    zadd: jest.Mock;
     exec: jest.Mock;
   };
 
@@ -20,6 +21,7 @@ describe('RedisRoomRepository', () => {
       expire: jest.fn().mockReturnThis(),
       hdel: jest.fn().mockReturnThis(),
       zrem: jest.fn().mockReturnThis(),
+      zadd: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue([]),
     };
 
@@ -362,6 +364,52 @@ describe('RedisRoomRepository', () => {
       (mockRedisClient.exists as jest.Mock).mockResolvedValue(0);
       const result = await repository.hasQuestions('ABCDEF');
       expect(result).toBe(false);
+    });
+  });
+
+  describe('updatePlayerScores', () => {
+    it('should do nothing if scoreUpdates is empty', async () => {
+      await repository.updatePlayerScores('ABCDEF', []);
+      expect(mockRedisClient.pipeline).not.toHaveBeenCalled();
+    });
+
+    it('should run hset and zadd operations in pipeline', async () => {
+      const updates = [
+        {
+          playerId: 'p1',
+          newScore: 1500,
+          playerJson: '{"id":"p1","score":1500}',
+        },
+        {
+          playerId: 'p2',
+          newScore: 1000,
+          playerJson: '{"id":"p2","score":1000}',
+        },
+      ];
+      await repository.updatePlayerScores('ABCDEF', updates);
+
+      expect(mockRedisClient.pipeline).toHaveBeenCalled();
+      expect(mockPipeline.hset).toHaveBeenCalledWith(
+        'room:ABCDEF:players',
+        'p1',
+        updates[0].playerJson,
+      );
+      expect(mockPipeline.zadd).toHaveBeenCalledWith(
+        'room:ABCDEF:leaderboard',
+        1500,
+        'p1',
+      );
+      expect(mockPipeline.hset).toHaveBeenCalledWith(
+        'room:ABCDEF:players',
+        'p2',
+        updates[1].playerJson,
+      );
+      expect(mockPipeline.zadd).toHaveBeenCalledWith(
+        'room:ABCDEF:leaderboard',
+        1000,
+        'p2',
+      );
+      expect(mockPipeline.exec).toHaveBeenCalled();
     });
   });
 });
