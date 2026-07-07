@@ -122,6 +122,46 @@ describe('AuthService', () => {
       expect(createMock).not.toHaveBeenCalled();
     });
 
+    it('should handle unique constraint violation (P2002) gracefully and return existing user', async () => {
+      verifyGoogleIdTokenMock.mockResolvedValue({
+        email: 'concurrent@example.com',
+        name: 'Concurrent User',
+      });
+      // First findUnique returns null (user doesn't exist yet)
+      // Second findUnique returns the user created by concurrent request
+      findUniqueMock.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        id: 'usr-concurrent',
+        email: 'concurrent@example.com',
+        name: 'Concurrent User',
+      });
+      // createMock throws unique constraint error
+      const prismaError = Object.assign(new Error('Unique constraint failed'), {
+        code: 'P2002',
+      });
+      createMock.mockRejectedValue(prismaError);
+      signTokenMock.mockResolvedValue('jwt-token-concurrent');
+
+      const result = await service.ssoLogin('google', 'valid-id-token');
+
+      expect(result.user.id).toBe('usr-concurrent');
+      expect(createMock).toHaveBeenCalled();
+      expect(findUniqueMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('should rethrow non-P2002 errors on user creation', async () => {
+      verifyGoogleIdTokenMock.mockResolvedValue({
+        email: 'error@example.com',
+        name: 'Error User',
+      });
+      findUniqueMock.mockResolvedValue(null);
+      const dbError = new Error('DB Connection Failed');
+      createMock.mockRejectedValue(dbError);
+
+      await expect(
+        service.ssoLogin('google', 'valid-id-token'),
+      ).rejects.toThrow('DB Connection Failed');
+    });
+
     it('should throw for unsupported provider', async () => {
       await expect(service.ssoLogin('unsupported', 'token')).rejects.toThrow(
         UnauthorizedException,

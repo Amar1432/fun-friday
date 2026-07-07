@@ -2,6 +2,16 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 10:40 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-026
+
+- **What Changed:** Updated `findOrCreateUser` in `apps/api/src/auth/auth.service.ts` to wrap user creation in a try/catch, catch Prisma `P2002` unique constraint violation errors, query the database, and return the existing user. This guarantees duplicate prevention and email uniqueness under concurrent login requests. Added type-safe unit tests in `apps/api/src/auth/auth.service.spec.ts` asserting graceful unique constraint recovery and non-P2002 error propagation. Verified type checking and linting pass monorepo-wide.
+- **Why:** To fulfill the active ticket's acceptance criteria, preventing duplicate user creation and gracefully reusing existing records during concurrent authentication.
+- **What's Next:** Start `FFH-027: Issue Application JWT` to generate JWT with required claims.
+
+---
+
 **Date/Time:** 2026-07-07 10:35 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-025

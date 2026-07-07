@@ -67,20 +67,33 @@ export class AuthService {
   private async findOrCreateUser(
     profile: SsoUserProfile,
   ): Promise<{ id: string; email: string; name: string }> {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: profile.email },
-    });
+    try {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: profile.email },
+      });
 
-    if (existingUser) {
-      return existingUser;
+      if (existingUser) {
+        return existingUser;
+      }
+
+      return await this.prisma.user.create({
+        data: {
+          email: profile.email,
+          name: profile.name,
+        },
+      });
+    } catch (error) {
+      const dbError = error as { code?: string };
+      if (dbError?.code === 'P2002') {
+        const existingUser = await this.prisma.user.findUnique({
+          where: { email: profile.email },
+        });
+        if (existingUser) {
+          return existingUser;
+        }
+      }
+      throw error;
     }
-
-    return this.prisma.user.create({
-      data: {
-        email: profile.email,
-        name: profile.name,
-      },
-    });
   }
 
   private parseExpiresIn(value: string): number {

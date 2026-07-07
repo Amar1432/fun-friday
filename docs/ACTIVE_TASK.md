@@ -8,10 +8,10 @@ Store authenticated hosts.
 
 ### Acceptance Criteria
 
-- [ ] User record created on first login.
-- [ ] Existing user reused.
-- [ ] Duplicate users prevented.
-- [ ] Email uniqueness enforced.
+- [x] User record created on first login.
+- [x] Existing user reused.
+- [x] Duplicate users prevented.
+- [x] Email uniqueness enforced.
 
 ---
 
