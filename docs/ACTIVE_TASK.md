@@ -1,19 +1,19 @@
 # Active Task
 
-## FFH-049: Implement RoomStateUpdated Broadcast
+## FFH-050: Validate Game Start Preconditions
 
 ### Description
 
-Broadcast complete room state whenever lobby state changes.
+Verify lobby requirements before gameplay begins.
 
 ### Acceptance Criteria
 
-Broadcast includes:
+Validation includes:
 
-- Connected players
-- Ready status
-- Host information
+- Host connected
+- Minimum player count
+- Required ready players
 - Room status
-- Player count
+- Valid game configuration
 
-Payload matches ROOM_PROTOCOL.md.
+Failures return protocol-compliant error events.

@@ -2,6 +2,22 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 15:40 (Local Time)
+**Agent:** Kiro
+**Ticket:** FFH-049
+
+- **What Changed:**
+  - Created `buildRoomStatePayload` private helper method in `GameGateway` that concurrently fetches `getPlayers` and `getRoomMetadata` via `Promise.all`, parses player JSON, and returns a complete payload object with `{ players, status, hostId, playerCount }`.
+  - Replaced all 4 inline `RoomStateUpdated` emission blocks (in `JoinRoom`, `LeaveRoom`, `executeCleanup`, `PlayerReady`) with calls to the helper, reducing duplication and standardizing the payload structure.
+  - Updated 14 `getRoomMetadata` mocks in unit tests to include `hostId: 'host-123'` so test expectations match the enriched payload.
+  - Strengthened 5 `RoomStateUpdated` assertions to verify `hostId` and `playerCount` fields are present and correct.
+  - Verified with `pnpm --dir apps/api test` — all 135 tests pass across 14 test suites.
+  - Committed changes (commit `ba0db4d`) with pre-commit hooks passing.
+- **Why:** To complete FFH-049 by enriching the `RoomStateUpdated` broadcast with host information and player count as specified in the protocol acceptance criteria.
+- **What's Next:** Start `FFH-050: Validate Game Start Preconditions`.
+
+---
+
 **Date/Time:** 2026-07-07 15:22 (Local Time)
 **Agent:** Kiro
 **Ticket:** FFH-048
