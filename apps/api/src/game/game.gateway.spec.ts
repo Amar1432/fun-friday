@@ -2743,6 +2743,27 @@ describe('GameGateway', () => {
       expectLastErrorCode(mockSocket.emit, 'ROUND_ALREADY_COMPLETED');
     });
 
+    it('should reject if submission is late based on wall-clock questionStartedAt time', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      // Started 25 seconds ago (limit is 20)
+      const startTime = new Date(Date.now() - 25000).toISOString();
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        questionStartedAt: startTime,
+        timerDuration: '20',
+      });
+
+      await expect(
+        gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          questionId: 'q-1',
+          answer: 'ans',
+          responseTimeMs: 500,
+        }),
+      ).rejects.toThrow(WsException);
+      expectLastErrorCode(mockSocket.emit, 'ROUND_ALREADY_COMPLETED');
+    });
+
     it('should reject if questionId does not match currentQuestionId', async () => {
       prismaMock.room.findUnique.mockResolvedValue(mockRoom);
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({

@@ -670,6 +670,24 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw err;
       }
 
+      // Check if timer has expired based on wall clock time (additional safety)
+      if (roomMeta.questionStartedAt) {
+        const questionStartedAt = new Date(
+          roomMeta.questionStartedAt,
+        ).getTime();
+        const timerDuration = parseInt(roomMeta.timerDuration || '20', 10);
+        const elapsedMs = Date.now() - questionStartedAt;
+        // Allow a small grace period of 1000ms for network latency/clock skew
+        if (elapsedMs > (timerDuration + 1) * 1000) {
+          const err = new WsException('Submission timed out');
+          client.emit('error', {
+            success: false,
+            error: { code: 'ROUND_ALREADY_COMPLETED', message: err.message },
+          });
+          throw err;
+        }
+      }
+
       // Check if question ID matches the active question ID
       if (roomMeta.currentQuestionId !== payload.questionId) {
         const err = new WsException('Question ID mismatch for current round');
