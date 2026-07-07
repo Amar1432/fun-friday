@@ -13,6 +13,10 @@ const getEnv = (value: string | undefined, name: string, defaultValue?: string):
   return finalValue;
 };
 
+const getOptionalEnv = (value: string | undefined, defaultValue = ''): string => {
+  return value ?? defaultValue;
+};
+
 const validateUrl = (url: string, name: string): string => {
   try {
     const parsed = new URL(url);
@@ -49,10 +53,16 @@ const apiUrl = validateUrl(rawApiUrl, 'NEXT_PUBLIC_API_URL');
 const authCallbackUrl = validateUrl(rawAuthCallbackUrl, 'NEXT_PUBLIC_AUTH_CALLBACK_URL');
 const appName = rawAppName;
 
+// SSO Client IDs (optional — empty string means SSO is not configured)
+const googleClientId = getOptionalEnv(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
+const microsoftClientId = getOptionalEnv(process.env.NEXT_PUBLIC_MICROSOFT_CLIENT_ID);
+
 export const config = {
   apiUrl,
   authCallbackUrl,
   appName,
+  googleClientId,
+  microsoftClientId,
 } as const;
 
 export type Config = typeof config;

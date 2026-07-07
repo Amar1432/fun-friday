@@ -2,6 +2,34 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 11:10 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Tickets:** FFH-030, FFH-031, FFH-032, FFH-033
+
+- **What Changed:**
+  - **FFH-030 & FFH-031:** Integrated Google Identity Services (GIS) and Microsoft MSAL (`@azure/msal-browser`) libraries to trigger authenticating popups, retrieve credentials (ID tokens), and exchange them with NestJS API `POST /api/v1/auth/sso/login` for JWT access tokens.
+  - **FFH-032:** Created global `AuthProvider` and `useAuth` hook at `apps/web/lib/auth/auth-context.tsx`. Handles localStorage token/profile persistence, automatic token/user loading, dynamic redirects (redirects unauthenticated users to `/login`, and authenticated users away from `/login` to `/dashboard`), and clear logout functionality. Wrapped the root layout with this provider.
+  - **FFH-033:** Created a premium, responsive host dashboard page at `apps/web/app/dashboard/page.tsx` featuring header navigation, active user info (name, email, profile badge), sidebar navigation tab state, logout buttons, and placeholders for game rooms, templates, analytics, and new room actions. Added full loading guard screens.
+  - **Validation:** Clean linting (`pnpm lint`), zero typecheck warnings, successful production NextJS app build (`pnpm build`).
+- **Why:** To complete Epic 6 (Frontend Authentication) and establish a secure, production-grade host session system and protected dashboard shell.
+- **What's Next:** Start Epic 7 (Quality & CI) with `FFH-034: Configure Testing Framework`.
+
+---
+
+**Date/Time:** 2026-07-07 10:56 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-029
+
+- **What Changed:**
+  - Created `apps/web/app/login/page.tsx` for the host login screen featuring application branding, custom Google and Microsoft SSO buttons with brand SVGs, responsive layout, and interactive simulated loading/error/success states.
+  - Added a "State Simulation" panel to the login page to allow easy testing of all layout states (force error, force loading, reset).
+  - Updated `apps/web/app/page.tsx` (landing page) to import `Link`, added a "Host Login" button in the header, and updated the "Create a Room" hero action button to link directly to `/login`.
+  - Verified compilation and type-safety (`pnpm typecheck`), code linting (`pnpm lint`), and production build optimization (`pnpm build`).
+- **Why:** To fulfill the acceptance criteria for Epic 6's first ticket, providing a premium, visually striking login screen with interactive states and seamless page routing.
+- **What's Next:** Start `FFH-030: Implement Google Login Flow` to hook up the Google OAuth provider verification and callback logic on the frontend.
+
+---
+
 **Date/Time:** 2026-07-07 10:50 (Local Time)
 **Agent:** Antigravity (Claude Opus 4.6)
 **Tickets:** FFH-026, FFH-027, FFH-028

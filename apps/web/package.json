@@ -10,12 +10,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.16.0",
+    "@fun-friday/ui": "workspace:*",
     "next": "16.2.10",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "@fun-friday/ui": "workspace:*"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@fun-friday/eslint-config": "workspace:*",
+    "@fun-friday/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -25,8 +28,6 @@
     "eslint-config-next": "16.2.10",
     "postcss": "^8",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "@fun-friday/tsconfig": "workspace:*",
-    "@fun-friday/eslint-config": "workspace:*"
+    "typescript": "^5"
   }
 }

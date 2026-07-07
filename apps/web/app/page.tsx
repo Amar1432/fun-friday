@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Button } from '@fun-friday/ui';
 import { config } from '@/lib/config';
 
@@ -30,11 +31,17 @@ export default function Home() {
               {config.appName}
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Dev Environment Active
             </span>
+            <Link
+              href="/login"
+              className="text-sm font-medium text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-lg transition-all cursor-pointer"
+            >
+              Host Login
+            </Link>
           </div>
         </div>
       </header>
@@ -57,9 +64,9 @@ export default function Home() {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
-              <Button variant="primary" onClick={() => alert('Host Room initiated!')}>
-                Create a Room
-              </Button>
+              <Link href="/login" className="no-underline">
+                <Button variant="primary">Create a Room</Button>
+              </Link>
               <Button variant="secondary" onClick={() => alert('Join Room initiated!')}>
                 Join Room
               </Button>
