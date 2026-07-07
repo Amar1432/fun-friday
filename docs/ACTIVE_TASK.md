@@ -1,18 +1,17 @@
 # Active Task
 
-## FFH-024: Configure Google OAuth Provider
+## FFH-026: Persist Host User
 
 ### Description
 
-Enable Google SSO.
+Store authenticated hosts.
 
 ### Acceptance Criteria
 
-- [ ] Google OAuth provider configured (credentials, settings).
-- [ ] Callback endpoint exists.
-- [ ] User profile parsed.
-- [ ] Existing users identified correctly.
-- [ ] New users created automatically.
+- [ ] User record created on first login.
+- [ ] Existing user reused.
+- [ ] Duplicate users prevented.
+- [ ] Email uniqueness enforced.
 
 ---
 

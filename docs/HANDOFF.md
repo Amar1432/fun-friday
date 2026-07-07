@@ -2,6 +2,26 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 10:35 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-025
+
+- **What Changed:** Created `MicrosoftSsoProvider` in `apps/api/src/auth/providers/microsoft-sso.provider.ts` implementing the `SsoProvider` interface using native fetch and `crypto.createPublicKey` to verify Microsoft Azure AD/Entra ID tokens. Registered it in `AuthModule` and integrated it in `AuthService`'s providers registry mapping under the key `microsoft`. Exposed `MICROSOFT_CLIENT_ID` configuration variable in `.env` and `.env.example`. Wrote unit tests in `microsoft-sso.provider.spec.ts` and updated service specs.
+- **Why:** To enable Microsoft SSO token validation and login flow without introducing heavy external library ESM/jose conflicts in Jest.
+- **What's Next:** Start the next Sprint task or authentication guarding/persistence (e.g. `FFH-026: Persist Host User` or `FFH-028: Protect Authenticated Endpoints`).
+
+---
+
+**Date/Time:** 2026-07-07 01:50 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-024
+
+- **What Changed:** Installed `google-auth-library` in `apps/api`. Created provider-agnostic `SsoProvider` interface and `GoogleSsoProvider` implementation using `OAuth2Client.verifyIdToken()`. Rewrote `AuthService` with `ssoLogin()` method implementing provider dispatch, ID token verification, find-or-create user via Prisma, and JWT issuance. Rewrote `AuthController` with `POST /auth/sso/login` endpoint matching the API contract envelope. Created `SsoLoginDto` with class-validator decorators. Added `GOOGLE_CLIENT_ID` to `.env` and `.env.example`. Wrote comprehensive unit tests for all new components.
+- **Why:** To implement the Google SSO authentication flow allowing hosts to authenticate with their corporate Google identity and receive application JWTs.
+- **What's Next:** Start `FFH-025` (next task in the active roadmap).
+
+---
+
 **Date/Time:** 2026-07-07 01:45 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-023
