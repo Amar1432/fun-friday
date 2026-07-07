@@ -2,6 +2,19 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 11:20 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Tickets:** FFH-034, FFH-035, FFH-036
+
+- **What Changed:**
+  - **FFH-034 (Testing Framework):** Integrated Jest and React Testing Library into the frontend (`apps/web`). Created `jest.config.ts` and `jest.setup.ts`, added unit testing scripts (`pnpm test`, `pnpm test:cov`), and wrote a sample spec file (`apps/web/app/page.spec.tsx`) verifying rendering, text assertions, and button presence. Checked backend coverage script.
+  - **FFH-035 (GitHub Actions):** Created `.github/workflows/ci.yml` defining the continuous integration pipeline that triggers on main branch push/pull requests. Pipeline automates setup (Node + pnpm), dependency installation, prisma generation, type checking, lint checking, testing, and production builds under mock env values.
+  - **FFH-036 (Verify Build):** Verified monorepo verification check scripts locally. Verified all compilation (`pnpm typecheck`), linting (`pnpm lint`), tests (`pnpm test`), and production building (`pnpm build`) pass successfully across the entire monorepo.
+- **Why:** To complete Epic 7 (Quality & CI) and finish Sprint 1's Definition of Done (DoD).
+- **What's Next:** Align on Sprint 2 goals.
+
+---
+
 **Date/Time:** 2026-07-07 11:10 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Tickets:** FFH-030, FFH-031, FFH-032, FFH-033

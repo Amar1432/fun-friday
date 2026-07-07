@@ -1,35 +1,27 @@
-# Active Task
+# Active Tasks
 
-## FFH-030: Implement Google Login Flow ✅
+## FFH-034: Configure Testing Framework ✅
 
-- [x] Login button initiates authentication.
-- [x] Successful login redirects correctly.
-- [x] Failed login displays error.
-- [x] Loading state shown during authentication.
+- [x] Frontend test runner configured (Jest + jsdom + Testing Library).
+- [x] Backend test runner configured (Jest + coverage).
+- [x] Sample tests execute successfully (`app/page.spec.tsx` and NestJS specs).
+- [x] Coverage reporting enabled.
 
-## FFH-031: Implement Microsoft Login Flow ✅
+## FFH-035: Configure GitHub Actions ✅
 
-- [x] Login button initiates authentication.
-- [x] Successful login redirects correctly.
-- [x] Failed login displays error.
-- [x] Loading state shown during authentication.
+- [x] CI pipeline workflow created (`.github/workflows/ci.yml`).
+- [x] Pipeline performs:
+  - [x] Install dependencies
+  - [x] Type checking
+  - [x] Linting
+  - [x] Testing
+  - [x] Production build
+- [x] Local verification of steps completed successfully.
 
-## FFH-032: Store Authentication Session ✅
+## FFH-036: Verify Full Project Build ✅
 
-- [x] Access token stored securely.
-- [x] Session restored after refresh.
-- [x] Logout clears session.
-- [x] Unauthorized users redirected to login.
-
-## FFH-033: Build Protected Dashboard Shell ✅
-
-- [x] Dashboard contains:
-  - [x] Header
-  - [x] User information
-  - [x] Placeholder navigation
-  - [x] Placeholder content area
-- [x] Unauthenticated access is blocked.
+- [x] Local verification of Sprint 1 DoD finished. All build and lint steps pass.
 
 ---
 
-# Epic 6 — Frontend Authentication
+# Epic 7 — Quality & CI
