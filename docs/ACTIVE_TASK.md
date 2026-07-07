@@ -1,15 +1,14 @@
 # Active Task
 
-## FFH-063: Cleanup Redis Game State
+## FFH-064: Implement Protocol Validation
 
 ### Description
 
-Remove expired game data after completion.
+Validate all incoming WebSocket payloads using NestJS `ValidationPipe` and `class-validator` decorators.
 
 ### Acceptance Criteria
 
-- Temporary Redis keys removed.
-- Active timers cleared.
-- Socket room cleaned.
-- Expiration policy applied.
-- No orphaned state remains.
+- All incoming WebSocket event payloads validated using `class-validator`.
+- Invalid payloads rejected with a structured error event before any business logic runs.
+- Validation DTOs created for all `@SubscribeMessage` handlers.
+- Unit tests cover both valid and invalid payload scenarios.

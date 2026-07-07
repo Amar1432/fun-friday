@@ -3244,10 +3244,12 @@ describe('GameGateway', () => {
   });
 
   describe('completeGame', () => {
-    it('should finalize game in Redis and Postgres, broadcast GameFinished, persist player scores, and expire keys', async () => {
+    it('should finalize game in Redis and Postgres, broadcast GameFinished, persist player scores, expire keys, and cleanup sockets', async () => {
       const toEmitMock = jest.fn();
+      const socketsLeaveMock = jest.fn();
       gateway.server = {
         to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+        in: jest.fn().mockReturnValue({ socketsLeave: socketsLeaveMock }),
       } as unknown as Server;
 
       redisRoomRepositoryMock.getLeaderboard.mockResolvedValue([
@@ -3294,6 +3296,55 @@ describe('GameGateway', () => {
         'ROOM12',
         300,
       );
+      // Evicted all sockets from the room namespace
+      expect(gateway.server.in).toHaveBeenCalledWith('ROOM12');
+      expect(socketsLeaveMock).toHaveBeenCalledWith('ROOM12');
+    });
+  });
+
+  describe('cleanupRoomSockets', () => {
+    it('should cancel pending disconnect timers for the given player IDs', () => {
+      const timer1 = setTimeout(() => {}, 10000);
+      const timer2 = setTimeout(() => {}, 10000);
+
+      gateway.disconnectTimers.set('p-1', timer1);
+      gateway.disconnectTimers.set('p-2', timer2);
+
+      const socketsLeaveMock = jest.fn();
+      gateway.server = {
+        in: jest.fn().mockReturnValue({ socketsLeave: socketsLeaveMock }),
+      } as unknown as Server;
+
+      gateway.cleanupRoomSockets('ROOM12', ['p-1', 'p-2']);
+
+      expect(gateway.disconnectTimers.has('p-1')).toBe(false);
+      expect(gateway.disconnectTimers.has('p-2')).toBe(false);
+    });
+
+    it('should evict all sockets from the Socket.IO room namespace', () => {
+      const socketsLeaveMock = jest.fn();
+      gateway.server = {
+        in: jest.fn().mockReturnValue({ socketsLeave: socketsLeaveMock }),
+      } as unknown as Server;
+
+      gateway.cleanupRoomSockets('ROOM12', []);
+
+      expect(gateway.server.in).toHaveBeenCalledWith('ROOM12');
+      expect(socketsLeaveMock).toHaveBeenCalledWith('ROOM12');
+    });
+
+    it('should gracefully handle players with no pending disconnect timer', () => {
+      const socketsLeaveMock = jest.fn();
+      gateway.server = {
+        in: jest.fn().mockReturnValue({ socketsLeave: socketsLeaveMock }),
+      } as unknown as Server;
+
+      // p-99 has no timer registered — should not throw
+      expect(() =>
+        gateway.cleanupRoomSockets('ROOM12', ['p-99']),
+      ).not.toThrow();
+
+      expect(socketsLeaveMock).toHaveBeenCalledWith('ROOM12');
     });
   });
 });

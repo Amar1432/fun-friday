@@ -2,6 +2,26 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 21:05 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-063
+
+- **What Changed:**
+  - Added `cleanupRoomSockets(roomCode, playerIds)` method to `GameGateway`:
+    - Cancels all pending disconnect grace-period `setTimeout` timers for every player in the room (prevents orphaned timer callbacks from executing against expired state).
+    - Calls `this.server.in(roomCode).socketsLeave(roomCode)` to evict every connected socket from the Socket.IO room namespace after game completion.
+  - Wired `cleanupRoomSockets` as step 8 inside `completeGame`, called after Redis keys are set to expire.
+  - Updated the `completeGame` unit test to mock `server.in().socketsLeave()` and assert it is called correctly.
+  - Added a new `describe('cleanupRoomSockets')` test suite with 3 cases:
+    - Cancels disconnect timers for provided player IDs.
+    - Evicts all sockets from the Socket.IO room namespace.
+    - Handles players with no pending timer gracefully without throwing.
+  - All 213 tests pass; typecheck is clean.
+- **Why:** To satisfy all acceptance criteria for FFH-063: cancel orphaned timers, clean socket room membership, and ensure no ghost state remains after a game ends.
+- **What's Next:** Start `FFH-064: Implement Protocol Validation`.
+
+---
+
 **Date/Time:** 2026-07-07 20:58 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-062

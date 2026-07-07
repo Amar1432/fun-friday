@@ -396,6 +396,36 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * Cleans up all in-memory and socket state for a finished or abandoned room.
+   *
+   * Responsibilities:
+   * 1. Cancels any pending disconnect grace-period timers for players in the room
+   *    so they don't fire and attempt to modify state that no longer exists.
+   * 2. Evicts every socket that is still joined to the Socket.IO room namespace,
+   *    preventing stale subscriptions from receiving future events.
+   *
+   * @param roomCode - The room code identifying the Socket.IO room and disconnect timers.
+   * @param playerIds - The list of player IDs whose disconnect timers should be cleared.
+   */
+  cleanupRoomSockets(roomCode: string, playerIds: string[]): void {
+    // Cancel pending disconnect grace-period timers to prevent orphaned state modifications
+    for (const playerId of playerIds) {
+      const timer = this.disconnectTimers.get(playerId);
+      if (timer) {
+        clearTimeout(timer);
+        this.disconnectTimers.delete(playerId);
+        this.logger.log(
+          `Cancelled disconnect timer for player ${playerId} in room ${roomCode}`,
+        );
+      }
+    }
+
+    // Evict all sockets from the Socket.IO room namespace
+    this.server.in(roomCode).socketsLeave(roomCode);
+    this.logger.log(`All sockets evicted from room namespace ${roomCode}`);
+  }
+
+  /**
    * Completes the current round after timer expiration.
    *
    * Responsibilities:
@@ -1077,6 +1107,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // 7. Expire all room-related Redis keys after 5 minutes (300 seconds)
       await this.redisRoomRepository.expireAllRoomKeys(roomCode, 300);
+
+      // 8. Cancel pending disconnect timers and evict all sockets from the room namespace
+      const playerIds = finalLeaderboard.map((entry) => entry.playerId);
+      this.cleanupRoomSockets(roomCode, playerIds);
 
       this.logger.log(`Successfully finalized game for room ${roomCode}`);
     } catch (err) {
