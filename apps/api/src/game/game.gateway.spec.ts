@@ -14,6 +14,9 @@ describe('GameGateway', () => {
     room: {
       findUnique: jest.fn(),
     },
+    game: {
+      findUnique: jest.fn(),
+    },
   };
 
   const redisRoomRepositoryMock = {
@@ -1528,6 +1531,197 @@ describe('GameGateway', () => {
 
       expect(redisRoomRepositoryMock.setPlayer).toHaveBeenCalledTimes(2);
       expect(toEmitMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('validateGameStart', () => {
+    const ROOM_CODE = 'ROOM12';
+    const GAME_ID = 'game-id-123';
+    const HOST_ID = 'host-123';
+
+    const mockRoom = {
+      id: 'room-id-123',
+      code: ROOM_CODE,
+      status: 'LOBBY',
+      hostId: HOST_ID,
+    };
+
+    const mockReadyPlayer = (id: string) =>
+      JSON.stringify({ id, displayName: 'Player', score: 0, isReady: true });
+
+    const mockUnreadyPlayer = (id: string) =>
+      JSON.stringify({ id, displayName: 'Player', score: 0, isReady: false });
+
+    const mockGame = {
+      id: GAME_ID,
+      name: 'Test Game',
+      _count: { questions: 5 },
+    };
+
+    let mockServer: {
+      in: jest.Mock;
+    };
+
+    beforeEach(() => {
+      const hostSocket = {
+        id: 'socket-host',
+        data: { user: { sub: HOST_ID, role: 'host' } },
+      };
+      mockServer = {
+        in: jest.fn().mockReturnValue({
+          fetchSockets: jest.fn().mockResolvedValue([hostSocket]),
+        }),
+      };
+      gateway.server = mockServer as unknown as Server;
+    });
+
+    it('should return valid when all preconditions are met', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      prismaMock.game.findUnique.mockResolvedValue(mockGame);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': mockReadyPlayer('player-1'),
+        'player-2': mockReadyPlayer('player-2'),
+      });
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(true);
+    });
+
+    it('should fail when room does not exist', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(null);
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('ROOM_NOT_FOUND');
+    });
+
+    it('should fail when room is not in LOBBY status', async () => {
+      prismaMock.room.findUnique.mockResolvedValue({
+        ...mockRoom,
+        status: 'IN_PROGRESS',
+      });
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('ROOM_NOT_IN_LOBBY');
+    });
+
+    it('should fail when host is not connected to the room', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      // Override server.in to return no sockets
+      gateway.server = {
+        in: jest.fn().mockReturnValue({
+          fetchSockets: jest.fn().mockResolvedValue([]),
+        }),
+      } as unknown as Server;
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('HOST_NOT_CONNECTED');
+    });
+
+    it('should fail when there are no players in the room', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('NOT_ENOUGH_PLAYERS');
+    });
+
+    it('should fail when at least one player is not ready', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': mockReadyPlayer('player-1'),
+        'player-2': mockUnreadyPlayer('player-2'),
+      });
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('PLAYERS_NOT_READY');
+    });
+
+    it('should fail when all players are unready', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': mockUnreadyPlayer('player-1'),
+      });
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('PLAYERS_NOT_READY');
+    });
+
+    it('should fail when game does not exist in the database', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': mockReadyPlayer('player-1'),
+      });
+      prismaMock.game.findUnique.mockResolvedValue(null);
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('GAME_NOT_FOUND');
+    });
+
+    it('should fail when game exists but has no questions', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': mockReadyPlayer('player-1'),
+      });
+      prismaMock.game.findUnique.mockResolvedValue({
+        ...mockGame,
+        _count: { questions: 0 },
+      });
+
+      const result = await gateway.validateGameStart(
+        ROOM_CODE,
+        GAME_ID,
+        HOST_ID,
+      );
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('GAME_HAS_NO_QUESTIONS');
     });
   });
 });

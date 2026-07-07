@@ -153,6 +153,121 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * Validates all preconditions required before a game can start.
+   *
+   * Checks (in order):
+   * 1. Room exists and is in LOBBY status.
+   * 2. Host socket is connected to the room.
+   * 3. Minimum player count is met (at least 1 player beyond the host).
+   * 4. All players in the room are ready.
+   * 5. The requested game exists in the DB and has at least one question.
+   *
+   * Returns a validation result object. Callers are responsible for emitting
+   * protocol-compliant error events on failure.
+   */
+  async validateGameStart(
+    roomCode: string,
+    gameId: string,
+    hostId: string,
+  ): Promise<
+    { valid: true } | { valid: false; code: string; message: string }
+  > {
+    // Check 1 — Room must exist and be in LOBBY status
+    const room = await this.prisma.room.findUnique({
+      where: { code: roomCode },
+    });
+
+    if (!room) {
+      return {
+        valid: false,
+        code: 'ROOM_NOT_FOUND',
+        message: `Room ${roomCode} does not exist`,
+      };
+    }
+
+    if (room.status !== 'LOBBY') {
+      return {
+        valid: false,
+        code: 'ROOM_NOT_IN_LOBBY',
+        message: 'Room is not in LOBBY status',
+      };
+    }
+
+    // Check 2 — Host must be connected (their socket is in the Socket.IO room)
+    const sockets = await this.server.in(roomCode).fetchSockets();
+    const hostConnected = sockets.some((socket) => {
+      const data = socket.data as { user?: TokenPayload };
+      return data.user?.sub === hostId && data.user?.role === 'host';
+    });
+
+    if (!hostConnected) {
+      return {
+        valid: false,
+        code: 'HOST_NOT_CONNECTED',
+        message: 'Host is not connected to the room',
+      };
+    }
+
+    // Check 3 — Minimum player count (at least 1 player)
+    const playersMap = await this.redisRoomRepository.getPlayers(roomCode);
+    const playerCount = Object.keys(playersMap).length;
+    const MIN_PLAYERS = 1;
+
+    if (playerCount < MIN_PLAYERS) {
+      return {
+        valid: false,
+        code: 'NOT_ENOUGH_PLAYERS',
+        message: `At least ${MIN_PLAYERS} player is required to start`,
+      };
+    }
+
+    // Check 4 — All players must be ready
+    const players = Object.values(playersMap)
+      .map((pJson) => {
+        try {
+          return JSON.parse(pJson) as Record<string, unknown>;
+        } catch {
+          return null;
+        }
+      })
+      .filter((p): p is Record<string, unknown> => p !== null);
+
+    const allReady = players.every((p) => p.isReady === true);
+
+    if (!allReady) {
+      return {
+        valid: false,
+        code: 'PLAYERS_NOT_READY',
+        message: 'Not all players are ready',
+      };
+    }
+
+    // Check 5 — Game must exist in DB with at least one question
+    const game = await this.prisma.game.findUnique({
+      where: { id: gameId },
+      include: { _count: { select: { questions: true } } },
+    });
+
+    if (!game) {
+      return {
+        valid: false,
+        code: 'GAME_NOT_FOUND',
+        message: `Game ${gameId} does not exist`,
+      };
+    }
+
+    if (game._count.questions === 0) {
+      return {
+        valid: false,
+        code: 'GAME_HAS_NO_QUESTIONS',
+        message: 'Game has no questions configured',
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
    * Builds the complete RoomStateUpdated payload including players, ready status,
    * host information, room status, and player count.
    */
