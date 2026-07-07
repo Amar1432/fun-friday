@@ -468,6 +468,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         );
       }
 
+      // Step 7 — Flush Redis answers to PostgreSQL (non-fatal; Redis is authoritative until this succeeds)
+      if (currentRoundId) {
+        await this.persistRoundAnswers(roomCode, currentRoundId);
+      }
+
       this.logger.log(
         `Round completed for room ${roomCode}. roundId=${currentRoundId ?? 'unknown'}, questionId=${currentQuestionId ?? 'unknown'}`,
       );
@@ -569,6 +574,103 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (err) {
       this.logger.error(
         `Failed to calculate and apply scores for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  /**
+   * Flushes all submitted answers for a completed round from Redis into PostgreSQL.
+   *
+   * Design notes:
+   * - The playerId stored in Redis (keyed from user.sub in the guest JWT) is the
+   *   Prisma Player.id — set at guest registration time in AuthService.registerGuest.
+   *   No additional lookup is required.
+   * - Uses createMany with skipDuplicates so re-running on retry is safe.
+   * - Entire operation is non-fatal: a failure is logged but does not block the
+   *   round completion flow. Redis remains authoritative until this succeeds.
+   */
+  async persistRoundAnswers(roomCode: string, roundId: string): Promise<void> {
+    this.logger.log(
+      `Persisting round answers to PostgreSQL for room ${roomCode}, roundId ${roundId}`,
+    );
+
+    try {
+      const answers = await this.redisRoomRepository.getAnswers(
+        roomCode,
+        roundId,
+      );
+
+      const playerIds = Object.keys(answers);
+
+      if (playerIds.length === 0) {
+        this.logger.log(
+          `No answers to persist for round ${roundId} in room ${roomCode}`,
+        );
+        return;
+      }
+
+      // Build the createMany payload, skipping entries with malformed JSON
+      const answerRows: {
+        roundId: string;
+        playerId: string;
+        answerText: string;
+        responseTime: number;
+        isCorrect: boolean;
+      }[] = [];
+
+      for (const playerId of playerIds) {
+        const raw = answers[playerId];
+        try {
+          const parsed = JSON.parse(raw) as {
+            answerText: string;
+            responseTime: number;
+            isCorrect: boolean;
+          };
+
+          if (
+            typeof parsed.answerText !== 'string' ||
+            typeof parsed.responseTime !== 'number' ||
+            typeof parsed.isCorrect !== 'boolean'
+          ) {
+            this.logger.warn(
+              `Skipping malformed answer for player ${playerId} in round ${roundId}`,
+            );
+            continue;
+          }
+
+          answerRows.push({
+            roundId,
+            playerId,
+            answerText: parsed.answerText,
+            responseTime: parsed.responseTime,
+            isCorrect: parsed.isCorrect,
+          });
+        } catch {
+          this.logger.warn(
+            `Failed to parse answer JSON for player ${playerId} in round ${roundId} — skipping`,
+          );
+        }
+      }
+
+      if (answerRows.length === 0) {
+        this.logger.warn(
+          `All answers were malformed for round ${roundId} — nothing persisted`,
+        );
+        return;
+      }
+
+      const result = await this.prisma.answer.createMany({
+        data: answerRows,
+        skipDuplicates: true,
+      });
+
+      this.logger.log(
+        `Persisted ${result.count} answer(s) to PostgreSQL for round ${roundId} in room ${roomCode}`,
+      );
+    } catch (err) {
+      // Non-fatal — Redis remains the source of truth during active gameplay
+      this.logger.error(
+        `Failed to persist round answers for round ${roundId} in room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }

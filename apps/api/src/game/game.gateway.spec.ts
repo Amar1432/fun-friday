@@ -25,6 +25,9 @@ describe('GameGateway', () => {
       create: jest.fn(),
       update: jest.fn(),
     },
+    answer: {
+      createMany: jest.fn(),
+    },
   };
 
   const redisRoomRepositoryMock = {
@@ -2937,6 +2940,162 @@ describe('GameGateway', () => {
           },
         ],
       );
+    });
+  });
+
+  describe('persistRoundAnswers', () => {
+    it('should bulk-create all valid answers in PostgreSQL with correct fields', async () => {
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'player-uuid-1': JSON.stringify({
+          answerText: 'Paris',
+          responseTime: 3500,
+          isCorrect: true,
+        }),
+        'player-uuid-2': JSON.stringify({
+          answerText: 'Berlin',
+          responseTime: 8200,
+          isCorrect: false,
+        }),
+      });
+      prismaMock.answer.createMany.mockResolvedValue({ count: 2 });
+
+      await gateway.persistRoundAnswers('ROOM12', 'round-abc');
+
+      expect(prismaMock.answer.createMany).toHaveBeenCalledWith({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        data: expect.arrayContaining([
+          {
+            roundId: 'round-abc',
+            playerId: 'player-uuid-1',
+            answerText: 'Paris',
+            responseTime: 3500,
+            isCorrect: true,
+          },
+          {
+            roundId: 'round-abc',
+            playerId: 'player-uuid-2',
+            answerText: 'Berlin',
+            responseTime: 8200,
+            isCorrect: false,
+          },
+        ]),
+        skipDuplicates: true,
+      });
+    });
+
+    it('should skip persistence and not call createMany when no answers exist in Redis', async () => {
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+
+      await gateway.persistRoundAnswers('ROOM12', 'round-abc');
+
+      expect(prismaMock.answer.createMany).not.toHaveBeenCalled();
+    });
+
+    it('should skip malformed JSON entries and still persist the valid ones', async () => {
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'player-good': JSON.stringify({
+          answerText: 'correct',
+          responseTime: 2000,
+          isCorrect: true,
+        }),
+        'player-bad': 'this-is-not-json',
+      });
+      prismaMock.answer.createMany.mockResolvedValue({ count: 1 });
+
+      await gateway.persistRoundAnswers('ROOM12', 'round-abc');
+
+      expect(prismaMock.answer.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            roundId: 'round-abc',
+            playerId: 'player-good',
+            answerText: 'correct',
+            responseTime: 2000,
+            isCorrect: true,
+          },
+        ],
+        skipDuplicates: true,
+      });
+    });
+
+    it('should skip entries with incomplete parsed fields and still persist valid ones', async () => {
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'player-incomplete': JSON.stringify({
+          answerText: 'something',
+          // responseTime and isCorrect intentionally missing
+        }),
+        'player-ok': JSON.stringify({
+          answerText: 'right',
+          responseTime: 1000,
+          isCorrect: true,
+        }),
+      });
+      prismaMock.answer.createMany.mockResolvedValue({ count: 1 });
+
+      await gateway.persistRoundAnswers('ROOM12', 'round-abc');
+
+      expect(prismaMock.answer.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            roundId: 'round-abc',
+            playerId: 'player-ok',
+            answerText: 'right',
+            responseTime: 1000,
+            isCorrect: true,
+          },
+        ],
+        skipDuplicates: true,
+      });
+    });
+
+    it('should not throw when all entries are malformed — nothing persisted', async () => {
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'player-1': 'bad-json',
+        'player-2': '{}',
+      });
+
+      await expect(
+        gateway.persistRoundAnswers('ROOM12', 'round-abc'),
+      ).resolves.not.toThrow();
+
+      expect(prismaMock.answer.createMany).not.toHaveBeenCalled();
+    });
+
+    it('should not throw when PostgreSQL createMany fails — logs the error and continues', async () => {
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'player-1': JSON.stringify({
+          answerText: 'ans',
+          responseTime: 1500,
+          isCorrect: true,
+        }),
+      });
+      prismaMock.answer.createMany.mockRejectedValue(
+        new Error('DB write failed'),
+      );
+
+      await expect(
+        gateway.persistRoundAnswers('ROOM12', 'round-abc'),
+      ).resolves.not.toThrow();
+    });
+
+    it('should pass skipDuplicates: true so retries are idempotent', async () => {
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'player-1': JSON.stringify({
+          answerText: 'yes',
+          responseTime: 500,
+          isCorrect: true,
+        }),
+      });
+      prismaMock.answer.createMany.mockResolvedValue({ count: 1 });
+
+      await gateway.persistRoundAnswers('ROOM12', 'round-abc');
+
+      const call = (
+        prismaMock.answer.createMany.mock.calls as unknown as [
+          { data: unknown[]; skipDuplicates: boolean },
+        ][]
+      )[0];
+      expect(call[0].skipDuplicates).toBe(true);
     });
   });
 });
