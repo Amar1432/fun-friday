@@ -582,6 +582,108 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * Builds and broadcasts the current leaderboard to all clients in the room.
+   *
+   * Payload shape (per ROOM_PROTOCOL.md):
+   *   LeaderboardUpdated: [{ rank, playerId, displayName, score, streak }]
+   *
+   * Rank is 1-based. Ties share the same rank (dense ranking is NOT used —
+   * players with equal scores receive the same rank and the next rank is
+   * skipped, matching standard competition ranking).
+   *
+   * streak is set to 0: streak tracking is not yet implemented.
+   *
+   * Non-fatal: any error is logged and swallowed so round completion continues.
+   */
+  async broadcastLeaderboard(roomCode: string): Promise<void> {
+    try {
+      const rawLeaderboard =
+        await this.redisRoomRepository.getLeaderboard(roomCode);
+      const playersMap = await this.redisRoomRepository.getPlayers(roomCode);
+
+      const entries: {
+        playerId: string;
+        displayName: string;
+        score: number;
+        streak: number;
+      }[] = [];
+
+      for (const item of rawLeaderboard) {
+        const playerJson = playersMap[item.playerId];
+        if (playerJson) {
+          try {
+            const player = JSON.parse(playerJson) as {
+              id: string;
+              displayName: string;
+              score: number;
+              streak?: number;
+            };
+
+            entries.push({
+              playerId: item.playerId,
+              displayName: player.displayName || 'Player',
+              score: item.score,
+              streak: player.streak || 0,
+            });
+          } catch {
+            entries.push({
+              playerId: item.playerId,
+              displayName: 'Player',
+              score: item.score,
+              streak: 0,
+            });
+          }
+        }
+      }
+
+      // Sort deterministically: score descending, then displayName ascending, then playerId ascending
+      entries.sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return (
+          a.displayName.localeCompare(b.displayName) ||
+          a.playerId.localeCompare(b.playerId)
+        );
+      });
+
+      // Assign ranks using standard competition ranking (ties share rank, next rank skipped)
+      const rankedLeaderboard: {
+        rank: number;
+        playerId: string;
+        displayName: string;
+        score: number;
+        streak: number;
+      }[] = [];
+
+      let currentRank = 1;
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        if (i > 0 && entry.score < entries[i - 1].score) {
+          currentRank = i + 1;
+        }
+        rankedLeaderboard.push({
+          rank: currentRank,
+          playerId: entry.playerId,
+          displayName: entry.displayName,
+          score: entry.score,
+          streak: entry.streak,
+        });
+      }
+
+      this.server.to(roomCode).emit('LeaderboardUpdated', rankedLeaderboard);
+
+      this.logger.log(
+        `LeaderboardUpdated broadcasted for room ${roomCode} with ${rankedLeaderboard.length} entries`,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Failed to broadcast leaderboard for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  /**
    * Flushes all submitted answers for a completed round from Redis into PostgreSQL.
    *
    * Design notes:
@@ -672,86 +774,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Non-fatal — Redis remains the source of truth during active gameplay
       this.logger.error(
         `Failed to persist round answers for round ${roundId} in room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-  }
-
-  /**
-   * Fetches the current leaderboard from Redis, builds the ranked payload, and broadcasts it to the room.
-   */
-  async broadcastLeaderboard(roomCode: string): Promise<void> {
-    this.logger.log(`Broadcasting leaderboard for room ${roomCode}`);
-
-    try {
-      const rawLeaderboard =
-        await this.redisRoomRepository.getLeaderboard(roomCode);
-      const playersMap = await this.redisRoomRepository.getPlayers(roomCode);
-
-      const entries: {
-        playerId: string;
-        displayName: string;
-        score: number;
-        streak: number;
-      }[] = [];
-
-      for (const item of rawLeaderboard) {
-        const playerJson = playersMap[item.playerId];
-        if (playerJson) {
-          try {
-            const player = JSON.parse(playerJson) as {
-              id: string;
-              displayName: string;
-              score: number;
-              streak?: number;
-            };
-
-            entries.push({
-              playerId: item.playerId,
-              displayName: player.displayName || 'Player',
-              score: item.score,
-              streak: player.streak || 0,
-            });
-          } catch {
-            // Graceful fallback for corrupted JSON
-            entries.push({
-              playerId: item.playerId,
-              displayName: 'Player',
-              score: item.score,
-              streak: 0,
-            });
-          }
-        }
-      }
-
-      // Sort deterministically: score descending, then displayName ascending, then playerId ascending
-      entries.sort((a, b) => {
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
-        return (
-          a.displayName.localeCompare(b.displayName) ||
-          a.playerId.localeCompare(b.playerId)
-        );
-      });
-
-      // Assign ranks
-      const rankedLeaderboard = entries.map((entry, index) => ({
-        rank: index + 1,
-        playerId: entry.playerId,
-        displayName: entry.displayName,
-        score: entry.score,
-        streak: entry.streak,
-      }));
-
-      // Broadcast to room
-      this.server.to(roomCode).emit('LeaderboardUpdated', rankedLeaderboard);
-
-      this.logger.log(
-        `LeaderboardUpdated broadcasted for room ${roomCode} with ${rankedLeaderboard.length} entries`,
-      );
-    } catch (err) {
-      this.logger.error(
-        `Failed to broadcast leaderboard for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -855,6 +877,212 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         error: { code: 'INTERNAL_SERVER_ERROR', message: err.message },
       });
       throw err;
+    }
+  }
+
+  @SubscribeMessage('EndGame')
+  async handleEndGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { roomId: string },
+  ): Promise<void> {
+    if (!payload?.roomId) {
+      const err = new WsException('roomId is required');
+      client.emit('error', {
+        success: false,
+        error: { code: 'BAD_REQUEST', message: err.message },
+      });
+      throw err;
+    }
+
+    const clientData = client.data as {
+      user?: TokenPayload;
+      roomCode?: string;
+    };
+    const user = clientData.user;
+
+    // Only host can end game
+    if (!user || user.role !== 'host') {
+      const err = new WsException('Only the host can end the game');
+      client.emit('error', {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: err.message },
+      });
+      throw err;
+    }
+
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: { id: payload.roomId },
+      });
+
+      if (!room) {
+        const err = new WsException('Room does not exist');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      if (room.hostId !== user.sub) {
+        const err = new WsException('You are not the host of this room');
+        client.emit('error', {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: err.message },
+        });
+        throw err;
+      }
+
+      const roomCode = room.code.toUpperCase();
+      const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+
+      if (!roomMeta) {
+        const err = new WsException('Room metadata not found');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      // Check if game is not already finished
+      if (roomMeta.status === 'FINISHED') {
+        const err = new WsException('Game has already completed');
+        client.emit('error', {
+          success: false,
+          error: { code: 'GAME_ALREADY_FINISHED', message: err.message },
+        });
+        throw err;
+      }
+
+      await this.completeGame(roomCode, payload.roomId);
+    } catch (error) {
+      if (error instanceof WsException) throw error;
+
+      const message =
+        error instanceof Error ? error.message : 'Failed to end game';
+      const err = new WsException(message);
+      client.emit('error', {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: err.message },
+      });
+      throw err;
+    }
+  }
+
+  /**
+   * Finalizes the game status, broadcasts the results, and sets Redis state to expire.
+   */
+  async completeGame(roomCode: string, roomId: string): Promise<void> {
+    this.logger.log(`Finalizing game for room ${roomCode}`);
+
+    try {
+      // 1. Stop any active countdown timer
+      this.stopTimer(roomCode);
+
+      // 2. Fetch the current leaderboard state
+      const rawLeaderboard =
+        await this.redisRoomRepository.getLeaderboard(roomCode);
+      const playersMap = await this.redisRoomRepository.getPlayers(roomCode);
+
+      const entries: {
+        playerId: string;
+        displayName: string;
+        score: number;
+        streak: number;
+      }[] = [];
+
+      for (const item of rawLeaderboard) {
+        const playerJson = playersMap[item.playerId];
+        if (playerJson) {
+          try {
+            const player = JSON.parse(playerJson) as {
+              id: string;
+              displayName: string;
+              score: number;
+              streak?: number;
+            };
+
+            entries.push({
+              playerId: item.playerId,
+              displayName: player.displayName || 'Player',
+              score: item.score,
+              streak: player.streak || 0,
+            });
+          } catch {
+            entries.push({
+              playerId: item.playerId,
+              displayName: 'Player',
+              score: item.score,
+              streak: 0,
+            });
+          }
+        }
+      }
+
+      // Deterministic sort: score descending, then displayName ascending, then playerId ascending
+      entries.sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return (
+          a.displayName.localeCompare(b.displayName) ||
+          a.playerId.localeCompare(b.playerId)
+        );
+      });
+
+      const finalLeaderboard = entries.map((entry, index) => ({
+        rank: index + 1,
+        playerId: entry.playerId,
+        displayName: entry.displayName,
+        score: entry.score,
+        streak: entry.streak,
+      }));
+
+      // 3. Update room status to FINISHED in Redis metadata
+      await this.redisRoomRepository.updateRoomMetadata(roomCode, {
+        status: 'FINISHED',
+      });
+
+      // 4. Emit GameFinished event to all connected clients
+      this.server.to(roomCode).emit('GameFinished', {
+        finalRankings: finalLeaderboard,
+      });
+
+      // 5. Update room status to FINISHED in PostgreSQL
+      try {
+        await this.prisma.room.update({
+          where: { id: roomId },
+          data: { status: 'FINISHED' },
+        });
+      } catch (err) {
+        this.logger.error(
+          `Failed to update room status to FINISHED in Postgres: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+
+      // 6. Persist final scores of all participants to PostgreSQL Player model
+      for (const entry of finalLeaderboard) {
+        try {
+          await this.prisma.player.update({
+            where: { id: entry.playerId },
+            data: { score: entry.score },
+          });
+        } catch (err) {
+          this.logger.error(
+            `Failed to persist score for player ${entry.playerId} in Postgres: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+
+      // 7. Expire all room-related Redis keys after 5 minutes (300 seconds)
+      await this.redisRoomRepository.expireAllRoomKeys(roomCode, 300);
+
+      this.logger.log(`Successfully finalized game for room ${roomCode}`);
+    } catch (err) {
+      this.logger.error(
+        `Error completing game for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 

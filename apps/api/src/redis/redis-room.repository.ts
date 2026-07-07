@@ -319,4 +319,19 @@ export class RedisRoomRepository {
     }
     await pipeline.exec();
   }
+
+  /**
+   * Sets expiration TTL (seconds) on all Redis keys belonging to the room.
+   */
+  async expireAllRoomKeys(roomCode: string, seconds: number): Promise<void> {
+    const client = this.redisService.getClient();
+    const keys = await client.keys(`room:${roomCode.toUpperCase()}:*`);
+    if (keys.length > 0) {
+      const pipeline = client.pipeline();
+      for (const key of keys) {
+        pipeline.expire(key, seconds);
+      }
+      await pipeline.exec();
+    }
+  }
 }

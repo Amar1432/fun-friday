@@ -28,6 +28,9 @@ describe('GameGateway', () => {
     answer: {
       createMany: jest.fn(),
     },
+    player: {
+      update: jest.fn(),
+    },
   };
 
   const redisRoomRepositoryMock = {
@@ -47,6 +50,7 @@ describe('GameGateway', () => {
     getAnswers: jest.fn(),
     setAnswer: jest.fn(),
     updatePlayerScores: jest.fn(),
+    expireAllRoomKeys: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -3130,7 +3134,7 @@ describe('GameGateway', () => {
           streak: 2,
         },
         {
-          rank: 2,
+          rank: 1,
           playerId: 'p-2',
           displayName: 'Bob',
           score: 1500,
@@ -3172,6 +3176,124 @@ describe('GameGateway', () => {
           streak: 0,
         },
       ]);
+    });
+  });
+
+  /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-member-access */
+  describe('handleEndGame', () => {
+    let mockSocket: Socket;
+
+    beforeEach(() => {
+      mockSocket = {
+        data: {
+          user: { sub: 'host-id-abc', role: 'host' },
+          roomCode: 'ROOM12',
+        },
+        emit: jest.fn(),
+      } as unknown as Socket;
+    });
+
+    it('should throw error if roomId is missing', async () => {
+      await expect(
+        gateway.handleEndGame(mockSocket, {} as any),
+      ).rejects.toThrow(WsException);
+      expect(mockSocket.emit).toHaveBeenCalledWith('error', expect.any(Object));
+    });
+
+    it('should throw error if non-host attempts to end game', async () => {
+      mockSocket.data.user.role = 'player';
+      await expect(
+        gateway.handleEndGame(mockSocket, { roomId: 'room-uuid' }),
+      ).rejects.toThrow(WsException);
+      expect(mockSocket.emit).toHaveBeenCalledWith('error', expect.any(Object));
+    });
+
+    it('should complete the game if host and room are valid', async () => {
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-uuid',
+        code: 'ROOM12',
+        hostId: 'host-id-abc',
+      } as any);
+
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+      });
+
+      jest.spyOn(gateway, 'completeGame').mockResolvedValue();
+
+      await gateway.handleEndGame(mockSocket, { roomId: 'room-uuid' });
+
+      expect(gateway.completeGame).toHaveBeenCalledWith('ROOM12', 'room-uuid');
+    });
+
+    it('should throw error if game is already finished', async () => {
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-uuid',
+        code: 'ROOM12',
+        hostId: 'host-id-abc',
+      } as any);
+
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'FINISHED',
+      });
+
+      await expect(
+        gateway.handleEndGame(mockSocket, { roomId: 'room-uuid' }),
+      ).rejects.toThrow('Game has already completed');
+    });
+  });
+
+  describe('completeGame', () => {
+    it('should finalize game in Redis and Postgres, broadcast GameFinished, persist player scores, and expire keys', async () => {
+      const toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+      } as unknown as Server;
+
+      redisRoomRepositoryMock.getLeaderboard.mockResolvedValue([
+        { playerId: 'p-1', score: 2000 },
+      ]);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'p-1': '{"id":"p-1","displayName":"Player 1","score":2000}',
+      });
+
+      prismaMock.room.update.mockResolvedValue({} as any);
+      prismaMock.player.update.mockResolvedValue({} as any);
+
+      await gateway.completeGame('ROOM12', 'room-uuid');
+
+      // Updated Redis metadata
+      expect(redisRoomRepositoryMock.updateRoomMetadata).toHaveBeenCalledWith(
+        'ROOM12',
+        { status: 'FINISHED' },
+      );
+      // Emitted GameFinished
+      expect(toEmitMock).toHaveBeenCalledWith('GameFinished', {
+        finalRankings: [
+          {
+            rank: 1,
+            playerId: 'p-1',
+            displayName: 'Player 1',
+            score: 2000,
+            streak: 0,
+          },
+        ],
+      });
+      // Updated Postgres room status
+      expect(prismaMock.room.update).toHaveBeenCalledWith({
+        where: { id: 'room-uuid' },
+        data: { status: 'FINISHED' },
+      });
+      // Updated player scores in Postgres
+      expect(prismaMock.player.update).toHaveBeenCalledWith({
+        where: { id: 'p-1' },
+        data: { score: 2000 },
+      });
+      // Expired Redis keys
+      expect(redisRoomRepositoryMock.expireAllRoomKeys).toHaveBeenCalledWith(
+        'ROOM12',
+        300,
+      );
     });
   });
 });

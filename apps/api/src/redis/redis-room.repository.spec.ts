@@ -412,4 +412,38 @@ describe('RedisRoomRepository', () => {
       expect(mockPipeline.exec).toHaveBeenCalled();
     });
   });
+
+  describe('expireAllRoomKeys', () => {
+    it('should find all matching keys and set expiration TTL using pipeline', async () => {
+      (mockRedisClient.keys as jest.Mock).mockResolvedValue([
+        'room:ABCDEF:meta',
+        'room:ABCDEF:players',
+        'room:ABCDEF:leaderboard',
+      ]);
+
+      await repository.expireAllRoomKeys('ABCDEF', 300);
+
+      expect(mockRedisClient.keys).toHaveBeenCalledWith('room:ABCDEF:*');
+      expect(mockRedisClient.pipeline).toHaveBeenCalled();
+      expect(mockPipeline.expire).toHaveBeenCalledWith('room:ABCDEF:meta', 300);
+      expect(mockPipeline.expire).toHaveBeenCalledWith(
+        'room:ABCDEF:players',
+        300,
+      );
+      expect(mockPipeline.expire).toHaveBeenCalledWith(
+        'room:ABCDEF:leaderboard',
+        300,
+      );
+      expect(mockPipeline.exec).toHaveBeenCalled();
+    });
+
+    it('should do nothing if no matching keys are found', async () => {
+      (mockRedisClient.keys as jest.Mock).mockResolvedValue([]);
+
+      await repository.expireAllRoomKeys('ABCDEF', 300);
+
+      expect(mockRedisClient.keys).toHaveBeenCalledWith('room:ABCDEF:*');
+      expect(mockRedisClient.pipeline).not.toHaveBeenCalled();
+    });
+  });
 });
