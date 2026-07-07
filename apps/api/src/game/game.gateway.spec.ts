@@ -3098,4 +3098,80 @@ describe('GameGateway', () => {
       expect(call[0].skipDuplicates).toBe(true);
     });
   });
+
+  describe('broadcastLeaderboard', () => {
+    it('should build, sort deterministically, rank, and broadcast the leaderboard', async () => {
+      const toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+      } as unknown as Server;
+
+      redisRoomRepositoryMock.getLeaderboard.mockResolvedValue([
+        { playerId: 'p-3', score: 800 },
+        { playerId: 'p-1', score: 1500 },
+        { playerId: 'p-2', score: 1500 },
+      ]);
+
+      const playersMap = {
+        'p-1': '{"id":"p-1","displayName":"Alice","score":1500,"streak":2}',
+        'p-2': '{"id":"p-2","displayName":"Bob","score":1500,"streak":1}',
+        'p-3': '{"id":"p-3","displayName":"Charlie","score":800,"streak":0}',
+      };
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue(playersMap);
+
+      await gateway.broadcastLeaderboard('ROOM12');
+
+      expect(toEmitMock).toHaveBeenCalledWith('LeaderboardUpdated', [
+        {
+          rank: 1,
+          playerId: 'p-1',
+          displayName: 'Alice',
+          score: 1500,
+          streak: 2,
+        },
+        {
+          rank: 2,
+          playerId: 'p-2',
+          displayName: 'Bob',
+          score: 1500,
+          streak: 1,
+        },
+        {
+          rank: 3,
+          playerId: 'p-3',
+          displayName: 'Charlie',
+          score: 800,
+          streak: 0,
+        },
+      ]);
+    });
+
+    it('should handle corrupted player profiles gracefully', async () => {
+      const toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+      } as unknown as Server;
+
+      redisRoomRepositoryMock.getLeaderboard.mockResolvedValue([
+        { playerId: 'p-1', score: 500 },
+      ]);
+
+      const playersMap = {
+        'p-1': 'invalid-json',
+      };
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue(playersMap);
+
+      await gateway.broadcastLeaderboard('ROOM12');
+
+      expect(toEmitMock).toHaveBeenCalledWith('LeaderboardUpdated', [
+        {
+          rank: 1,
+          playerId: 'p-1',
+          displayName: 'Player',
+          score: 500,
+          streak: 0,
+        },
+      ]);
+    });
+  });
 });

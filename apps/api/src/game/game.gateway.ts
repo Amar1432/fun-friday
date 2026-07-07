@@ -473,6 +473,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         await this.persistRoundAnswers(roomCode, currentRoundId);
       }
 
+      // Step 8 — Broadcast updated leaderboard to all connected clients
+      await this.broadcastLeaderboard(roomCode);
+
       this.logger.log(
         `Round completed for room ${roomCode}. roundId=${currentRoundId ?? 'unknown'}, questionId=${currentQuestionId ?? 'unknown'}`,
       );
@@ -669,6 +672,86 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Non-fatal — Redis remains the source of truth during active gameplay
       this.logger.error(
         `Failed to persist round answers for round ${roundId} in room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  /**
+   * Fetches the current leaderboard from Redis, builds the ranked payload, and broadcasts it to the room.
+   */
+  async broadcastLeaderboard(roomCode: string): Promise<void> {
+    this.logger.log(`Broadcasting leaderboard for room ${roomCode}`);
+
+    try {
+      const rawLeaderboard =
+        await this.redisRoomRepository.getLeaderboard(roomCode);
+      const playersMap = await this.redisRoomRepository.getPlayers(roomCode);
+
+      const entries: {
+        playerId: string;
+        displayName: string;
+        score: number;
+        streak: number;
+      }[] = [];
+
+      for (const item of rawLeaderboard) {
+        const playerJson = playersMap[item.playerId];
+        if (playerJson) {
+          try {
+            const player = JSON.parse(playerJson) as {
+              id: string;
+              displayName: string;
+              score: number;
+              streak?: number;
+            };
+
+            entries.push({
+              playerId: item.playerId,
+              displayName: player.displayName || 'Player',
+              score: item.score,
+              streak: player.streak || 0,
+            });
+          } catch {
+            // Graceful fallback for corrupted JSON
+            entries.push({
+              playerId: item.playerId,
+              displayName: 'Player',
+              score: item.score,
+              streak: 0,
+            });
+          }
+        }
+      }
+
+      // Sort deterministically: score descending, then displayName ascending, then playerId ascending
+      entries.sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return (
+          a.displayName.localeCompare(b.displayName) ||
+          a.playerId.localeCompare(b.playerId)
+        );
+      });
+
+      // Assign ranks
+      const rankedLeaderboard = entries.map((entry, index) => ({
+        rank: index + 1,
+        playerId: entry.playerId,
+        displayName: entry.displayName,
+        score: entry.score,
+        streak: entry.streak,
+      }));
+
+      // Broadcast to room
+      this.server.to(roomCode).emit('LeaderboardUpdated', rankedLeaderboard);
+
+      this.logger.log(
+        `LeaderboardUpdated broadcasted for room ${roomCode} with ${rankedLeaderboard.length} entries`,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Failed to broadcast leaderboard for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
