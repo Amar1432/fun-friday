@@ -39,6 +39,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   readonly disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
+  /**
+   * Tracks active game round countdown timers per room code.
+   */
+  readonly activeTimers = new Map<string, ReturnType<typeof setInterval>>();
+
   constructor(
     private readonly tokenService: TokenService,
     private readonly prisma: PrismaService,
@@ -138,6 +143,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Cleanup empty room
       if (roomStatePayload.playerCount === 0) {
         await this.redisRoomRepository.deleteRoomState(roomCode);
+        this.stopTimer(roomCode);
         this.logger.log(`Room ${roomCode} is now empty and has been deleted`);
       } else {
         this.server.to(roomCode).emit('RoomStateUpdated', roomStatePayload);
@@ -328,9 +334,64 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       difficulty: question.difficulty,
     });
 
+    // Start the countdown timer engine automatically
+    this.startTimer(roomCode, 20);
+
     this.logger.log(
       `Round started in room ${roomCode}. Index=${roundIndex}, roundId=${round.id}, questionId=${question.id}`,
     );
+  }
+
+  /**
+   * Starts the countdown timer for the specified room.
+   */
+  startTimer(roomCode: string, durationSeconds: number): void {
+    // Ensure any existing timer is stopped first
+    this.stopTimer(roomCode);
+
+    const startTime = Date.now();
+
+    const interval = setInterval(() => {
+      void (async () => {
+        try {
+          const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+          const remaining = Math.max(0, durationSeconds - elapsedSeconds);
+
+          // Update timer state in Redis
+          await this.redisRoomRepository.updateRoomMetadata(roomCode, {
+            timerRemaining: remaining.toString(),
+          });
+
+          // Broadcast TimerTick to all connected clients in the room
+          this.server.to(roomCode).emit('TimerTick', {
+            secondsRemaining: remaining,
+          });
+
+          if (remaining <= 0) {
+            this.stopTimer(roomCode);
+            this.logger.log(`Timer expired for room ${roomCode}`);
+          }
+        } catch (err) {
+          this.logger.error(
+            `Error in timer tick for room ${roomCode}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      })();
+    }, 1000);
+
+    this.activeTimers.set(roomCode, interval);
+  }
+
+  /**
+   * Stops and clears the countdown timer for the specified room.
+   */
+  stopTimer(roomCode: string): void {
+    const interval = this.activeTimers.get(roomCode);
+    if (interval) {
+      clearInterval(interval);
+      this.activeTimers.delete(roomCode);
+      this.logger.log(`Timer stopped for room ${roomCode}`);
+    }
   }
 
   @SubscribeMessage('NextRound')
@@ -947,6 +1008,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         if (remainingCount === 0) {
           await this.redisRoomRepository.deleteRoomState(roomCode);
+          this.stopTimer(roomCode);
         } else {
           const roomStatePayload = await this.buildRoomStatePayload(
             roomCode,

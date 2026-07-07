@@ -1792,6 +1792,7 @@ describe('GameGateway', () => {
         }),
       };
       gateway.server = mockServer as unknown as Server;
+      jest.spyOn(gateway, 'startTimer').mockImplementation(() => {});
     });
 
     it('should reject when payload is missing fields', async () => {
@@ -2088,6 +2089,7 @@ describe('GameGateway', () => {
       gateway.server = {
         to: jest.fn().mockReturnValue({ emit: toEmitMock }),
       } as unknown as Server;
+      jest.spyOn(gateway, 'startTimer').mockImplementation(() => {});
     });
 
     it('should throw if room metadata is not found', async () => {
@@ -2199,6 +2201,7 @@ describe('GameGateway', () => {
       gateway.server = {
         to: jest.fn().mockReturnValue({ emit: toEmitMock }),
       } as unknown as Server;
+      jest.spyOn(gateway, 'startTimer').mockImplementation(() => {});
     });
 
     it('should reject if roomId is missing', async () => {
@@ -2319,6 +2322,77 @@ describe('GameGateway', () => {
         timeLimitSeconds: 20,
         difficulty: 'MEDIUM',
       });
+    });
+  });
+
+  describe('Timer Engine', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should start timer, store interval reference, update Redis and emit TimerTick each second', async () => {
+      const toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+      } as unknown as Server;
+
+      // Mock updateRoomMetadata to resolve immediately
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+
+      // Start the timer with 5 seconds duration
+      gateway.startTimer('ROOM12', 5);
+
+      // Check the interval is saved
+      expect(gateway.activeTimers.has('ROOM12')).toBe(true);
+
+      // Fast-forward 1 second
+      await jest.advanceTimersByTimeAsync(1000);
+
+      // Verify Redis update and socket broadcast
+      expect(redisRoomRepositoryMock.updateRoomMetadata).toHaveBeenCalledWith(
+        'ROOM12',
+        expect.objectContaining({ timerRemaining: '4' }),
+      );
+      expect(toEmitMock).toHaveBeenCalledWith('TimerTick', {
+        secondsRemaining: 4,
+      });
+
+      // Fast-forward another 4 seconds (total 5)
+      await jest.advanceTimersByTimeAsync(4000);
+
+      // Verify timer is stopped and removed at expiration
+      expect(gateway.activeTimers.has('ROOM12')).toBe(false);
+    });
+
+    it('should clear existing interval when starting a new timer for the same room', () => {
+      const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+
+      gateway.startTimer('ROOM12', 5);
+      const firstInterval = gateway.activeTimers.get('ROOM12');
+      expect(firstInterval).toBeDefined();
+
+      gateway.startTimer('ROOM12', 10);
+      expect(clearIntervalSpy).toHaveBeenCalledWith(firstInterval);
+
+      clearIntervalSpy.mockRestore();
+    });
+
+    it('should stop timer and clear interval on stopTimer', () => {
+      const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+
+      gateway.startTimer('ROOM12', 5);
+      const interval = gateway.activeTimers.get('ROOM12');
+      expect(interval).toBeDefined();
+
+      gateway.stopTimer('ROOM12');
+      expect(clearIntervalSpy).toHaveBeenCalledWith(interval);
+      expect(gateway.activeTimers.has('ROOM12')).toBe(false);
+
+      clearIntervalSpy.mockRestore();
     });
   });
 });
