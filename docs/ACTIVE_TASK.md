@@ -1,15 +1,14 @@
 # Active Task
 
-## FFH-054: Implement Timer Engine
+## FFH-055: Implement TimerTick Broadcast
 
 ### Description
 
-Create the server-side countdown system.
+Broadcast timer updates during active rounds.
 
 ### Acceptance Criteria
 
-- Timer begins automatically when round starts.
-- Timer executes on the server only.
-- Timer state is stored in Redis.
-- Timer accuracy remains consistent.
-- Timer stops correctly at expiration.
+- Tick interval matches ROOM_PROTOCOL.md.
+- Remaining time is synchronized.
+- All connected clients receive updates.
+- Broadcasts stop immediately after timer completion.

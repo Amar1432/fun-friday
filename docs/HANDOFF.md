@@ -2,6 +2,25 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 16:08 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-054
+
+- **What Changed:**
+  - Implemented the server-side countdown Timer Engine in `GameGateway`:
+    - Declared `activeTimers` Map to track running interval instances keyed by room code.
+    - Added `startTimer` method that starts a `setInterval` ticking every 1s, recalculating remaining duration based on elapsed wall-clock time (`Date.now() - startTime`) to avoid JS drift, writes remaining seconds to Redis `timerRemaining` metadata, and broadcasts `TimerTick` (addressing FFH-055 partially/fully for real-time updates).
+    - Added `stopTimer` method that halts the interval, clears the reference, and handles round end transitions safely.
+  - Linked `startTimer` automatically at the end of `startRound`.
+  - Integrated `stopTimer` in `executeCleanup` and `handleLeaveRoom` to prevent orphan intervals when an active room becomes empty and is deleted.
+  - Wrote comprehensive unit tests in `game.gateway.spec.ts` using Jest fake timers (`jest.useFakeTimers()`) to verify interval setup, Redis state persistence, timer accuracy, duplicate prevention, and clean up at expiration.
+  - Mocked `startTimer` in other WebSocket tests (`handleStartGame`, `handleNextRound`, `startRound`) to prevent real intervals from running in test backgrounds (eliminating Jest open handles warning).
+  - All 172 unit tests passed, type checking and lint checks completed successfully.
+- **Why:** To satisfy all acceptance criteria for FFH-054: server-side countdown execution, storing timer state in Redis, drift-free wall-clock accuracy, and automatic start/stop hooks.
+- **What's Next:** Start `FFH-055: Implement TimerTick Broadcast`.
+
+---
+
 **Date/Time:** 2026-07-07 16:04 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-053
