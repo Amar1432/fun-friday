@@ -2,6 +2,18 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 10:50 (Local Time)
+**Agent:** Antigravity (Claude Opus 4.6)
+**Tickets:** FFH-026, FFH-027, FFH-028
+
+- **What Changed:**
+  - **FFH-026 & FFH-027 (verified as already done):** `AuthService.findOrCreateUser()` already persists host users on first login, reuses existing users, handles race conditions (P2002), and email uniqueness is enforced via the Prisma schema `@unique` constraint. `TokenPayload` already contains `sub` (User ID), `email`, and `name`; expiration is configurable via `JWT_EXPIRATION`; signing/verification are in `TokenService`. Both tickets were already fully implemented as part of FFH-024's SSO login flow.
+  - **FFH-028 (new code):** Created `JwtAuthGuard` at `apps/api/src/auth/jwt-auth.guard.ts` implementing `CanActivate`. Extracts Bearer token from the `Authorization` header, verifies it via `TokenService.verifyToken()`, and attaches the decoded `TokenPayload` to the request. Created `CurrentUser` parameter decorator at `apps/api/src/auth/current-user.decorator.ts` for ergonomic user extraction. Registered `JwtAuthGuard` as a provider and export in `AuthModule`. Wrote 7 unit tests covering valid token, missing header, empty header, wrong scheme, missing token value, and expired token scenarios.
+- **Why:** To complete the Epic 5 authentication infrastructure, enabling protected endpoints.
+- **What's Next:** Start Epic 6 — Frontend Authentication (FFH-029: Build Login Screen).
+
+---
+
 **Date/Time:** 2026-07-07 10:45 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-027

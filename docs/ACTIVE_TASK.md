@@ -1,19 +1,17 @@
 # Active Task
 
-## FFH-027: Issue Application JWT
+## FFH-028: Protect Authenticated Endpoints ✅
 
 ### Description
 
-Generate application access token.
+Create JWT guard.
 
 ### Acceptance Criteria
 
-- [x] JWT contains:
-  - [x] User ID (sub)
-  - [x] Email
-  - [x] Name
-- [x] Expiration configured.
-- [x] Signing verified.
+- [x] Guard implemented.
+- [x] Invalid token rejected.
+- [x] Missing token rejected.
+- [x] Valid token accepted.
 
 ---
 
