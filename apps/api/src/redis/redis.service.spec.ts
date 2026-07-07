@@ -9,6 +9,9 @@ jest.mock('ioredis', () => {
     status = 'connect';
     ping = jest.fn().mockResolvedValue('PONG');
     quit = jest.fn().mockResolvedValue('OK');
+    get = jest.fn().mockResolvedValue(null);
+    set = jest.fn().mockResolvedValue('OK');
+    del = jest.fn().mockResolvedValue(1);
     disconnect = jest.fn();
     on = jest
       .fn()
@@ -102,5 +105,32 @@ describe('RedisService', () => {
     );
     const healthy = await service.isHealthy();
     expect(healthy).toBe(false);
+  });
+
+  it('should call get on the redis client', async () => {
+    (mockRedisInstance.get as jest.Mock).mockResolvedValueOnce('value');
+    const result = await service.get('key');
+    expect(result).toBe('value');
+    expect(mockRedisInstance.get).toHaveBeenCalledWith('key');
+  });
+
+  it('should call set on the redis client without TTL', async () => {
+    await service.set('key', 'value');
+    expect(mockRedisInstance.set).toHaveBeenCalledWith('key', 'value');
+  });
+
+  it('should call set on the redis client with TTL', async () => {
+    await service.set('key', 'value', 60);
+    expect(mockRedisInstance.set).toHaveBeenCalledWith(
+      'key',
+      'value',
+      'EX',
+      60,
+    );
+  });
+
+  it('should call del on the redis client', async () => {
+    await service.del('key');
+    expect(mockRedisInstance.del).toHaveBeenCalledWith('key');
   });
 });

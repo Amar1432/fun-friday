@@ -1,14 +1,24 @@
-# Active Task
+# Active Tasks
 
-**Ticket:** FFH-038
-**Title:** Create Redis Service
+## Epic 9 — Socket.IO Foundation
 
-## Objective
+## FFH-041: Configure Socket.IO Gateway
 
-Extend `RedisService` to support standard read, write, delete, and expiration operations for application-wide usage.
+- [ ] Gateway initializes successfully.
+- [ ] Namespace configuration matches project architecture.
+- [ ] CORS configuration matches frontend requirements.
+- [ ] Client connections are accepted.
+- [ ] Client disconnections are detected.
+- [ ] Gateway startup is logged.
 
-## Execution Requirements
+## FFH-042: Configure Socket Authentication
 
-1. **Operations Support:** Add strongly-typed helper methods for standard Redis operations (e.g., `set`, `get`, `del`, `expire`, etc.) on the Redis client.
-2. **Lifecycle and Connection Management:** Maintain the singleton connection and ensure other modules use this service instead of creating independent connections.
-3. **Unit Tests:** Add comprehensive unit tests in `redis.service.spec.ts` covering these new operations.
+- [ ] Host JWT validation is supported.
+- [ ] Guest JWT validation is supported.
+- [ ] Invalid tokens are rejected.
+- [ ] Expired tokens are rejected.
+- [ ] Authenticated identity is available throughout the socket lifecycle.
+
+## FFH-043: Implement Socket Event Logging
+
+- [ ] Structured logging of all socket events.

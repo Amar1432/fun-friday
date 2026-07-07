@@ -2,6 +2,20 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 11:55 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Tickets:** FFH-038, FFH-039, FFH-040
+
+- **What Changed:**
+  - **FFH-038 (Redis Service Helpers):** Extended `RedisService` with strongly-typed `get`, `set` (supporting optional TTL), and `del` wrapper methods to abstract client-specific calls. Updated `redis.service.spec.ts` unit tests to achieve 100% coverage.
+  - **FFH-039 (Redis State Schema):** Created `docs/REDIS_SCHEMA.md` to define and document the Redis key spaces (`room:{roomCode}:meta`, `room:{roomCode}:players`, `room:{roomCode}:leaderboard`, and `room:{roomCode}:answers:{roundId}`), serialization conventions, default expirations (24h/1h), and concurrency/atomic operation rules.
+  - **FFH-040 (Redis Room Repository):** Implemented `RedisRoomRepository` in `apps/api/src/redis/redis-room.repository.ts` as a clean data access layer for active game room states (metadata, players, leaderboards, and answer tracking). Wrote comprehensive unit tests in `redis-room.repository.spec.ts` covering pipeline executions, sorted sets (zadd/zrevrange), hashes (hset/hget/hgetall/hdel), and metadata increments. Expose repository in `RedisModule`.
+  - **Verification:** All 80 backend unit tests pass successfully. Code is fully type-safe and lint-clean.
+- **Why:** To finish Epic 8 (Redis Infrastructure) and establish a solid, type-safe data access layer for active game sessions before implementing WebSockets.
+- **What's Next:** Start Epic 9 — Socket.IO Foundation (FFH-041: Configure Socket.IO Gateway).
+
+---
+
 **Date/Time:** 2026-07-07 11:43 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-037
