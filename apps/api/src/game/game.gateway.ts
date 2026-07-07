@@ -263,6 +263,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         totalRounds,
       });
 
+      // Start the first round (round index 0)
+      await this.startRound(roomCode, 0);
+
       this.logger.log(
         `Game started in room ${roomCode} by host ${user.sub}. gameId=${payload.gameId}, totalRounds=${totalRounds}`,
       );
@@ -271,6 +274,158 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const message =
         error instanceof Error ? error.message : 'Failed to start game';
+      const err = new WsException(message);
+      client.emit('error', {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: err.message },
+      });
+      throw err;
+    }
+  }
+
+  /**
+   * Initializes and broadcasts a new round for the given room.
+   */
+  async startRound(roomCode: string, roundIndex: number): Promise<void> {
+    const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+    if (!roomMeta) {
+      throw new WsException('Room metadata not found');
+    }
+
+    const question = await this.redisRoomRepository.getQuestion(
+      roomCode,
+      roundIndex,
+    );
+    if (!question) {
+      throw new WsException('Question not found for this round');
+    }
+
+    // Persist new round in PostgreSQL
+    const round = await this.prisma.round.create({
+      data: {
+        roomId: roomMeta.id,
+        questionId: question.id,
+      },
+    });
+
+    // Update room state in Redis metadata
+    await this.redisRoomRepository.updateRoomMetadata(roomCode, {
+      currentRoundIndex: roundIndex.toString(),
+      currentRoundId: round.id,
+      currentQuestionId: question.id,
+      questionStartedAt: new Date().toISOString(),
+      timerDuration: '20', // Default 20 seconds allowed response duration
+      timerRemaining: '20',
+    });
+
+    // Broadcast QuestionStarted to all connected clients in the room
+    this.server.to(roomCode).emit('QuestionStarted', {
+      roundNumber: roundIndex + 1,
+      questionId: question.id,
+      prompt: question.prompt,
+      metadata: question.metadata,
+      timeLimitSeconds: 20,
+      difficulty: question.difficulty,
+    });
+
+    this.logger.log(
+      `Round started in room ${roomCode}. Index=${roundIndex}, roundId=${round.id}, questionId=${question.id}`,
+    );
+  }
+
+  @SubscribeMessage('NextRound')
+  async handleNextRound(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { roomId: string },
+  ): Promise<void> {
+    if (!payload?.roomId) {
+      const err = new WsException('roomId is required');
+      client.emit('error', {
+        success: false,
+        error: { code: 'BAD_REQUEST', message: err.message },
+      });
+      throw err;
+    }
+
+    const clientData = client.data as {
+      user?: TokenPayload;
+      roomCode?: string;
+    };
+    const user = clientData.user;
+
+    // Only host can start next round
+    if (!user || user.role !== 'host') {
+      const err = new WsException('Only the host can advance the round');
+      client.emit('error', {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: err.message },
+      });
+      throw err;
+    }
+
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: { id: payload.roomId },
+      });
+
+      if (!room) {
+        const err = new WsException('Room does not exist');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      if (room.hostId !== user.sub) {
+        const err = new WsException('You are not the host of this room');
+        client.emit('error', {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: err.message },
+        });
+        throw err;
+      }
+
+      const roomCode = room.code.toUpperCase();
+      const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+
+      if (!roomMeta) {
+        const err = new WsException('Room metadata not found');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      if (roomMeta.status !== 'IN_PROGRESS') {
+        const err = new WsException('Game is not in progress');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_IN_PROGRESS', message: err.message },
+        });
+        throw err;
+      }
+
+      const currentRoundIndex = parseInt(roomMeta.currentRoundIndex || '0', 10);
+      const totalRounds = parseInt(roomMeta.totalRounds || '0', 10);
+      const nextRoundIndex = currentRoundIndex + 1;
+
+      if (nextRoundIndex >= totalRounds) {
+        const err = new WsException('No more rounds in this game');
+        client.emit('error', {
+          success: false,
+          error: { code: 'NO_MORE_ROUNDS', message: err.message },
+        });
+        throw err;
+      }
+
+      await this.startRound(roomCode, nextRoundIndex);
+    } catch (error) {
+      if (error instanceof WsException) throw error;
+
+      const message =
+        error instanceof Error ? error.message : 'Failed to advance round';
       const err = new WsException(message);
       client.emit('error', {
         success: false,
