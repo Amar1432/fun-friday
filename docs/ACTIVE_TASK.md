@@ -1,16 +1,19 @@
 # Active Task
 
-## FFH-051: Implement StartGame Event
+## FFH-053: Implement QuestionStarted Event
 
 ### Description
 
-Implement the StartGame event.
+Broadcast new round information.
 
 ### Acceptance Criteria
 
-- Only host can start game.
-- Preconditions are validated.
-- Room status changes appropriately.
-- Initial game state is created in Redis.
-- First round initialization begins.
-- Clients receive protocol-compliant event.
+Players receive:
+
+- Round number
+- Question identifier
+- Prompt
+- Metadata
+- Allowed response duration
+
+Correct answer is never included.

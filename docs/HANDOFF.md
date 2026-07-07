@@ -2,6 +2,47 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 16:01 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-052
+
+- **What Changed:**
+  - Extended `RedisRoomRepository` with new methods:
+    - `loadQuestions` to store questions inside Redis Hash `room:{roomCode}:questions` with their 0-based index. Prevents duplicate question loading by checking key existence first. Sets 24h TTL.
+    - `getQuestion` to retrieve a parsed question for a given round index.
+    - `hasQuestions` to check if a room's questions are loaded in Redis.
+  - Declared `RedisQuestion` interface for type safety, eliminating lint rules warnings (no-unsafe-assignment / no-unsafe-return).
+  - Modified `handleStartGame` in `GameGateway` to fetch game questions from PostgreSQL (ordered by ID ascending) and load them into Redis using `redisRoomRepository.loadQuestions` before room status transitions to `IN_PROGRESS` and metadata is updated.
+  - Added unit tests in `redis-room.repository.spec.ts` for all new repository methods.
+  - Added unit tests in `game.gateway.spec.ts` to assert that questions are fetched, loaded, and duplicate loading is handled gracefully.
+  - Verified codebase functionality, linting, and type checking; all 159 tests passed.
+- **Why:** To satisfy all acceptance criteria for FFH-052: load questions from PostgreSQL, order them deterministically, store them on server-side Redis with required runtime metadata, and prevent duplicate loading.
+- **What's Next:** Start `FFH-053: Implement QuestionStarted Event`.
+
+---
+
+**Date/Time:** 2026-07-07 15:52 (Local Time)
+**Agent:** Kiro
+**Ticket:** FFH-051
+
+- **What Changed:**
+  - Implemented `handleStartGame` WebSocket handler in `apps/api/src/game/game.gateway.ts` for the `StartGame` event with payload `{ roomId: string, gameId: string }`.
+  - Enforces host-only access: rejects unauthenticated sockets and non-host roles with `UNAUTHORIZED`.
+  - Verifies the authenticated host owns the room (`room.hostId === user.sub`); returns `UNAUTHORIZED` if not.
+  - Delegates all 5 precondition checks to `validateGameStart`; emits the returned failure code directly if validation fails.
+  - On success:
+    - Updates room status to `IN_PROGRESS` in PostgreSQL via `prisma.room.update`.
+    - Writes `{ status: 'IN_PROGRESS', gameId, totalRounds, currentRoundIndex: '0' }` to Redis metadata via `updateRoomMetadata`.
+    - Emits `GameStarted { gameId, totalRounds }` to all clients in the room.
+  - Added `room.update` mock to `prismaMock` in `game.gateway.spec.ts`.
+  - Wrote 8 unit tests: missing payload, non-host, unauthenticated, room not found, wrong host, precondition failure (NOT_ENOUGH_PLAYERS), and full success path verifying Prisma update, Redis write, and GameStarted broadcast.
+  - Verified with `pnpm --dir apps/api test` — all 151 tests pass across 14 test suites.
+  - Committed changes (commit `5567cc2`) with pre-commit hooks passing.
+- **Why:** To complete FFH-051 by implementing the StartGame event handler that transitions the room into active gameplay.
+- **What's Next:** Start `FFH-052: Load Question Set into Redis`.
+
+---
+
 **Date/Time:** 2026-07-07 15:46 (Local Time)
 **Agent:** Kiro
 **Ticket:** FFH-050
