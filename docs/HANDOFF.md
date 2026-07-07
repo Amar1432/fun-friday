@@ -2,6 +2,21 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 16:09 (Local Time)
+**Agent:** Antigravity
+**Ticket:** FFH-055
+
+- **What Changed:**
+  - Implemented the `TimerTick` event broadcast inside the countdown loop:
+    - On every 1s interval tick, `TimerTick { secondsRemaining: number }` is broadcasted to the entire room code socket namespace.
+    - Remaining duration calculations are stored in Redis `timerRemaining` on each tick to synchronize transient timer state.
+    - Verified that ticks stop immediately upon timer completion by calling `stopTimer` (clearing and deleting interval) when `remaining <= 0`.
+  - Added unit test assertions inside `GameGateway` spec verifying correct `TimerTick` event format and execution behavior using fake timers.
+- **Why:** To satisfy all acceptance criteria for FFH-055: real-time synchronized timer tick broadcasts to all clients at 1s intervals, and proper teardown on expiration.
+- **What's Next:** Start `FFH-056: Implement Round Completion`.
+
+---
+
 **Date/Time:** 2026-07-07 16:08 (Local Time)
 **Agent:** Antigravity
 **Ticket:** FFH-054

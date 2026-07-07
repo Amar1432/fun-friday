@@ -1,14 +1,14 @@
 # Active Task
 
-## FFH-055: Implement TimerTick Broadcast
+## FFH-056: Implement Round Completion
 
 ### Description
 
-Broadcast timer updates during active rounds.
+Complete a round after timer expiration.
 
 ### Acceptance Criteria
 
-- Tick interval matches ROOM_PROTOCOL.md.
-- Remaining time is synchronized.
-- All connected clients receive updates.
-- Broadcasts stop immediately after timer completion.
+- Timer stops.
+- Late answers are rejected.
+- Final scoring begins.
+- Next game state transition is triggered.
