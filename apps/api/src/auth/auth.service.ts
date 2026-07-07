@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  ConflictException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { TokenService, TokenPayload } from './token.service';
 import { GoogleSsoProvider } from './providers/google-sso.provider';
@@ -47,6 +53,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
+      role: 'host',
     };
     const accessToken = await this.tokenService.signToken(payload);
 
@@ -61,6 +68,73 @@ export class AuthService {
         name: user.name,
         email: user.email,
       },
+    };
+  }
+
+  async registerGuest(
+    roomCode: string,
+    displayName: string,
+  ): Promise<{
+    player: { id: string; displayName: string };
+    room: { id: string; code: string };
+    accessToken: string;
+    expiresIn: number;
+  }> {
+    const code = roomCode.toUpperCase();
+    const room = await this.prisma.room.findUnique({
+      where: { code },
+    });
+
+    if (!room) {
+      throw new NotFoundException('Room not found');
+    }
+
+    if (room.status !== 'LOBBY') {
+      throw new UnprocessableEntityException(
+        'Room is no longer accepting players',
+      );
+    }
+
+    // Check duplicate name
+    const existingPlayer = await this.prisma.player.findFirst({
+      where: {
+        roomId: room.id,
+        displayName,
+      },
+    });
+
+    if (existingPlayer) {
+      throw new ConflictException('Display name already exists');
+    }
+
+    const player = await this.prisma.player.create({
+      data: {
+        roomId: room.id,
+        displayName,
+      },
+    });
+
+    const payload: TokenPayload = {
+      sub: player.id,
+      name: player.displayName,
+      role: 'guest',
+      roomId: room.id,
+    };
+
+    const accessToken = await this.tokenService.signToken(payload);
+    const expiresIn = 14400; // 4 hours in seconds
+
+    return {
+      player: {
+        id: player.id,
+        displayName: player.displayName,
+      },
+      room: {
+        id: room.id,
+        code: room.code,
+      },
+      accessToken,
+      expiresIn,
     };
   }
 

@@ -2,6 +2,20 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-07 12:05 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Tickets:** FFH-041, FFH-042, FFH-043
+
+- **What Changed:**
+  - **FFH-041 (Socket.IO Gateway):** Created `GameGateway` in `apps/api/src/game/game.gateway.ts` mapping root Socket.IO WebSocket handlers with full CORS configuration. Declared and exported in the new `GameModule`, and registered it in `AppModule`.
+  - **FFH-042 (Socket Authentication):** Implemented connection-handshake validation in `GameGateway` supporting both Host and Guest JWT verification via `TokenService`. Extends `TokenPayload` interface to support role and roomId parameters. Implemented guest registration controller handler `POST /auth/guest` along with strict `GuestLoginDto` and unit tests in `auth.service.spec.ts` and `auth.controller.spec.ts`.
+  - **FFH-043 (Socket Logging):** Implemented `SocketLoggingInterceptor` in `apps/api/src/common/interceptors/socket-logging.interceptor.ts` utilizing NestJS `wsContext.getPattern()` to log event performance, socket identifiers, player parameters, and room codes safely without revealing payloads.
+  - **Verification:** Unit tests written for both the interceptor and gateway, achieving 100% code coverage. All 97 backend unit tests pass successfully. Full workspace build, typecheck, and lint pass without warnings.
+- **Why:** To complete Epic 9 (Socket.IO Foundation) and establish secure, structured real-time communication pathways for hosts and players.
+- **What's Next:** Start Epic 10 — Room Lifecycle (FFH-044: Implement JoinRoom Event).
+
+---
+
 **Date/Time:** 2026-07-07 11:55 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Tickets:** FFH-038, FFH-039, FFH-040

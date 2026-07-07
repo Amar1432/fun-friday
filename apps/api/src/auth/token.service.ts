@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 export interface TokenPayload {
-  sub: string; // User ID
-  email: string;
+  sub: string; // User ID or Player ID
+  email?: string; // Only present for host
   name: string;
+  role?: 'host' | 'guest';
+  roomId?: string; // Room ID for guests
 }
 
 @Injectable()

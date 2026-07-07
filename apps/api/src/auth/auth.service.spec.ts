@@ -4,7 +4,12 @@ import { PrismaService } from '../database/prisma.service';
 import { TokenService } from './token.service';
 import { GoogleSsoProvider } from './providers/google-sso.provider';
 import { MicrosoftSsoProvider } from './providers/microsoft-sso.provider';
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  NotFoundException,
+  ConflictException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -13,6 +18,10 @@ describe('AuthService', () => {
   const signTokenMock = jest.fn();
   const verifyGoogleIdTokenMock = jest.fn();
   const verifyMicrosoftIdTokenMock = jest.fn();
+
+  const roomFindUniqueMock = jest.fn();
+  const playerFindFirstMock = jest.fn();
+  const playerCreateMock = jest.fn();
 
   beforeEach(async () => {
     process.env.JWT_EXPIRATION = '24h';
@@ -26,6 +35,13 @@ describe('AuthService', () => {
             user: {
               findUnique: findUniqueMock,
               create: createMock,
+            },
+            room: {
+              findUnique: roomFindUniqueMock,
+            },
+            player: {
+              findFirst: playerFindFirstMock,
+              create: playerCreateMock,
             },
           },
         },
@@ -165,6 +181,86 @@ describe('AuthService', () => {
     it('should throw for unsupported provider', async () => {
       await expect(service.ssoLogin('unsupported', 'token')).rejects.toThrow(
         UnauthorizedException,
+      );
+    });
+  });
+
+  describe('registerGuest', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should register guest successfully when room exists in LOBBY status and name is unique', async () => {
+      roomFindUniqueMock.mockResolvedValue({
+        id: 'room-123',
+        code: 'AB12CD',
+        status: 'LOBBY',
+      });
+      playerFindFirstMock.mockResolvedValue(null);
+      playerCreateMock.mockResolvedValue({
+        id: 'player-123',
+        displayName: 'Alex',
+      });
+      signTokenMock.mockResolvedValue('guest-jwt-token');
+
+      const result = await service.registerGuest('AB12CD', 'Alex');
+
+      expect(roomFindUniqueMock).toHaveBeenCalledWith({
+        where: { code: 'AB12CD' },
+      });
+      expect(playerFindFirstMock).toHaveBeenCalledWith({
+        where: { roomId: 'room-123', displayName: 'Alex' },
+      });
+      expect(playerCreateMock).toHaveBeenCalledWith({
+        data: { roomId: 'room-123', displayName: 'Alex' },
+      });
+      expect(signTokenMock).toHaveBeenCalledWith({
+        sub: 'player-123',
+        name: 'Alex',
+        role: 'guest',
+        roomId: 'room-123',
+      });
+      expect(result).toEqual({
+        player: { id: 'player-123', displayName: 'Alex' },
+        room: { id: 'room-123', code: 'AB12CD' },
+        accessToken: 'guest-jwt-token',
+        expiresIn: 14400,
+      });
+    });
+
+    it('should throw NotFoundException if room does not exist', async () => {
+      roomFindUniqueMock.mockResolvedValue(null);
+
+      await expect(service.registerGuest('INVALID', 'Alex')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should throw UnprocessableEntityException if room is not in LOBBY status', async () => {
+      roomFindUniqueMock.mockResolvedValue({
+        id: 'room-123',
+        code: 'AB12CD',
+        status: 'IN_PROGRESS',
+      });
+
+      await expect(service.registerGuest('AB12CD', 'Alex')).rejects.toThrow(
+        UnprocessableEntityException,
+      );
+    });
+
+    it('should throw ConflictException if player display name already exists in room', async () => {
+      roomFindUniqueMock.mockResolvedValue({
+        id: 'room-123',
+        code: 'AB12CD',
+        status: 'LOBBY',
+      });
+      playerFindFirstMock.mockResolvedValue({
+        id: 'existing-player',
+        displayName: 'Alex',
+      });
+
+      await expect(service.registerGuest('AB12CD', 'Alex')).rejects.toThrow(
+        ConflictException,
       );
     });
   });
