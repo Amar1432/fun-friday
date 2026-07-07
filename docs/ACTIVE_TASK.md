@@ -1,20 +1,24 @@
 # Active Task
 
-## FFH-066: Configure Socket.IO Client
+## FFH-070: Configure Global State Management
 
 ### Description
 
-Integrate the Socket.IO client into the Next.js application.
+Create the application's global real-time state layer.
 
 ### Acceptance Criteria
 
-- [x] Socket.IO client dependency is installed.
-- [x] Connection URL is configurable through environment variables.
-- [x] Connection is established only when required.
-- [x] Automatic reconnection is enabled.
-- [x] Connection status is exposed to the application.
-- [x] Development and production configurations are supported.
+- [ ] Global state includes:
+  - [ ] Current user
+  - [ ] Current room
+  - [ ] Connected players
+  - [ ] Game status
+  - [ ] Current round
+  - [ ] Timer
+  - [ ] Leaderboard
+  - [ ] Connection status
+- [ ] State is accessible from any page.
 
 ### Status
 
-Completed. All tests are passing successfully. Ready for handoff.
+In Progress.
