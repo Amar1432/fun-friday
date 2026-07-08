@@ -4,11 +4,28 @@ import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { config } from '@/lib/config';
+import { RoomInformationPanel } from '@/components/room-information-panel';
+import { useGameStore } from '@/lib/store/use-game-store';
 
 export default function LobbyPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { roomCode } = useParams();
+  const setRoom = useGameStore((state) => state.setRoom);
+  const isMounted = React.useRef(true);
+
+  // Set room code from URL params
+  React.useEffect(() => {
+    isMounted.current = true;
+    if (roomCode) {
+      setRoom({ code: roomCode as string });
+    }
+    // Cleanup room state when component unmounts
+    return () => {
+      isMounted.current = false;
+      setRoom({ code: null, id: null, status: null, hostId: null });
+    };
+  }, [roomCode, setRoom]);
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -121,36 +138,10 @@ export default function LobbyPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold text-white">Lobby</h1>
-                <p className="text-sm text-slate-400">
-                  Room Code:{' '}
-                  <span className="text-2xl font-bold tracking-widest text-indigo-400">
-                    {roomCode}
-                  </span>
-                </p>
               </div>
             </div>
 
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white">Players</h3>
-                <span className="text-xs text-slate-500">Waiting for players to join...</span>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-slate-900/50 rounded-xl border border-slate-800">
-                  <div className="h-10 w-10 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center font-bold text-sm text-indigo-300">
-                    {user?.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white">{user?.name}</p>
-                    <p className="text-xs text-slate-500">Host</p>
-                  </div>
-                  <div className="px-2 py-1 bg-green-500/10 text-green-400 rounded-lg text-xs font-semibold">
-                    Ready
-                  </div>
-                </div>
-              </div>
-            </div>
+            <RoomInformationPanel />
 
             <div className="text-center space-y-4">
               <p className="text-sm text-slate-400">
