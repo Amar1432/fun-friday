@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import LobbyPage from './page';
 import { useSocket } from '@/lib/socket/socket-context';
@@ -30,10 +30,12 @@ const mockGameState: any = {
   currentQuestion: null,
   timerRemaining: null,
   correctAnswer: null,
+  submittedAnswer: null,
 };
 let mockStorePlayers: any[] = [];
 let mockStoreLeaderboard: any[] = [];
 const mockSetRoomSpy = jest.fn();
+const mockSetSubmittedAnswerSpy = jest.fn();
 
 jest.mock('@/lib/store/use-game-store', () => ({
   useGameStore: Object.assign(
@@ -44,6 +46,7 @@ jest.mock('@/lib/store/use-game-store', () => ({
         players: mockStorePlayers,
         leaderboard: mockStoreLeaderboard,
         setRoom: mockSetRoomSpy,
+        setSubmittedAnswer: mockSetSubmittedAnswerSpy,
       }),
     {
       getState: () => ({
@@ -52,6 +55,7 @@ jest.mock('@/lib/store/use-game-store', () => ({
         players: mockStorePlayers,
         leaderboard: mockStoreLeaderboard,
         setRoom: mockSetRoomSpy,
+        setSubmittedAnswer: mockSetSubmittedAnswerSpy,
       }),
     },
   ),
@@ -71,6 +75,8 @@ jest.mock('@/lib/config', () => ({
 describe('LobbyPage Component', () => {
   const mockPush = jest.fn();
   const mockSocketEmit = jest.fn();
+  const mockRegisterListener = jest.fn();
+  const mockUnregisterListener = jest.fn();
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mockUseAuth = require('@/lib/auth/auth-context').useAuth as jest.Mock;
 
@@ -82,6 +88,7 @@ describe('LobbyPage Component', () => {
     mockRoomState.id = 'room-123';
     mockGameState.currentQuestion = null;
     mockGameState.correctAnswer = null;
+    mockGameState.submittedAnswer = null;
 
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
@@ -104,6 +111,8 @@ describe('LobbyPage Component', () => {
         emit: mockSocketEmit,
       },
       status: 'connected',
+      registerListener: mockRegisterListener,
+      unregisterListener: mockUnregisterListener,
     });
   });
 
@@ -278,5 +287,115 @@ describe('LobbyPage Component', () => {
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Bob')).toBeInTheDocument();
     expect(screen.getByText('Charlie')).toBeInTheDocument();
+  });
+
+  it('submits answer and handles SubmitAnswerAck successfully', async () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+    mockGameState.timerRemaining = 15;
+    mockGameState.submittedAnswer = null;
+
+    mockUseAuth.mockReturnValue({
+      user: { id: 'player-1', name: 'Player 1', email: 'player@example.com' },
+      token: 'player-token',
+      isLoading: false,
+    });
+
+    render(<LobbyPage />);
+
+    const input = screen.getByPlaceholderText('Type your guess here...');
+    fireEvent.change(input, { target: { value: 'Harry Potter' } });
+    const submitButton = screen.getByRole('button', { name: 'Submit Answer' });
+
+    // Click submit
+    fireEvent.click(submitButton);
+
+    // Verify SubmitAnswer socket event is emitted
+    expect(mockSocketEmit).toHaveBeenCalledWith('SubmitAnswer', {
+      roomId: 'room-123',
+      questionId: 'q-1',
+      answer: 'Harry Potter',
+      responseTimeMs: expect.any(Number),
+    });
+
+    // Verify listeners registered
+    expect(mockRegisterListener).toHaveBeenCalledWith('SubmitAnswerAck', expect.any(Function));
+    expect(mockRegisterListener).toHaveBeenCalledWith('error', expect.any(Function));
+
+    // Retrieve and fire the SubmitAnswerAck callback
+    const ackCall = mockRegisterListener.mock.calls.find((call) => call[0] === 'SubmitAnswerAck');
+    expect(ackCall).toBeDefined();
+    const ackCallback = ackCall[1];
+
+    await act(async () => {
+      ackCallback({
+        success: true,
+        data: {
+          playerId: 'player-1',
+          roundId: 'round-1',
+          questionId: 'q-1',
+          answerText: 'Harry Potter',
+          responseTimeMs: 500,
+        },
+      });
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    // Check that setSubmittedAnswer is called and unregister is called
+    expect(mockSetSubmittedAnswerSpy).toHaveBeenCalledWith('Harry Potter');
+    expect(mockUnregisterListener).toHaveBeenCalledWith('SubmitAnswerAck', expect.any(Function));
+    expect(mockUnregisterListener).toHaveBeenCalledWith('error', expect.any(Function));
+  });
+
+  it('submits answer and handles socket error during submission', async () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+    mockGameState.timerRemaining = 15;
+    mockGameState.submittedAnswer = null;
+
+    mockUseAuth.mockReturnValue({
+      user: { id: 'player-1', name: 'Player 1', email: 'player@example.com' },
+      token: 'player-token',
+      isLoading: false,
+    });
+
+    render(<LobbyPage />);
+
+    const input = screen.getByPlaceholderText('Type your guess here...');
+    fireEvent.change(input, { target: { value: 'Harry Potter' } });
+    const submitButton = screen.getByRole('button', { name: 'Submit Answer' });
+
+    // Click submit
+    fireEvent.click(submitButton);
+
+    // Retrieve and fire the error callback
+    const errorCall = mockRegisterListener.mock.calls.find((call) => call[0] === 'error');
+    expect(errorCall).toBeDefined();
+    const errorCallback = errorCall[1];
+
+    await act(async () => {
+      errorCallback({
+        success: false,
+        error: { code: 'ROUND_ALREADY_COMPLETED', message: 'Round already completed.' },
+      });
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    // Check that setSubmittedAnswer was NOT called, and listeners are cleaned up
+    expect(mockSetSubmittedAnswerSpy).not.toHaveBeenCalled();
+    expect(mockUnregisterListener).toHaveBeenCalledWith('SubmitAnswerAck', expect.any(Function));
+    expect(mockUnregisterListener).toHaveBeenCalledWith('error', expect.any(Function));
   });
 });

@@ -48,6 +48,16 @@ export interface ServerToClientEvents {
     leaderboard?: LeaderboardEntry[];
   }) => void;
   error: (error: { code: string; message: string }) => void;
+  SubmitAnswerAck: (data: {
+    success: boolean;
+    data: {
+      playerId: string;
+      roundId: string;
+      questionId: string;
+      answerText: string;
+      responseTimeMs: number;
+    };
+  }) => void;
 }
 
 export interface ClientToServerEvents {

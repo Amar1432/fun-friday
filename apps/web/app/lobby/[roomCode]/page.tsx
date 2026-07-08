@@ -29,12 +29,13 @@ export default function LobbyPage() {
 
   const isHost = user?.id === room.hostId;
 
-  const { socket, status: socketStatus } = useSocket();
+  const { socket, status: socketStatus, registerListener, unregisterListener } = useSocket();
 
   const [isStarting, setIsStarting] = React.useState(false);
   const [startError, setStartError] = React.useState<string | null>(null);
 
   const isMounted = React.useRef(true);
+  const questionStartedAtRef = React.useRef<number | null>(null);
 
   // Set room code and ID from URL params
   React.useEffect(() => {
@@ -51,6 +52,15 @@ export default function LobbyPage() {
       setRoom({ code: null, id: null, status: null, hostId: null });
     };
   }, [roomCode, roomIdParam, setRoom, room.id]);
+
+  // Track question start time
+  React.useEffect(() => {
+    if (game.currentQuestion) {
+      questionStartedAtRef.current = Date.now();
+    } else {
+      questionStartedAtRef.current = null;
+    }
+  }, [game.currentQuestion]);
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -129,20 +139,88 @@ export default function LobbyPage() {
 
   const handleSubmitAnswer = React.useCallback(
     (answer: string) => {
-      if (!game.currentQuestion) return;
+      return new Promise<void>((resolve, reject) => {
+        if (!game.currentQuestion) {
+          reject(new Error('No active question to submit answer for.'));
+          return;
+        }
 
-      const activeRoomId = room.id || roomIdParam;
-      if (socket && activeRoomId) {
+        const activeRoomId = room.id || roomIdParam;
+        if (!socket || socketStatus !== 'connected' || !activeRoomId) {
+          reject(new Error('Real-time connection is not active. Please wait.'));
+          return;
+        }
+
+        const limitMs = (game.currentQuestion.timeLimitSeconds || 20) * 1000;
+        const responseTimeMs = questionStartedAtRef.current
+          ? Math.min(Math.max(0, Date.now() - questionStartedAtRef.current), limitMs)
+          : 0;
+
+        const handleAck = (data: {
+          success: boolean;
+          data: {
+            playerId: string;
+            roundId: string;
+            questionId: string;
+            answerText: string;
+            responseTimeMs: number;
+          };
+        }) => {
+          if (data?.data?.questionId === game.currentQuestion?.id) {
+            cleanup();
+            setSubmittedAnswer(answer);
+            resolve();
+          }
+        };
+
+        const handleErr = (
+          err:
+            | { code: string; message: string }
+            | { success: boolean; error: { code: string; message: string } },
+        ) => {
+          cleanup();
+          let errorMsg = 'Failed to submit answer.';
+          if (err && typeof err === 'object') {
+            if (
+              'error' in err &&
+              err.error &&
+              typeof err.error === 'object' &&
+              'message' in err.error
+            ) {
+              errorMsg = (err.error as { message: string }).message;
+            } else if ('message' in err && typeof err.message === 'string') {
+              errorMsg = err.message;
+            }
+          }
+          reject(new Error(errorMsg));
+        };
+
+        const cleanup = () => {
+          unregisterListener('SubmitAnswerAck', handleAck);
+          unregisterListener('error', handleErr);
+        };
+
+        registerListener('SubmitAnswerAck', handleAck);
+        registerListener('error', handleErr);
+
         socket.emit('SubmitAnswer', {
           roomId: activeRoomId,
           questionId: game.currentQuestion.id,
           answer: answer,
-          responseTimeMs: 0, // Simplified for now, will be implemented in a later task
+          responseTimeMs,
         });
-      }
-      setSubmittedAnswer(answer);
+      });
     },
-    [game.currentQuestion, socket, room.id, roomIdParam, setSubmittedAnswer],
+    [
+      game.currentQuestion,
+      socket,
+      socketStatus,
+      room.id,
+      roomIdParam,
+      registerListener,
+      unregisterListener,
+      setSubmittedAnswer,
+    ],
   );
 
   // Show loading state while checking auth
