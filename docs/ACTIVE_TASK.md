@@ -1,19 +1,21 @@
 # Active Task
 
-## FFH-088: Build Countdown Timer Component
+## FFH-089: Build Answer Submission Component
 
 ### Description
 
-Display remaining round time.
+Allow players to submit answers.
 
 ### Acceptance Criteria
 
-Timer:
+Component supports:
 
-- [ ] Updates from TimerTick events
-- [ ] Stops automatically
-- [ ] Resets each round
-- [ ] Handles reconnect correctly
+- [ ] Text input or game-specific interaction
+- [ ] Submit button
+- [ ] Disabled state after submission
+- [ ] Loading state
+
+Duplicate submissions prevented.
 
 ### Status
 

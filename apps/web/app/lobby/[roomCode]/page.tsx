@@ -10,6 +10,7 @@ import { LobbyControls } from '@/components/lobby-controls';
 import { useGameStore } from '@/lib/store/use-game-store';
 import { useSocket, useSocketEvent } from '@/lib/socket/socket-context';
 import { QuestionDisplay } from '@/components/question-display';
+import { CountdownTimer } from '@/components/countdown-timer';
 
 export default function LobbyPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -350,20 +351,7 @@ export default function LobbyPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-8 space-y-8 flex flex-col justify-between min-h-[450px]">
               <div className="flex justify-end items-center border-b border-slate-800/50 pb-4">
-                {game.timerRemaining !== null && (
-                  <div className="flex flex-col items-center">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                      Time Remaining
-                    </span>
-                    <span
-                      className={`text-3xl font-extrabold tabular-nums transition-colors duration-300 ${
-                        game.timerRemaining <= 5 ? 'text-rose-500 animate-pulse' : 'text-slate-100'
-                      }`}
-                    >
-                      {game.timerRemaining}s
-                    </span>
-                  </div>
-                )}
+                <CountdownTimer timerRemaining={game.timerRemaining} />
               </div>
 
               {/* Active Question Display */}
