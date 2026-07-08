@@ -13,6 +13,24 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
 
+**Date/Time:** 2026-07-08 23:26 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash (Medium))
+**Ticket:** FFH-091
+
+- **What Changed:**
+  - Implemented the Round Completion state in the main game view of the lobby page (`apps/web/app/lobby/[roomCode]/page.tsx`).
+  - Added a dedicated layout shown when `game.timerRemaining === 0` and the correct answer has not yet been revealed.
+  - Implemented dynamic user status messages: "Waiting for results calculations..." for the host, and "Waiting for the host to reveal the results..." for normal players.
+  - Showed active submission status for players: displaying their submitted answer or "No Answer Submitted" if they missed the deadline.
+  - Rendered a transition indicator (spinning loader with concentric ping pulse animation) indicating that score/round calculations are in progress.
+  - Prevented additional submissions by completely overriding the answer input form when the timer expires.
+  - Added comprehensive Jest tests in `apps/web/app/lobby/[roomCode]/page.spec.tsx` validating the waiting messages, transition indicator, and submission status across host and player roles.
+  - Verified compilation (`pnpm build`), linting (`pnpm lint`), type checking (`pnpm typecheck`), and all 373 unit tests pass successfully.
+- **Why:** To satisfy all acceptance criteria of ticket FFH-091, presenting players and host with an engaging, informative transition state upon timer expiration while blocking further input.
+- **What's Next:** Start `FFH-092: Build Live Leaderboard Component`.
+
+---
+
 **Date/Time:** 2026-07-08 16:10 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-090

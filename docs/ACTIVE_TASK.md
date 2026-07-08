@@ -1,17 +1,19 @@
 # Active Task
 
-## FFH-091: Display Round Completion State
+## FFH-092: Build Live Leaderboard Component
 
 ### Description
 
-Show transition after timer expiration.
+Display player rankings.
 
 ### Acceptance Criteria
 
-- [ ] Waiting message displayed.
-- [ ] Submission status shown.
-- [ ] Transition indicator displayed.
-- [ ] No additional submissions allowed.
+- [ ] Leaderboard displays:
+  - [ ] Rank
+  - [ ] Player name
+  - [ ] Score
+  - [ ] Score change (if available)
+- [ ] Ordering matches backend.
 
 ### Status
 
