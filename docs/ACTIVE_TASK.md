@@ -1,19 +1,20 @@
 # Active Task
 
-## FFH-084: Build Waiting Room Screen
+## FFH-086: Build Game Screen Layout
 
 ### Description
 
-Display lobby while waiting for the game to begin.
+Create the primary gameplay interface for player view.
 
 ### Acceptance Criteria
 
-- [ ] Room code
-- [ ] Connected players
-- [ ] Ready status
-- [ ] Host information
-- [ ] Waiting message
+- [ ] Question area
+- [ ] Timer
+- [ ] Answer area
+- [ ] Player status
+- [ ] Responsive layout
+- [ ] Tailwind CSS used consistently
 
 ### Status
 
-In Progress.
+Pending.
