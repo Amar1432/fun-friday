@@ -13,6 +13,23 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
 
+**Date/Time:** 2026-07-08 23:55 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash (Medium))
+**Ticket:** FFH-097
+
+- **What Changed:**
+  - Implemented centralized socket error state `error` (`{ code, message }`) and `clearError` action in `SocketProvider` (`apps/web/lib/socket/socket-context.tsx`).
+  - Added connection error tracking for `connect_error` to catch authentication failures (`auth_failed`) and server offline scenarios (`reconnecting`/`SERVER_UNAVAILABLE`).
+  - Configured error event interception within the raw listener loop to globally capture server-emitted `'error'` events, keeping track of them in state.
+  - Created a reusable, premium glassmorphic `SocketErrorAlert` component (`apps/web/components/socket-error-alert.tsx`) that renders a full-page modal for critical connection issues (reconnecting, auth failure, room not found, server unavailable) inside active lobbies, and a dismissable warning toast for non-critical/action-level errors (denied actions, unauthorized).
+  - Integrated `SocketErrorAlert` into the global `RootLayout` (`apps/web/app/layout.tsx`) so socket connection health and errors are monitored and handled across the app automatically.
+  - Added comprehensive test suites in `components/socket-error-alert.spec.tsx` and `lib/socket/socket-context.spec.tsx` to verify component layout, warning toasts, blocking overlays, reconnect/retry button actions, and context updates.
+  - Verified and confirmed that the full project pipeline compiles, builds (`pnpm build`), lints (`pnpm lint`), typechecks (`pnpm typecheck`), and all 409 tests pass cleanly.
+- **Why:** To satisfy all acceptance criteria for FFH-097, establishing a user-friendly socket error handler with clear recovery options (retry connection, dashboard redirect, warning dismissal) for both network connection loss and application-level errors.
+- **What's Next:** Start `FFH-098: Implement Reconnection Recovery UI`.
+
+---
+
 **Date/Time:** 2026-07-08 23:50 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash (Medium))
 **Ticket:** FFH-096

@@ -1,20 +1,17 @@
 # Active Task
 
-## FFH-097: Handle Socket Errors
+## FFH-098: Implement Reconnection Recovery UI
 
 ### Description
 
-Provide user-friendly error handling.
+Recover gracefully after temporary network interruptions.
 
 ### Acceptance Criteria
 
-- [ ] Handle socket errors including:
-  - Lost connection
-  - Authentication failure
-  - Invalid room
-  - Invalid action
-  - Server unavailable
-- [ ] Display recovery actions when applicable.
+- [ ] Detect reconnection and display reconnection status
+- [ ] Restore state upon reconnection
+- [ ] Synchronize room state with the server
+- [ ] Remove stale UI elements from previous state
 
 ### Status
 
