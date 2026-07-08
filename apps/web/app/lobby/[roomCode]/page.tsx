@@ -446,6 +446,95 @@ export default function LobbyPage() {
                       </span>
                       <p className="text-2xl font-black text-white">{game.correctAnswer}</p>
                     </div>
+                  ) : game.timerRemaining === 0 ? (
+                    <div
+                      data-testid="round-completion-state"
+                      className="space-y-6 max-w-md mx-auto p-6 bg-slate-900/80 border border-slate-800 rounded-3xl animate-fade-in flex flex-col items-center text-center shadow-2xl"
+                    >
+                      {/* Transition Indicator */}
+                      <div
+                        className="relative flex items-center justify-center"
+                        data-testid="transition-indicator"
+                      >
+                        <div className="absolute animate-ping h-8 w-8 rounded-full bg-indigo-500/30 opacity-75"></div>
+                        <svg
+                          className="animate-spin h-8 w-8 text-indigo-500 relative z-10"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                      </div>
+
+                      <div className="space-y-2">
+                        {/* Waiting Message */}
+                        <h4 className="text-lg font-bold text-white">Round Completed!</h4>
+                        <p className="text-sm text-slate-400" data-testid="waiting-message">
+                          {isHost
+                            ? 'Waiting for results calculations...'
+                            : 'Waiting for the host to reveal the results...'}
+                        </p>
+                      </div>
+
+                      {/* Submission Status */}
+                      {!isHost && (
+                        <div
+                          className="w-full pt-4 border-t border-slate-800/80 mt-2"
+                          data-testid="submission-status"
+                        >
+                          <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-2">
+                            Submission Status
+                          </span>
+                          {game.submittedAnswer ? (
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 text-green-400 rounded-full text-sm font-semibold">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              Answer Submitted: &quot;{game.submittedAnswer}&quot;
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-full text-sm font-semibold">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                              No Answer Submitted
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ) : isHost ? (
                     <p className="text-sm font-medium text-slate-400 animate-pulse">
                       Waiting for players to submit answers...

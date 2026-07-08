@@ -398,4 +398,96 @@ describe('LobbyPage Component', () => {
     expect(mockUnregisterListener).toHaveBeenCalledWith('SubmitAnswerAck', expect.any(Function));
     expect(mockUnregisterListener).toHaveBeenCalledWith('error', expect.any(Function));
   });
+
+  it('renders round completion state for non-host player when timer expires and they submitted an answer', () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+    mockGameState.timerRemaining = 0;
+    mockGameState.submittedAnswer = 'Harry Potter';
+
+    // Override user to be a normal player
+    mockUseAuth.mockReturnValue({
+      user: { id: 'player-1', name: 'Player 1', email: 'player@example.com' },
+      token: 'player-token',
+      isLoading: false,
+    });
+
+    render(<LobbyPage />);
+
+    expect(screen.getByTestId('round-completion-state')).toBeInTheDocument();
+    expect(screen.getByTestId('transition-indicator')).toBeInTheDocument();
+    expect(screen.getByTestId('waiting-message')).toHaveTextContent(
+      'Waiting for the host to reveal the results...',
+    );
+    expect(screen.getByTestId('submission-status')).toHaveTextContent(
+      'Answer Submitted: "Harry Potter"',
+    );
+    expect(screen.queryByPlaceholderText('Type your guess here...')).not.toBeInTheDocument();
+  });
+
+  it('renders round completion state for non-host player when timer expires and they did not submit an answer', () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+    mockGameState.timerRemaining = 0;
+    mockGameState.submittedAnswer = null;
+
+    // Override user to be a normal player
+    mockUseAuth.mockReturnValue({
+      user: { id: 'player-1', name: 'Player 1', email: 'player@example.com' },
+      token: 'player-token',
+      isLoading: false,
+    });
+
+    render(<LobbyPage />);
+
+    expect(screen.getByTestId('round-completion-state')).toBeInTheDocument();
+    expect(screen.getByTestId('transition-indicator')).toBeInTheDocument();
+    expect(screen.getByTestId('waiting-message')).toHaveTextContent(
+      'Waiting for the host to reveal the results...',
+    );
+    expect(screen.getByTestId('submission-status')).toHaveTextContent('No Answer Submitted');
+    expect(screen.queryByPlaceholderText('Type your guess here...')).not.toBeInTheDocument();
+  });
+
+  it('renders round completion state for host when timer expires', () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+    mockGameState.timerRemaining = 0;
+    mockGameState.submittedAnswer = null;
+
+    // Host user
+    mockUseAuth.mockReturnValue({
+      user: { id: 'host-123', name: 'Host User', email: 'host@example.com' },
+      token: 'host-token',
+      isLoading: false,
+    });
+
+    render(<LobbyPage />);
+
+    expect(screen.getByTestId('round-completion-state')).toBeInTheDocument();
+    expect(screen.getByTestId('transition-indicator')).toBeInTheDocument();
+    expect(screen.getByTestId('waiting-message')).toHaveTextContent(
+      'Waiting for results calculations...',
+    );
+    expect(screen.queryByTestId('submission-status')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Type your guess here...')).not.toBeInTheDocument();
+  });
 });
