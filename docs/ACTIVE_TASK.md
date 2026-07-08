@@ -10,13 +10,13 @@ Display all connected players.
 
 Player cards display:
 
-- [ ] Display name
-- [ ] Ready state
-- [ ] Score
-- [ ] Connection status
+- [x] Display name
+- [x] Ready state
+- [x] Score
+- [x] Connection status
 
 List updates immediately from socket events.
 
 ### Status
 
-Pending.
+Completed.

@@ -334,4 +334,16 @@ export class RedisRoomRepository {
       await pipeline.exec();
     }
   }
+
+  /**
+   * Clears the disconnected flag for a player from the room metadata.
+   */
+  async removePlayerDisconnectedStatus(
+    roomCode: string,
+    playerId: string,
+  ): Promise<void> {
+    const client = this.redisService.getClient();
+    const metaKey = this.getMetaKey(roomCode);
+    await client.hdel(metaKey, `player:${playerId}:disconnected`);
+  }
 }

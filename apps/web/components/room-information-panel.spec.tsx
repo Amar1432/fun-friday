@@ -80,31 +80,6 @@ describe('RoomInformationPanel Component', () => {
 
     expect(screen.getByText('Host User')).toBeInTheDocument();
     expect(screen.getByText('Host')).toBeInTheDocument();
-
-    expect(screen.getByText('Players')).toBeInTheDocument();
-    expect(screen.getByText('No players connected yet')).toBeInTheDocument();
-  });
-
-  it('renders connected players correctly', () => {
-    mockState.room = {
-      id: 'room-123',
-      code: 'ABCDEF',
-      status: 'LOBBY',
-      hostId: 'host-123',
-    };
-    mockState.players = [
-      { id: 'p1', displayName: 'Player One', score: 100, isReady: true },
-      { id: 'p2', displayName: 'Player Two', score: 50, isReady: false },
-    ];
-
-    render(<RoomInformationPanel />);
-
-    expect(screen.getByText('Player One')).toBeInTheDocument();
-    expect(screen.getByText('Score: 100')).toBeInTheDocument();
-    expect(screen.getByText('Ready')).toBeInTheDocument();
-
-    expect(screen.getByText('Player Two')).toBeInTheDocument();
-    expect(screen.getByText('Score: 50')).toBeInTheDocument();
   });
 
   it('renders In Progress status correctly', () => {

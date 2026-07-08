@@ -61,6 +61,7 @@ describe('GameGateway', () => {
     setAnswer: jest.fn(),
     updatePlayerScores: jest.fn(),
     expireAllRoomKeys: jest.fn(),
+    removePlayerDisconnectedStatus: jest.fn(),
   };
 
   beforeEach(async () => {

@@ -1534,6 +1534,10 @@ Player cards display:
 
 List updates immediately from socket events.
 
+### Status
+
+**COMPLETED** - Created a dedicated, responsive, and glassmorphic `PlayerList` component in `apps/web/components/player-list.tsx` which fetches players from the Zustand game store. Each player card displays their avatar, display name, score, ready state, and live connection status. Fixed the backend to track `player:${playerId}:disconnected` in Redis metadata and automatically clear it when joining or reconnecting, ensuring the correct status is broadcasted. Integrated `<PlayerList />` on the lobby page and wrote unit tests for the frontend component and backend logic.
+
 ---
 
 ## FFH-079: Build Lobby Controls

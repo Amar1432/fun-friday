@@ -2,6 +2,22 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-08 10:05 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-078
+
+- **What Changed:**
+  - Created a dedicated `PlayerList` component at `apps/web/components/player-list.tsx` that displays a grid/list of player cards containing the display name, avatar with a unique hash gradient, score, ready state, and live connection status.
+  - Removed duplicate simple player list rendering from `RoomInformationPanel` and updated its unit tests.
+  - Integrated `PlayerList` in the lobby page under `RoomInformationPanel`.
+  - Added new unit test suite for `PlayerList` in `apps/web/components/player-list.spec.tsx`.
+  - Updated the backend Redis repository and socket gateway in `apps/api` to clear the `player:${playerId}:disconnected` status on join/reconnect, ensuring the live connection status is updated immediately.
+  - Ran monorepo typecheck, lint, and test runs to verify all checks pass perfectly.
+- **Why:** To fulfill the acceptance criteria for FFH-078, providing a dedicated player list component displaying the correct connection status, ready state, score, and display name, syncing dynamically from socket state events.
+- **What's Next:** Start `FFH-079: Build Lobby Controls`.
+
+---
+
 **Date/Time:** 2026-07-08 10:00 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-077

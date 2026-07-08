@@ -1434,7 +1434,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const players = Object.values(playersMap)
       .map((playerJson) => {
         try {
-          return JSON.parse(playerJson) as Record<string, unknown>;
+          const playerObj = JSON.parse(playerJson) as Record<string, unknown>;
+          const playerId = typeof playerObj.id === 'string' ? playerObj.id : '';
+          const isDisconnected = roomMeta
+            ? !!roomMeta[`player:${playerId}:disconnected`]
+            : false;
+          const result: Record<string, unknown> = {
+            ...playerObj,
+            isConnected: !isDisconnected,
+          };
+          return result;
         } catch {
           return null;
         }
@@ -1645,6 +1654,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       await client.join(roomCode);
       clientData.roomCode = roomCode;
+
+      await this.redisRoomRepository.removePlayerDisconnectedStatus(
+        roomCode,
+        playerId,
+      );
 
       client.to(roomCode).emit('PlayerJoined', { player: playerState });
 
@@ -1919,6 +1933,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await client.join(roomCode);
       clientData.roomCode = roomCode;
 
+      await this.redisRoomRepository.removePlayerDisconnectedStatus(
+        roomCode,
+        payload.playerId,
+      );
+
+      // Re-fetch room metadata after clearing player disconnected status
+      roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+
       const playersMap = await this.redisRoomRepository.getPlayers(roomCode);
       const playerJson = playersMap[payload.playerId];
 
@@ -1937,12 +1959,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const players = Object.values(playersMap)
         .map((entry) => {
           try {
-            return JSON.parse(entry) as Record<string, unknown>;
+            const playerObj = JSON.parse(entry) as Record<string, unknown>;
+            const playerId =
+              typeof playerObj.id === 'string' ? playerObj.id : '';
+            const isDisconnected = roomMeta
+              ? !!roomMeta[`player:${playerId}:disconnected`]
+              : false;
+            const result: Record<string, unknown> = {
+              ...playerObj,
+              isConnected: !isDisconnected,
+            };
+            return result;
           } catch {
             return null;
           }
         })
-        .filter(Boolean);
+        .filter((p): p is Record<string, unknown> => p !== null);
 
       const leaderboard =
         await this.redisRoomRepository.getLeaderboard(roomCode);

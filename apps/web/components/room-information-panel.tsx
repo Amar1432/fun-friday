@@ -5,7 +5,6 @@ import { useGameStore } from '@/lib/store/use-game-store';
 
 export function RoomInformationPanel() {
   const room = useGameStore((state) => state.room);
-  const players = useGameStore((state) => state.players);
   const game = useGameStore((state) => state.game);
   const user = useGameStore((state) => state.user);
 
@@ -122,39 +121,6 @@ export function RoomInformationPanel() {
           </div>
         </div>
       )}
-
-      {/* Connected Players */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Players</p>
-          <span className="text-xs text-slate-400">{players.length} connected</span>
-        </div>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {players.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-4">No players connected yet</p>
-          ) : (
-            players.map((player) => (
-              <div
-                key={player.id}
-                className="flex items-center gap-3 p-2.5 bg-slate-900/50 rounded-lg border border-slate-800"
-              >
-                <div className="h-8 w-8 rounded-full bg-slate-700/50 border border-slate-600/50 flex items-center justify-center font-bold text-xs text-slate-300">
-                  {player.displayName.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{player.displayName}</p>
-                  <p className="text-xs text-slate-500">Score: {player.score}</p>
-                </div>
-                {player.isReady && (
-                  <div className="px-2 py-0.5 bg-green-500/10 text-green-400 rounded text-xs font-semibold">
-                    Ready
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
 
       {/* Current Game State */}
       {gameInfo && (

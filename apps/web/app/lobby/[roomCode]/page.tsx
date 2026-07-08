@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { config } from '@/lib/config';
 import { RoomInformationPanel } from '@/components/room-information-panel';
+import { PlayerList } from '@/components/player-list';
 import { useGameStore } from '@/lib/store/use-game-store';
 
 export default function LobbyPage() {
@@ -142,6 +143,7 @@ export default function LobbyPage() {
             </div>
 
             <RoomInformationPanel />
+            <PlayerList />
 
             <div className="text-center space-y-4">
               <p className="text-sm text-slate-400">

@@ -4,6 +4,7 @@ export interface Player {
   score: number;
   isReady: boolean;
   joinedAt?: string;
+  isConnected?: boolean;
 }
 
 export interface RoomMetadata {
