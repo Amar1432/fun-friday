@@ -61,9 +61,21 @@ jest.mock('@/lib/store/use-game-store', () => ({
   ),
 }));
 
+const mockDispatcher = {
+  joinRoom: jest.fn(),
+  leaveRoom: jest.fn(),
+  playerReady: jest.fn(),
+  startGame: jest.fn(),
+  nextRound: jest.fn(),
+  endGame: jest.fn(),
+  submitAnswer: jest.fn(),
+  reconnectRequest: jest.fn(),
+};
+
 jest.mock('@/lib/socket/socket-context', () => ({
   useSocket: jest.fn(),
   useSocketEvent: jest.fn(),
+  useSocketDispatcher: jest.fn(() => mockDispatcher),
 }));
 
 jest.mock('@/lib/config', () => ({
@@ -159,7 +171,7 @@ describe('LobbyPage Component', () => {
       code: 'ABCDEF',
       id: 'room-123',
     });
-    expect(mockSocketEmit).toHaveBeenCalledWith('JoinRoom', {
+    expect(mockDispatcher.joinRoom).toHaveBeenCalledWith({
       roomCode: 'ABCDEF',
       displayName: 'Host User',
       guestToken: '',
@@ -178,7 +190,7 @@ describe('LobbyPage Component', () => {
 
     fireEvent.click(startButton);
 
-    expect(mockSocketEmit).toHaveBeenCalledWith('StartGame', {
+    expect(mockDispatcher.startGame).toHaveBeenCalledWith({
       roomId: 'room-123',
       gameId: '1cd83808-737f-4c29-ab51-adff5c6a1ef5',
     });
@@ -331,7 +343,7 @@ describe('LobbyPage Component', () => {
     fireEvent.click(submitButton);
 
     // Verify SubmitAnswer socket event is emitted
-    expect(mockSocketEmit).toHaveBeenCalledWith('SubmitAnswer', {
+    expect(mockDispatcher.submitAnswer).toHaveBeenCalledWith({
       roomId: 'room-123',
       questionId: 'q-1',
       answer: 'Harry Potter',

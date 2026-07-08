@@ -8,7 +8,7 @@ import { RoomInformationPanel } from '@/components/room-information-panel';
 import { PlayerList } from '@/components/player-list';
 import { LobbyControls } from '@/components/lobby-controls';
 import { useGameStore } from '@/lib/store/use-game-store';
-import { useSocket, useSocketEvent } from '@/lib/socket/socket-context';
+import { useSocket, useSocketEvent, useSocketDispatcher } from '@/lib/socket/socket-context';
 import { QuestionDisplay } from '@/components/question-display';
 import { CountdownTimer } from '@/components/countdown-timer';
 import { AnswerSubmission } from '@/components/answer-submission';
@@ -30,7 +30,8 @@ export default function LobbyPage() {
 
   const isHost = user?.id === room.hostId;
 
-  const { socket, status: socketStatus, registerListener, unregisterListener } = useSocket();
+  const { status: socketStatus, registerListener, unregisterListener } = useSocket();
+  const dispatcher = useSocketDispatcher();
 
   const [isStarting, setIsStarting] = React.useState(false);
   const [startError, setStartError] = React.useState<string | null>(null);
@@ -76,15 +77,15 @@ export default function LobbyPage() {
 
   // Emit JoinRoom when socket is connected
   React.useEffect(() => {
-    if (socketStatus === 'connected' && socket && roomCode) {
+    if (socketStatus === 'connected' && roomCode) {
       const isGuest = user && (!user.email || user.email.trim() === '');
-      socket.emit('JoinRoom', {
+      dispatcher.joinRoom({
         roomCode: roomCode as string,
         displayName: user?.name || '',
         guestToken: isGuest ? token || '' : '',
       });
     }
-  }, [socketStatus, socket, roomCode, user, token]);
+  }, [socketStatus, roomCode, user, token, dispatcher]);
 
   // Socket event listener for game start success
   useSocketEvent(
@@ -106,7 +107,7 @@ export default function LobbyPage() {
 
   const handleStartGame = React.useCallback(() => {
     const activeRoomId = room.id || roomIdParam;
-    if (!socket || socketStatus !== 'connected') {
+    if (socketStatus !== 'connected') {
       setStartError('Real-time connection is not active. Please wait.');
       return;
     }
@@ -121,22 +122,22 @@ export default function LobbyPage() {
 
     // Default to the seeded Emoji Guess game
     const gameId = '1cd83808-737f-4c29-ab51-adff5c6a1ef5';
-    socket.emit('StartGame', { roomId: activeRoomId, gameId });
-  }, [socket, socketStatus, room.id, roomIdParam]);
+    dispatcher.startGame({ roomId: activeRoomId, gameId });
+  }, [socketStatus, room.id, roomIdParam, dispatcher]);
 
   const handleNextRound = React.useCallback(() => {
     const activeRoomId = room.id || roomIdParam;
-    if (socket && activeRoomId) {
-      socket.emit('NextRound', { roomId: activeRoomId });
+    if (activeRoomId) {
+      dispatcher.nextRound({ roomId: activeRoomId });
     }
-  }, [socket, room.id, roomIdParam]);
+  }, [room.id, roomIdParam, dispatcher]);
 
   const handleEndGame = React.useCallback(() => {
     const activeRoomId = room.id || roomIdParam;
-    if (socket && activeRoomId) {
-      socket.emit('EndGame', { roomId: activeRoomId });
+    if (activeRoomId) {
+      dispatcher.endGame({ roomId: activeRoomId });
     }
-  }, [socket, room.id, roomIdParam]);
+  }, [room.id, roomIdParam, dispatcher]);
 
   const handleSubmitAnswer = React.useCallback(
     (answer: string) => {
@@ -147,7 +148,7 @@ export default function LobbyPage() {
         }
 
         const activeRoomId = room.id || roomIdParam;
-        if (!socket || socketStatus !== 'connected' || !activeRoomId) {
+        if (socketStatus !== 'connected' || !activeRoomId) {
           reject(new Error('Real-time connection is not active. Please wait.'));
           return;
         }
@@ -204,7 +205,7 @@ export default function LobbyPage() {
         registerListener('SubmitAnswerAck', handleAck);
         registerListener('error', handleErr);
 
-        socket.emit('SubmitAnswer', {
+        dispatcher.submitAnswer({
           roomId: activeRoomId,
           questionId: game.currentQuestion.id,
           answer: answer,
@@ -214,13 +215,13 @@ export default function LobbyPage() {
     },
     [
       game.currentQuestion,
-      socket,
       socketStatus,
       room.id,
       roomIdParam,
       registerListener,
       unregisterListener,
       setSubmittedAnswer,
+      dispatcher,
     ],
   );
 

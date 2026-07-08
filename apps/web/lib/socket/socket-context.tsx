@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 import { config } from '@/lib/config';
 import { useAuth } from '@/lib/auth/auth-context';
 import { ServerToClientEvents, ClientToServerEvents, ConnectionStatus } from './types';
+import { SocketDispatcher } from './socket-dispatcher';
 
 interface SocketContextType {
   socket: Socket<ServerToClientEvents, ClientToServerEvents> | null;
@@ -20,6 +21,7 @@ interface SocketContextType {
     event: K,
     callback: ServerToClientEvents[K],
   ) => void;
+  dispatcher: SocketDispatcher;
 }
 
 const SocketContext = React.createContext<SocketContextType | undefined>(undefined);
@@ -48,6 +50,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     ClientToServerEvents
   > | null>(null);
   const socketRef = React.useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+  const [dispatcher] = React.useState(() => new SocketDispatcher(null));
 
   // Maintain local record of callbacks to prevent duplicate listeners
   // and route incoming socket events to the registered callbacks.
@@ -130,9 +133,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socketRef.current.disconnect();
       socketRef.current = null;
       setSocket(null);
+      // Clear socket from dispatcher
+      dispatcher.setSocket(null);
     }
     setStatus('disconnected');
-  }, []);
+  }, [dispatcher]);
 
   const connect = React.useCallback(
     (connectionToken: string) => {
@@ -165,6 +170,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
       socketRef.current = newSocket;
       setSocket(newSocket);
+
+      // Update dispatcher with new socket instance
+      dispatcher.setSocket(newSocket);
 
       // Set up status event handlers
       newSocket.on('connect', () => {
@@ -204,7 +212,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       // Connect
       newSocket.connect();
     },
-    [logout, setupEventDispatcher],
+    [logout, setupEventDispatcher, dispatcher],
   );
 
   // Manage connection lifecycle automatically based on Auth token presence
@@ -222,9 +230,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
+        dispatcher.setSocket(null);
       }
     };
-  }, []);
+  }, [dispatcher]);
 
   const value = React.useMemo(
     () => ({
@@ -234,8 +243,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       disconnect,
       registerListener,
       unregisterListener,
+      dispatcher,
     }),
-    [socket, status, connect, disconnect, registerListener, unregisterListener],
+    [socket, status, connect, disconnect, registerListener, unregisterListener, dispatcher],
   );
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
@@ -247,6 +257,15 @@ export function useSocket() {
     throw new Error('useSocket must be used within a SocketProvider');
   }
   return context;
+}
+
+/**
+ * Custom hook to access the socket dispatcher for emitting events.
+ * Components should use this instead of directly calling socket.emit.
+ */
+export function useSocketDispatcher() {
+  const { dispatcher } = useSocket();
+  return dispatcher;
 }
 
 /**

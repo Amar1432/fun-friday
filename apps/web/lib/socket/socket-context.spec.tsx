@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import * as React from 'react';
 import { render, screen, act } from '@testing-library/react';
-import { SocketProvider, useSocket, useSocketEvent } from './socket-context';
+import { SocketProvider, useSocket, useSocketEvent, useSocketDispatcher } from './socket-context';
 
 // Mock socket.io-client
 const mockSocketInstance = {
@@ -221,5 +221,29 @@ describe('SocketProvider and hooks', () => {
     );
 
     warnSpy.mockRestore();
+  });
+
+  it('provides dispatcher via useSocketDispatcher hook', () => {
+    mockUseAuth.mockReturnValue({
+      token: 'some-token',
+      logout: jest.fn(),
+    });
+
+    function TestDispatcherComponent() {
+      const dispatcher = useSocketDispatcher();
+      return (
+        <div>
+          <span data-testid="dispatcher-exists">{dispatcher ? 'exists' : 'null'}</span>
+        </div>
+      );
+    }
+
+    render(
+      <SocketProvider>
+        <TestDispatcherComponent />
+      </SocketProvider>,
+    );
+
+    expect(screen.getByTestId('dispatcher-exists')).toHaveTextContent('exists');
   });
 });
