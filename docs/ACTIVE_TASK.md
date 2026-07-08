@@ -1,23 +1,22 @@
 # Active Task
 
-## FFH-077: Build Room Information Panel
+## FFH-078: Build Player List Component
 
 ### Description
 
-Display room metadata.
+Display all connected players.
 
 ### Acceptance Criteria
 
-Panel displays:
+Player cards display:
 
-- [x] Room code
-- [x] Room status
-- [x] Connected players
-- [x] Host information
-- [x] Current game state
+- [ ] Display name
+- [ ] Ready state
+- [ ] Score
+- [ ] Connection status
 
-Values update automatically.
+List updates immediately from socket events.
 
 ### Status
 
-Completed.
+Pending.
