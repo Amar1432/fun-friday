@@ -1,17 +1,19 @@
 # Active Task
 
-## FFH-087: Build Question Display Component
+## FFH-088: Build Countdown Timer Component
 
 ### Description
 
-Render the active question.
+Display remaining round time.
 
 ### Acceptance Criteria
 
-- [ ] Prompt
-- [ ] Metadata
-- [ ] Round number
-- [ ] Correct answer is never rendered.
+Timer:
+
+- [ ] Updates from TimerTick events
+- [ ] Stops automatically
+- [ ] Resets each round
+- [ ] Handles reconnect correctly
 
 ### Status
 

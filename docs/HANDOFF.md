@@ -39,3 +39,15 @@ _(For detailed history of Sprints 1 & 2, see `docs/archive/SPRINT_1_AND_2_HANDOF
   - Added tests in `apps/web/app/lobby/[roomCode]/page.spec.tsx` to verify non-host players see the input form, their submitted answer, and do not see the host controls.
 - **Why:** To satisfy FFH-086 by building the answer area and player interaction layout for the gameplay UI while ensuring regular players cannot access host features.
 - **What's Next:** Start `FFH-087: Build Question Display Component`.
+
+---
+
+**Date/Time:** 2026-07-08 14:30 (Local Time)
+**Ticket:** FFH-087
+
+- **What Changed:**
+  - Created a new `QuestionDisplay` component at `apps/web/components/question-display.tsx` to handle the rendering of the active question prompt, round number, and difficulty metadata.
+  - Updated `apps/web/app/lobby/[roomCode]/page.tsx` to use the new `QuestionDisplay` component, cleaning up the main page layout.
+  - Added unit tests for the `QuestionDisplay` component in `apps/web/components/question-display.spec.tsx` to ensure proper rendering and that the correct answer is never exposed or rendered by this component.
+- **Why:** To satisfy FFH-087 by abstracting the question display logic into a reusable component that adheres strictly to the requirement of never rendering the correct answer.
+- **What's Next:** Start `FFH-088: Build Countdown Timer Component`.
