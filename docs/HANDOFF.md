@@ -25,3 +25,17 @@ _(For detailed history of Sprints 1 & 2, see `docs/archive/SPRINT_1_AND_2_HANDOF
   - Pre-commit check (type check, linter, formatting) and all 378 unit/integration tests pass perfectly.
 - **Why:** To satisfy all requirements of FFH-081 and FFH-082, providing guests with a secure, beautiful form to join multiplayer sessions.
 - **What's Next:** Start `FFH-083: Connect JoinRoom Flow`.
+
+---
+
+**Date/Time:** 2026-07-08 14:00 (Local Time)
+**Ticket:** FFH-086
+
+- **What Changed:**
+  - Implemented the primary gameplay interface layout for the player view (`apps/web/app/lobby/[roomCode]/page.tsx`).
+  - Added an answer input form specifically for non-host players, conditional on the `isHost` variable.
+  - Implemented `handleSubmitAnswer` which updates the local Zustand store via `setSubmittedAnswer` and emits a `SubmitAnswer` socket event.
+  - Restricted host-only controls (e.g., "End Game Early", "Next Round", "End Game") so they are only visible when the active user is the host.
+  - Added tests in `apps/web/app/lobby/[roomCode]/page.spec.tsx` to verify non-host players see the input form, their submitted answer, and do not see the host controls.
+- **Why:** To satisfy FFH-086 by building the answer area and player interaction layout for the gameplay UI while ensuring regular players cannot access host features.
+- **What's Next:** Start `FFH-087: Build Question Display Component`.

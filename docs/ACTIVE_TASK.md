@@ -1,19 +1,17 @@
 # Active Task
 
-## FFH-086: Build Game Screen Layout
+## FFH-087: Build Question Display Component
 
 ### Description
 
-Create the primary gameplay interface for player view.
+Render the active question.
 
 ### Acceptance Criteria
 
-- [ ] Question area
-- [ ] Timer
-- [ ] Answer area
-- [ ] Player status
-- [ ] Responsive layout
-- [ ] Tailwind CSS used consistently
+- [ ] Prompt
+- [ ] Metadata
+- [ ] Round number
+- [ ] Correct answer is never rendered.
 
 ### Status
 
