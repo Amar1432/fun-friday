@@ -11,7 +11,7 @@ import { useGameStore } from '@/lib/store/use-game-store';
 import { useSocket, useSocketEvent } from '@/lib/socket/socket-context';
 
 export default function LobbyPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, token, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { roomCode } = useParams();
   const searchParams = useSearchParams();
@@ -49,20 +49,25 @@ export default function LobbyPage() {
   // Redirect if not authenticated
   React.useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      if (roomCode) {
+        router.push(`/room/join?code=${roomCode}`);
+      } else {
+        router.push('/login');
+      }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, roomCode, router]);
 
   // Emit JoinRoom when socket is connected
   React.useEffect(() => {
     if (socketStatus === 'connected' && socket && roomCode) {
+      const isGuest = user && (!user.email || user.email.trim() === '');
       socket.emit('JoinRoom', {
         roomCode: roomCode as string,
         displayName: user?.name || '',
-        guestToken: '',
+        guestToken: isGuest ? token || '' : '',
       });
     }
-  }, [socketStatus, socket, roomCode, user]);
+  }, [socketStatus, socket, roomCode, user, token]);
 
   // Socket event listener for game start success
   useSocketEvent(

@@ -118,11 +118,25 @@ describe('LobbyPage Component', () => {
     expect(screen.getByText('Loading session...')).toBeInTheDocument();
   });
 
-  it('redirects to login if user is not authenticated', () => {
+  it('redirects to join room page if user is not authenticated and roomCode is present', () => {
     mockUseAuth.mockReturnValue({
       user: null,
       token: null,
       isLoading: false,
+    });
+
+    render(<LobbyPage />);
+    expect(mockPush).toHaveBeenCalledWith('/room/join?code=ABCDEF');
+  });
+
+  it('redirects to login if user is not authenticated and roomCode is not present', () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      token: null,
+      isLoading: false,
+    });
+    (useParams as jest.Mock).mockReturnValue({
+      roomCode: undefined,
     });
 
     render(<LobbyPage />);
