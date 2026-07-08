@@ -10,14 +10,14 @@ Display room metadata.
 
 Panel displays:
 
-- [ ] Room code
-- [ ] Room status
-- [ ] Connected players
-- [ ] Host information
-- [ ] Current game state
+- [x] Room code
+- [x] Room status
+- [x] Connected players
+- [x] Host information
+- [x] Current game state
 
 Values update automatically.
 
 ### Status
 
-Pending.
+Completed.

@@ -1511,6 +1511,10 @@ Panel displays:
 
 Values update automatically.
 
+### Status
+
+**COMPLETED** - Implemented the `RoomInformationPanel` component at `apps/web/components/room-information-panel.tsx` which renders room code, status, host info, connected players, and game progress from the Zustand store. Added a unit test suite to fully cover its functionality and verified that lint and type checks pass.
+
 ---
 
 ## FFH-078: Build Player List Component
