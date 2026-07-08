@@ -1,20 +1,18 @@
 # Active Task
 
-## FFH-081: Build Join Room Screen
+## FFH-083: Connect JoinRoom Flow
 
 ### Description
 
-Create guest entry page.
+Wire guest join flow to authentication and WebSocket connection.
 
 ### Acceptance Criteria
 
-- [x] Room code input
-- [x] Display name input
-- [x] Join button
-- [x] Validation errors
-- [x] Loading state
-- [x] Tailwind styling applied
+- [ ] Guest authentication
+- [ ] Socket authentication
+- [ ] JoinRoom event
+- [ ] Room synchronization
 
 ### Status
 
-Completed.
+In Progress.
