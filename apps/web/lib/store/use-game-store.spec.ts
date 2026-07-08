@@ -1,4 +1,4 @@
-import { useGameStore, sortPlayers } from './use-game-store';
+import { useGameStore, sortPlayers, deduplicateLeaderboard } from './use-game-store';
 import { Player, LeaderboardEntry } from '@/lib/socket/types';
 
 describe('useGameStore', () => {
@@ -190,5 +190,46 @@ describe('useGameStore', () => {
     expect(state.room.status).toBe('IN_PROGRESS');
     expect(state.players).toEqual(players);
     expect(state.leaderboard).toEqual(leaderboard);
+  });
+
+  it('should deduplicate leaderboard entries by playerId', () => {
+    const rawLeaderboard: LeaderboardEntry[] = [
+      { rank: 1, playerId: 'p1', displayName: 'Player 1', score: 100, streak: 1 },
+      { rank: 2, playerId: 'p2', displayName: 'Player 2', score: 80, streak: 1 },
+      { rank: 3, playerId: 'p1', displayName: 'Player 1 Duplicate', score: 100, streak: 1 },
+    ];
+
+    const deduplicated = deduplicateLeaderboard(rawLeaderboard);
+    expect(deduplicated).toEqual([
+      { rank: 1, playerId: 'p1', displayName: 'Player 1', score: 100, streak: 1 },
+      { rank: 2, playerId: 'p2', displayName: 'Player 2', score: 80, streak: 1 },
+    ]);
+  });
+
+  it('should deduplicate leaderboard state when setLeaderboard, setGameFinished, or syncState is called', () => {
+    const store = useGameStore.getState();
+    const rawLeaderboard: LeaderboardEntry[] = [
+      { rank: 1, playerId: 'p1', displayName: 'Player 1', score: 100, streak: 1 },
+      { rank: 2, playerId: 'p1', displayName: 'Player 1 Duplicate', score: 100, streak: 1 },
+    ];
+
+    store.setLeaderboard(rawLeaderboard);
+    expect(useGameStore.getState().leaderboard).toEqual([
+      { rank: 1, playerId: 'p1', displayName: 'Player 1', score: 100, streak: 1 },
+    ]);
+
+    store.setGameFinished(rawLeaderboard);
+    expect(useGameStore.getState().leaderboard).toEqual([
+      { rank: 1, playerId: 'p1', displayName: 'Player 1', score: 100, streak: 1 },
+    ]);
+
+    store.syncState({
+      status: 'IN_PROGRESS',
+      players: [],
+      leaderboard: rawLeaderboard,
+    });
+    expect(useGameStore.getState().leaderboard).toEqual([
+      { rank: 1, playerId: 'p1', displayName: 'Player 1', score: 100, streak: 1 },
+    ]);
   });
 });

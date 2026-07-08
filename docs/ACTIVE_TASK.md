@@ -1,19 +1,15 @@
 # Active Task
 
-## FFH-092: Build Live Leaderboard Component
+## FFH-094: Build Game Completion Screen
 
 ### Description
 
-Display player rankings.
+Display final game results.
 
 ### Acceptance Criteria
 
-- [ ] Leaderboard displays:
-  - [ ] Rank
-  - [ ] Player name
-  - [ ] Score
-  - [ ] Score change (if available)
-- [ ] Ordering matches backend.
+- [ ] Screen includes final rankings, winner, player scores, and return action.
+- [ ] Screen is displayed after GameFinished event.
 
 ### Status
 

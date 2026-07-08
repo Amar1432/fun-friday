@@ -16,12 +16,23 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
   const prevScoresRef = React.useRef<Record<string, number>>({});
   const [scoreChanges, setScoreChanges] = React.useState<Record<string, number>>({});
 
+  // Deduplicate entries by playerId to prevent React key collisions and display anomalies
+  const uniqueEntries = React.useMemo(() => {
+    const seen = new Set<string>();
+    return entries.filter((entry) => {
+      if (!entry || !entry.playerId) return false;
+      if (seen.has(entry.playerId)) return false;
+      seen.add(entry.playerId);
+      return true;
+    });
+  }, [entries]);
+
   React.useEffect(() => {
-    if (entries.length === 0) return;
+    if (uniqueEntries.length === 0) return;
 
     const newChanges: Record<string, number> = {};
 
-    entries.forEach((entry) => {
+    uniqueEntries.forEach((entry) => {
       const prevScore = prevScoresRef.current[entry.playerId];
       if (prevScore !== undefined) {
         const diff = entry.score - prevScore;
@@ -46,7 +57,7 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [entries]);
+  }, [uniqueEntries]);
 
   return (
     <div
@@ -101,13 +112,13 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
           Live Leaderboard
         </h3>
         <span className="text-[10px] text-slate-500 font-bold bg-slate-950/80 px-2 py-0.5 rounded-full border border-slate-800">
-          {entries.length} {entries.length === 1 ? 'Player' : 'Players'}
+          {uniqueEntries.length} {uniqueEntries.length === 1 ? 'Player' : 'Players'}
         </span>
       </div>
 
-      {entries.length > 0 ? (
+      {uniqueEntries.length > 0 ? (
         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-          {entries.map((entry) => {
+          {uniqueEntries.map((entry) => {
             const isSelf = entry.playerId === currentUserId;
             const change = scoreChanges[entry.playerId];
             const hasChange = change !== undefined && change > 0;

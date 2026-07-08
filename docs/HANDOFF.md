@@ -13,6 +13,35 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
 
+**Date/Time:** 2026-07-08 23:45 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash (Medium))
+**Ticket:** FFH-093
+
+- **What Changed:**
+  - Implemented automatic leaderboard updates on the frontend by subscribing to the `LeaderboardUpdated` event in `useSocketSync` which triggers the store update.
+  - Implemented deduplication on the frontend inside the game store (`setLeaderboard`, `setGameFinished`, `syncState`) and inside the `LiveLeaderboard` component itself to avoid duplicate player entries and prevent React key conflicts.
+  - Ensured score change animations do not affect ranking accuracy by using React `useMemo` for stable deduplicated entries and stable React rendering keys.
+  - Added comprehensive tests in `apps/web/lib/store/use-game-store.spec.ts` and `apps/web/components/live-leaderboard.spec.tsx` to verify deduplication behavior.
+  - Verified that code compiles, linting, type-checking, and all 377 unit tests in the monorepo pass successfully.
+- **Why:** To satisfy the acceptance criteria of FFH-093, allowing real-time, accurate, and duplicate-free leaderboard synchronization.
+- **What's Next:** Start `FFH-094: Build Game Completion Screen`.
+
+---
+
+**Date/Time:** 2026-07-08 23:32 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash (Medium))
+**Ticket:** FFH-092
+
+- **What Changed:**
+  - Refactored `LiveLeaderboard` (`apps/web/components/live-leaderboard.tsx`) to track previous scores using a React `useRef` (`prevScoresRef`) rather than state (`prevScores`).
+  - Fixed an infinite re-render loop ("Maximum update depth exceeded" error) caused by updating `prevScores` state inside `useEffect` where `prevScores` was in the dependency array.
+  - Verified all tests in `apps/web/components/live-leaderboard.spec.tsx` compile and pass in under 0.5s.
+  - Ran comprehensive checks: linting (`pnpm lint`), type checking (`pnpm typecheck`), build (`pnpm build`), and verified that all 374 monorepo tests pass successfully.
+- **Why:** To satisfy the acceptance criteria of FFH-092, fixing a critical infinite rendering loop in the live leaderboard UI component and ensuring optimal performance.
+- **What's Next:** Start `FFH-093: Synchronize Leaderboard Updates`.
+
+---
+
 **Date/Time:** 2026-07-08 23:26 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash (Medium))
 **Ticket:** FFH-091

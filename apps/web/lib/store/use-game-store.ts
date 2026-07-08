@@ -109,6 +109,17 @@ export const sortPlayers = (players: Player[]): Player[] => {
   });
 };
 
+// Deduplicate leaderboard entries by playerId
+export const deduplicateLeaderboard = (leaderboard: LeaderboardEntry[]): LeaderboardEntry[] => {
+  const seen = new Set<string>();
+  return leaderboard.filter((entry) => {
+    if (!entry || !entry.playerId) return false;
+    if (seen.has(entry.playerId)) return false;
+    seen.add(entry.playerId);
+    return true;
+  });
+};
+
 export const useGameStore = create<GameStore>((set) => ({
   user: null,
   connectionStatus: 'disconnected',
@@ -207,18 +218,20 @@ export const useGameStore = create<GameStore>((set) => ({
       game: { ...state.game, submittedAnswer },
     })),
 
-  setLeaderboard: (leaderboard) => set({ leaderboard }),
+  setLeaderboard: (leaderboard) => set({ leaderboard: deduplicateLeaderboard(leaderboard) }),
 
   setGameFinished: (finalRankings) =>
     set((state) => ({
       room: { ...state.room, status: 'FINISHED' },
-      leaderboard: finalRankings,
+      leaderboard: deduplicateLeaderboard(finalRankings),
     })),
 
   syncState: (syncData) =>
     set((state) => ({
       room: { ...state.room, status: syncData.status },
       players: sortPlayers(syncData.players),
-      leaderboard: syncData.leaderboard ?? state.leaderboard,
+      leaderboard: syncData.leaderboard
+        ? deduplicateLeaderboard(syncData.leaderboard)
+        : state.leaderboard,
     })),
 }));

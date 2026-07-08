@@ -95,4 +95,23 @@ describe('LiveLeaderboard Component', () => {
     // No score change for player-2
     expect(screen.queryByTestId('score-change-player-2')).not.toBeInTheDocument();
   });
+
+  it('deduplicates input entries by playerId to avoid duplicate elements and React key conflicts', () => {
+    const duplicateEntries: LeaderboardEntry[] = [
+      { rank: 1, playerId: 'player-1', displayName: 'Player 1', score: 1000, streak: 0 },
+      { rank: 2, playerId: 'player-2', displayName: 'Player 2', score: 800, streak: 0 },
+      { rank: 3, playerId: 'player-1', displayName: 'Player 1 Duplicate', score: 1000, streak: 0 },
+    ];
+
+    render(<LiveLeaderboard entries={duplicateEntries} />);
+
+    // Player 1 should only be rendered once
+    const player1Rows = screen.getAllByTestId('leaderboard-row-player-1');
+    expect(player1Rows).toHaveLength(1);
+    expect(screen.getByText('Player 1')).toBeInTheDocument();
+    expect(screen.queryByText('Player 1 Duplicate')).not.toBeInTheDocument();
+
+    // The player count pill should display the count of unique players (2)
+    expect(screen.getByText('2 Players')).toBeInTheDocument();
+  });
 });
