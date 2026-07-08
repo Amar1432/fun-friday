@@ -10,6 +10,8 @@ const mockSocketInstance = {
   on: jest.fn(),
   off: jest.fn(),
   emit: jest.fn(),
+  onAny: jest.fn(),
+  offAny: jest.fn(),
   connected: false,
   io: {
     opts: {
@@ -183,5 +185,41 @@ describe('SocketProvider and hooks', () => {
 
     // Unmount should keep registry intact, but unregistering from context should clean it up
     unmount();
+  });
+
+  it('logs unhandled events safely to console.warn', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    mockUseAuth.mockReturnValue({
+      token: 'some-token',
+      logout: jest.fn(),
+    });
+
+    render(
+      <SocketProvider>
+        <TestComponent />
+      </SocketProvider>,
+    );
+
+    expect(mockSocketInstance.onAny).toHaveBeenCalledWith(expect.any(Function));
+    const onAnyListener = mockSocketInstance.onAny.mock.calls[0][0];
+
+    // Case 1: Unregistered/unhandled event
+    onAnyListener('UnknownEvent', { foo: 'bar' });
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Socket] Unhandled event received: UnknownEvent'),
+      expect.any(Object),
+    );
+
+    warnSpy.mockClear();
+
+    // Case 2: Registered event but no active listeners
+    onAnyListener('PlayerJoined', { player: { id: 'p1' } });
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Socket] Unhandled event received: PlayerJoined'),
+      expect.any(Object),
+    );
+
+    warnSpy.mockRestore();
   });
 });

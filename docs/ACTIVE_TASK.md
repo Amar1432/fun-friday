@@ -1,16 +1,15 @@
 # Active Task
 
-## FFH-095: Implement Incoming Event Handlers
+## FFH-096: Implement Outgoing Event Dispatcher
 
 ### Description
 
-Connect all incoming Socket.IO events to UI updates.
+Centralize outgoing WebSocket event emission.
 
 ### Acceptance Criteria
 
-- [ ] Handlers exist for every event defined in ROOM_PROTOCOL.md.
-- [ ] Each event updates the correct UI.
-- [ ] Unhandled events are logged safely.
+- [ ] Dispatcher supports: JoinRoom, LeaveRoom, PlayerReady, StartGame, SubmitAnswer, Reconnect.
+- [ ] Components never emit socket events directly.
 
 ### Status
 

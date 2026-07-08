@@ -13,6 +13,20 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
 
+**Date/Time:** 2026-07-09 00:05 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash (Medium))
+**Ticket:** FFH-095
+
+- **What Changed:**
+  - Implemented client-side wildcard listener using `targetSocket.onAny` in `SocketProvider` (`apps/web/lib/socket/socket-context.tsx`) to log all unregistered or unhandled incoming WebSocket events safely using `console.warn`.
+  - Added unit test in `apps/web/lib/socket/socket-context.spec.tsx` to verify unhandled events trigger safe logging, while handled events do not.
+  - Verified and confirmed that handlers exist for all specified server-to-client events defined in `ROOM_PROTOCOL.md` (e.g. `PlayerJoined`, `PlayerLeft`, `RoomStateUpdated`, `GameStarted`, `QuestionStarted`, `TimerTick`, `AnswerReveal`, `LeaderboardUpdated`, `GameFinished`), and that they accurately update the state and UI.
+  - Successfully verified the full project validation pipeline: ran linting (`pnpm lint`), type checking (`pnpm typecheck`), build (`pnpm build`), and all 379 tests (including the new test case) compile and pass.
+- **Why:** To satisfy all acceptance criteria for FFH-095, connecting all incoming Socket.IO events to UI updates and implementing safe logging for unhandled/unrecognized socket events.
+- **What's Next:** Start `FFH-096: Implement Outgoing Event Dispatcher`.
+
+---
+
 **Date/Time:** 2026-07-08 23:55 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash (Medium))
 **Ticket:** FFH-094

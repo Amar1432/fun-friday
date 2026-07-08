@@ -87,6 +87,22 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   // Central event dispatcher that hooks up to the underlying socket
   const setupEventDispatcher = React.useCallback(
     (targetSocket: Socket<ServerToClientEvents, ClientToServerEvents>) => {
+      // Set up wildcard listener to safely log all unhandled incoming events
+      targetSocket.offAny();
+      targetSocket.onAny((event, ...args) => {
+        const isRegistered = VALID_SERVER_EVENTS.includes(event as keyof ServerToClientEvents);
+        const callbacks = listenersRef.current[event as keyof ServerToClientEvents];
+        const hasActiveCallbacks = callbacks && callbacks.size > 0;
+
+        if (!isRegistered || !hasActiveCallbacks) {
+          console.warn(`[Socket] Unhandled event received: ${String(event)}`, {
+            args,
+            isRegistered,
+            activeCallbackCount: callbacks ? callbacks.size : 0,
+          });
+        }
+      });
+
       VALID_SERVER_EVENTS.forEach((event) => {
         // Clean up any existing raw listeners to avoid duplicates
         targetSocket.off(event);
