@@ -13,18 +13,6 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
 
-**Date/Time:** 2026-07-08 15:00 (Local Time)
-**Ticket:** FFH-088
-
-- **What Changed:**
-  - Created a new `CountdownTimer` component at `apps/web/components/countdown-timer.tsx` to display the remaining round time.
-  - Replaced the inline timer rendering block in `apps/web/app/lobby/[roomCode]/page.tsx` with the new `CountdownTimer` component.
-  - Added unit tests for `CountdownTimer` in `apps/web/components/countdown-timer.spec.tsx` ensuring the timer displays standard styles when time > 5s, applies danger (`text-rose-500` & `animate-pulse`) when time <= 5s, and correctly returns `null` when no time is set.
-- **Why:** To satisfy FFH-088 by centralizing the timer component UI that correctly handles the styling based on the state synced by `TimerTick` events.
-- **What's Next:** Start `FFH-089: Build Answer Submission Component`.
-
----
-
 **Date/Time:** 2026-07-08 14:00 (Local Time)
 **Ticket:** FFH-086
 
@@ -53,29 +41,3 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
   - Pre-commit check (type check, linter, formatting) and all 378 unit/integration tests pass perfectly.
 - **Why:** To satisfy all requirements of FFH-081 and FFH-082, providing guests with a secure, beautiful form to join multiplayer sessions.
 - **What's Next:** Start `FFH-083: Connect JoinRoom Flow`.
-
----
-
-**Date/Time:** 2026-07-08 14:00 (Local Time)
-**Ticket:** FFH-086
-
-- **What Changed:**
-  - Implemented the primary gameplay interface layout for the player view (`apps/web/app/lobby/[roomCode]/page.tsx`).
-  - Added an answer input form specifically for non-host players, conditional on the `isHost` variable.
-  - Implemented `handleSubmitAnswer` which updates the local Zustand store via `setSubmittedAnswer` and emits a `SubmitAnswer` socket event.
-  - Restricted host-only controls (e.g., "End Game Early", "Next Round", "End Game") so they are only visible when the active user is the host.
-  - Added tests in `apps/web/app/lobby/[roomCode]/page.spec.tsx` to verify non-host players see the input form, their submitted answer, and do not see the host controls.
-- **Why:** To satisfy FFH-086 by building the answer area and player interaction layout for the gameplay UI while ensuring regular players cannot access host features.
-- **What's Next:** Start `FFH-087: Build Question Display Component`.
-
----
-
-**Date/Time:** 2026-07-08 14:30 (Local Time)
-**Ticket:** FFH-087
-
-- **What Changed:**
-  - Created a new `QuestionDisplay` component at `apps/web/components/question-display.tsx` to handle the rendering of the active question prompt, round number, and difficulty metadata.
-  - Updated `apps/web/app/lobby/[roomCode]/page.tsx` to use the new `QuestionDisplay` component, cleaning up the main page layout.
-  - Added unit tests for the `QuestionDisplay` component in `apps/web/components/question-display.spec.tsx` to ensure proper rendering and that the correct answer is never exposed or rendered by this component.
-- **Why:** To satisfy FFH-087 by abstracting the question display logic into a reusable component that adheres strictly to the requirement of never rendering the correct answer.
-- **What's Next:** Start `FFH-088: Build Countdown Timer Component`.
