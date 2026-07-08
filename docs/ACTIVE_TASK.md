@@ -8,13 +8,13 @@ Create guest entry page.
 
 ### Acceptance Criteria
 
-- [ ] Room code input
-- [ ] Display name input
-- [ ] Join button
-- [ ] Validation errors
-- [ ] Loading state
-- [ ] Tailwind styling applied
+- [x] Room code input
+- [x] Display name input
+- [x] Join button
+- [x] Validation errors
+- [x] Loading state
+- [x] Tailwind styling applied
 
 ### Status
 
-In Progress.
+Completed.

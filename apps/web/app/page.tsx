@@ -67,9 +67,9 @@ export default function Home() {
               <Link href="/login" className="no-underline">
                 <Button variant="primary">Create a Room</Button>
               </Link>
-              <Button variant="secondary" onClick={() => alert('Join Room initiated!')}>
-                Join Room
-              </Button>
+              <Link href="/room/join" className="no-underline">
+                <Button variant="secondary">Join Room</Button>
+              </Link>
             </div>
           </div>
 

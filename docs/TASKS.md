@@ -1594,15 +1594,17 @@ Create guest entry page.
 
 ### Acceptance Criteria
 
-Screen contains:
-
-- Room code input
-- Display name input
-- Join button
-- Validation errors
-- Loading state
+- [x] Room code input
+- [x] Display name input
+- [x] Join button
+- [x] Validation errors
+- [x] Loading state
 
 Tailwind styling applied.
+
+### Status
+
+**COMPLETED** - Created a new premium Join Room page at `apps/web/app/room/join/page.tsx` utilizing a glassmorphic card interface, including input fields for Room Code and Display Name, custom submit buttons, error notification banners, dynamic client-side forms constraints validation, and wrapping in a Suspense boundary. Configured query parameter pre-population. Wired the main page Join Room button to `/room/join`. Created a unit test suite under `apps/web/app/room/join/page.spec.tsx` verifying all features.
 
 ---
 

@@ -102,4 +102,28 @@ export async function createRoom(token: string): Promise<CreateRoomResponse> {
   return envelope.data;
 }
 
+export interface GuestLoginResponse {
+  player: {
+    id: string;
+    displayName: string;
+  };
+  room: {
+    id: string;
+    code: string;
+  };
+  accessToken: string;
+  expiresIn: number;
+}
+
+export async function loginAsGuest(
+  roomCode: string,
+  displayName: string,
+): Promise<GuestLoginResponse> {
+  const envelope = await request<ApiResponse<GuestLoginResponse>>('/auth/guest', {
+    method: 'POST',
+    body: JSON.stringify({ roomCode, displayName }),
+  });
+  return envelope.data;
+}
+
 export { ApiError };
