@@ -62,6 +62,19 @@ function TestComponent() {
   );
 }
 
+function ErrorTestComponent() {
+  const { error, clearError } = useSocket();
+  return (
+    <div>
+      <span data-testid="error-code">{error?.code || 'none'}</span>
+      <span data-testid="error-message">{error?.message || 'none'}</span>
+      <button onClick={clearError} data-testid="btn-clear-error">
+        Clear
+      </button>
+    </div>
+  );
+}
+
 // Test helper for useSocketEvent hook
 function ListenerComponent({ callback }: { callback: () => void }) {
   useSocketEvent('PlayerJoined', callback);
@@ -245,5 +258,57 @@ describe('SocketProvider and hooks', () => {
     );
 
     expect(screen.getByTestId('dispatcher-exists')).toHaveTextContent('exists');
+  });
+
+  it('updates error state on connect_error', () => {
+    mockUseAuth.mockReturnValue({
+      token: 'some-token',
+      logout: jest.fn(),
+    });
+
+    render(
+      <SocketProvider>
+        <ErrorTestComponent />
+      </SocketProvider>,
+    );
+
+    const connectErrorCall = mockSocketInstance.on.mock.calls.find(
+      (call) => call[0] === 'connect_error',
+    );
+    expect(connectErrorCall).toBeDefined();
+
+    const connectErrorListener = connectErrorCall![1];
+
+    act(() => {
+      connectErrorListener(new Error('Unauthorized token'));
+    });
+
+    expect(screen.getByTestId('error-code')).toHaveTextContent('AUTH_FAILED');
+    expect(screen.getByTestId('error-message')).toHaveTextContent('Unauthorized token');
+  });
+
+  it('updates error state on socket error event', () => {
+    mockUseAuth.mockReturnValue({
+      token: 'some-token',
+      logout: jest.fn(),
+    });
+
+    render(
+      <SocketProvider>
+        <ErrorTestComponent />
+      </SocketProvider>,
+    );
+
+    const errorCall = mockSocketInstance.on.mock.calls.find((call) => call[0] === 'error');
+    expect(errorCall).toBeDefined();
+
+    const errorListener = errorCall![1];
+
+    act(() => {
+      errorListener({ success: false, error: { code: 'ROOM_NOT_FOUND', message: 'Room missing' } });
+    });
+
+    expect(screen.getByTestId('error-code')).toHaveTextContent('ROOM_NOT_FOUND');
+    expect(screen.getByTestId('error-message')).toHaveTextContent('Room missing');
   });
 });

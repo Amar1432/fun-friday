@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth/auth-context';
 import { SocketProvider } from '@/lib/socket/socket-context';
 import { SocketSyncRoot } from '@/lib/socket/use-socket-sync';
+import { SocketErrorAlert } from '@/components/socket-error-alert';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -32,6 +33,7 @@ export default function RootLayout({
           <SocketProvider>
             {children}
             <SocketSyncRoot />
+            <SocketErrorAlert />
           </SocketProvider>
         </AuthProvider>
       </body>

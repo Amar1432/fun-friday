@@ -13,6 +13,21 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
 
+**Date/Time:** 2026-07-08 23:50 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash (Medium))
+**Ticket:** FFH-096
+
+- **What Changed:**
+  - Resolved a `ReferenceError: dispatcher is not defined` bug in `apps/web/lib/socket/socket-context.tsx` by defining the local `dispatcher` variable.
+  - Refactored `dispatcher` ref creation to use a stable `useState` lazy initializer to comply with React rendering best practices (avoiding ref-in-render ESLint warnings) and cleaned up unmount logic.
+  - Fixed TypeScript constraints build issue in `apps/web/lib/socket/socket-dispatcher.ts` by replacing `unknown` with `ServerToClientEvents` type constraint on Socket.
+  - Updated lobby page unit tests in `apps/web/app/lobby/[roomCode]/page.spec.tsx` to assert mock socket dispatcher calls instead of direct `socket.emit` calls.
+  - Verified and confirmed full project builds (`pnpm build`), lints (`pnpm lint`), typechecks (`pnpm typecheck`), and all 399 unit and integration tests pass cleanly.
+- **Why:** To satisfy all acceptance criteria for FFH-096, establishing a clean, centralized event dispatcher that prevents components from emitting socket events directly, while ensuring a bug-free build and compliance with strict React/ESLint rules.
+- **What's Next:** Start `FFH-097: Handle Socket Errors`.
+
+---
+
 **Date/Time:** 2026-07-09 00:05 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash (Medium))
 **Ticket:** FFH-095

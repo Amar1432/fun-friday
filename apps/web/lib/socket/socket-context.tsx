@@ -22,6 +22,8 @@ interface SocketContextType {
     callback: ServerToClientEvents[K],
   ) => void;
   dispatcher: SocketDispatcher;
+  error: { code: string; message: string } | null;
+  clearError: () => void;
 }
 
 const SocketContext = React.createContext<SocketContextType | undefined>(undefined);
@@ -51,6 +53,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   > | null>(null);
   const socketRef = React.useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const [dispatcher] = React.useState(() => new SocketDispatcher(null));
+  const [error, setError] = React.useState<{ code: string; message: string } | null>(null);
+
+  const clearError = React.useCallback(() => {
+    setError(null);
+  }, []);
 
   // Maintain local record of callbacks to prevent duplicate listeners
   // and route incoming socket events to the registered callbacks.
@@ -112,6 +119,22 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         // Register a single raw listener per event type
         targetSocket.on(event, (...args: any[]) => {
+          if (event === 'error') {
+            const err = args[0];
+            let code = 'UNKNOWN_ERROR';
+            let message = 'An unexpected error occurred.';
+            if (err && typeof err === 'object') {
+              if ('error' in err && err.error && typeof err.error === 'object') {
+                code = err.error.code || code;
+                message = err.error.message || message;
+              } else {
+                code = err.code || code;
+                message = err.message || message;
+              }
+            }
+            setError({ code, message });
+          }
+
           const callbacks = listenersRef.current[event] as Set<any> | undefined;
           if (callbacks) {
             callbacks.forEach((cb) => {
@@ -137,6 +160,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       dispatcher.setSocket(null);
     }
     setStatus('disconnected');
+    setError(null);
   }, [dispatcher]);
 
   const connect = React.useCallback(
@@ -154,6 +178,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       }
 
       setStatus('connecting');
+      setError(null);
 
       // Create a new socket instance
       const newSocket = io(config.socketUrl, {
@@ -177,6 +202,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       // Set up status event handlers
       newSocket.on('connect', () => {
         setStatus('connected');
+        setError(null);
       });
 
       newSocket.on('disconnect', (reason) => {
@@ -199,10 +225,18 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           err.message.includes('Unauthorized')
         ) {
           setStatus('auth_failed');
+          setError({
+            code: 'AUTH_FAILED',
+            message: err.message || 'Real-time session authorization failed',
+          });
           // Optionally logout if auth fails
           logout();
         } else {
           setStatus('reconnecting');
+          setError({
+            code: 'SERVER_UNAVAILABLE',
+            message: 'Game server is currently unreachable. Reconnecting automatically...',
+          });
         }
       });
 
@@ -244,8 +278,20 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       registerListener,
       unregisterListener,
       dispatcher,
+      error,
+      clearError,
     }),
-    [socket, status, connect, disconnect, registerListener, unregisterListener, dispatcher],
+    [
+      socket,
+      status,
+      connect,
+      disconnect,
+      registerListener,
+      unregisterListener,
+      dispatcher,
+      error,
+      clearError,
+    ],
   );
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
