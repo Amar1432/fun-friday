@@ -1,17 +1,17 @@
 # Active Task
 
-## FFH-090: Connect SubmitAnswer Event
+## FFH-091: Display Round Completion State
 
 ### Description
 
-Wire answer submission to Socket.IO.
+Show transition after timer expiration.
 
 ### Acceptance Criteria
 
-- [ ] SubmitAnswer event emitted.
-- [ ] Submission acknowledgement handled.
-- [ ] Errors displayed.
-- [ ] UI locked after successful submission.
+- [ ] Waiting message displayed.
+- [ ] Submission status shown.
+- [ ] Transition indicator displayed.
+- [ ] No additional submissions allowed.
 
 ### Status
 

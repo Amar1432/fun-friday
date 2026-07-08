@@ -13,6 +13,22 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
 
+**Date/Time:** 2026-07-08 16:10 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-090
+
+- **What Changed:**
+  - Added `SubmitAnswerAck` to `ServerToClientEvents` in `apps/web/lib/socket/types.ts`.
+  - Added `'SubmitAnswerAck'` to `VALID_SERVER_EVENTS` in `apps/web/lib/socket/socket-context.tsx`.
+  - Updated `handleSubmitAnswer` in `apps/web/app/lobby/[roomCode]/page.tsx` to return a `Promise<void>`, calculating precise `responseTimeMs` (clamped to time limit) using a new local React ref `questionStartedAtRef`.
+  - Configured `handleSubmitAnswer` to listen to `SubmitAnswerAck` and `error` events, updating store state (`setSubmittedAnswer`) only upon server acknowledgement.
+  - Added comprehensive test suite in `apps/web/app/lobby/[roomCode]/page.spec.tsx` verifying `SubmitAnswer` emission, `SubmitAnswerAck` handling, error handling, and memory cleanup.
+  - Verified linter rules, type checking, and all 367 monorepo tests pass successfully.
+- **Why:** To satisfy all acceptance criteria for FFH-090, connecting the client-side gameplay form to the Socket.IO real-time gameplay backend.
+- **What's Next:** Start `FFH-091: Display Round Completion State`.
+
+---
+
 **Date/Time:** 2026-07-08 16:05 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-089
