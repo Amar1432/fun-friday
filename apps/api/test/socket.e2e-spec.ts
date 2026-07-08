@@ -186,8 +186,18 @@ class InMemoryRedisRoomRepository {
       .sort((a, b) => b.score - a.score);
   }
 
-  async expireAllRoomKeys(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async expireAllRoomKeys(roomCode: string, seconds: number): Promise<void> {
     // No-op in memory
+    await Promise.resolve();
+  }
+
+  async removePlayerDisconnectedStatus(
+    roomCode: string,
+    playerId: string,
+  ): Promise<void> {
+    const room = this.getOrCreateRoom(roomCode);
+    delete room.metadata[`player:${playerId}:disconnected`];
     await Promise.resolve();
   }
 }

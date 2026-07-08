@@ -6,9 +6,10 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { RedisModule } from './redis/redis.module';
 import { GameModule } from './game/game.module';
+import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RedisModule, GameModule],
+  imports: [DatabaseModule, AuthModule, RedisModule, GameModule, RoomsModule],
   controllers: [AppController],
   providers: [AppService],
 })
