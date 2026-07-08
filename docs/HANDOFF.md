@@ -2,6 +2,24 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-08 10:25 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-080
+
+- **What Changed:**
+  - Wired the "Start Game" button in `LobbyControls` on the host lobby page to emit the `StartGame` Socket.IO event.
+  - Implemented state tracking (`isStarting`, `startError`) on the lobby page to display socket error responses and loading states, preventing duplicate clicks.
+  - Updated `CreateRoomPage` to append the generated room database ID as a query parameter (`?roomId=`) when redirecting to the lobby, ensuring the ID persists on page refreshes.
+  - Configured the lobby page to conditionally transition its layout to an active gameplay screen or finished podium screen dynamically based on the room's status (`IN_PROGRESS` or `FINISHED`), showing real-time question prompts, ticking round countdown timers, live leaderboard standings, and host loop controls (`NextRound` and `EndGame`).
+  - Created a database seed script `scripts/seed-games.ts` and seeded default games/questions into Postgres for runtime validation.
+  - Created `apps/web/app/lobby/[roomCode]/page.spec.tsx` containing comprehensive unit tests checking all states, layouts, callbacks, and socket events.
+  - Updated `docs/ACTIVE_TASK.md` and `docs/TASKS.md` to mark the ticket as completed.
+  - All workspace lint, format, typecheck, and 317 unit/integration tests pass perfectly.
+- **Why:** To satisfy the criteria for `FFH-080` and allow the host to start game lobbies and control game sessions over WebSockets in real time.
+- **What's Next:** Start `FFH-081: Build Join Room Screen`.
+
+---
+
 **Date/Time:** 2026-07-08 10:15 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-079

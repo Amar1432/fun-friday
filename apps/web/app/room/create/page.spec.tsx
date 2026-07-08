@@ -190,7 +190,7 @@ describe('CreateRoomPage', () => {
     jest.advanceTimersByTime(3000);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/lobby/ABC123');
+      expect(mockPush).toHaveBeenCalledWith('/lobby/ABC123?roomId=room-1');
     });
   });
 

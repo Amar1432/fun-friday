@@ -1570,11 +1570,15 @@ Wire Start Game button to the Socket.IO event.
 
 ### Acceptance Criteria
 
-- Button emits StartGame event.
-- Loading state displayed.
-- Duplicate clicks prevented.
-- Errors displayed appropriately.
-- Successful response transitions UI.
+- [x] Button emits StartGame event.
+- [x] Loading state displayed.
+- [x] Duplicate clicks prevented.
+- [x] Errors displayed appropriately.
+- [x] Successful response transitions UI.
+
+### Status
+
+**COMPLETED** - Wired the Start Game button to emit the `StartGame` socket event using the active room's ID and seeded game ID. Implemented loading, disabled, and duplicate click prevention states on the host page. Connected socket event listeners for error feedback and successful game start. Conditionally rendered rich glassmorphic views for both active gameplay (showing round progress, timer, question prompt, revealed answer, live leaderboard, and host round navigation controls) and finished state podium, avoiding 404s. Created comprehensive unit tests in `apps/web/app/lobby/[roomCode]/page.spec.tsx` verifying the behavior.
 
 ---
 

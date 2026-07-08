@@ -12,6 +12,7 @@ export default function CreateRoomPage() {
   const [isCreating, setIsCreating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [roomCode, setRoomCode] = React.useState<string | null>(null);
+  const [roomId, setRoomId] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
 
   // Redirect if not authenticated
@@ -33,11 +34,12 @@ export default function CreateRoomPage() {
     try {
       const response = await createRoom(token);
       setRoomCode(response.room.code);
+      setRoomId(response.room.id);
       setIsSuccess(true);
 
       // Auto-navigate to lobby after 3 seconds
       setTimeout(() => {
-        router.push(`/lobby/${response.room.code}`);
+        router.push(`/lobby/${response.room.code}?roomId=${response.room.id}`);
       }, 3000);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -290,7 +292,7 @@ export default function CreateRoomPage() {
                   <span className="text-indigo-400 font-semibold">3 seconds</span>...
                 </p>
                 <button
-                  onClick={() => router.push(`/lobby/${roomCode}`)}
+                  onClick={() => router.push(`/lobby/${roomCode}?roomId=${roomId}`)}
                   className="text-sm text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
                 >
                   Go to lobby now

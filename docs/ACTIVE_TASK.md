@@ -8,12 +8,12 @@ Wire Start Game button to the Socket.IO event.
 
 ### Acceptance Criteria
 
-- Button emits StartGame event.
-- Loading state displayed.
-- Duplicate clicks prevented.
-- Errors displayed appropriately.
-- Successful response transitions UI.
+- [x] Button emits StartGame event.
+- [x] Loading state displayed.
+- [x] Duplicate clicks prevented.
+- [x] Errors displayed appropriately.
+- [x] Successful response transitions UI.
 
 ### Status
 
-In Progress.
+Completed.
