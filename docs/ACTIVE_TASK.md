@@ -1,22 +1,21 @@
 # Active Task
 
-## FFH-078: Build Player List Component
+## FFH-079: Build Lobby Controls
 
 ### Description
 
-Display all connected players.
+Provide host controls before gameplay begins.
 
 ### Acceptance Criteria
 
-Player cards display:
+Controls include:
 
-- [x] Display name
-- [x] Ready state
-- [x] Score
-- [x] Connection status
+- [ ] Start game
+- [ ] Player count
+- [ ] Ready player count
 
-List updates immediately from socket events.
+Unavailable actions are visually disabled.
 
 ### Status
 
-Completed.
+In Progress.
