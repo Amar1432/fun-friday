@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import LobbyPage from './page';
 import { useSocket } from '@/lib/socket/socket-context';

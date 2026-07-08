@@ -11,6 +11,7 @@ import { useGameStore } from '@/lib/store/use-game-store';
 import { useSocket, useSocketEvent } from '@/lib/socket/socket-context';
 import { QuestionDisplay } from '@/components/question-display';
 import { CountdownTimer } from '@/components/countdown-timer';
+import { AnswerSubmission } from '@/components/answer-submission';
 
 export default function LobbyPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -32,7 +33,6 @@ export default function LobbyPage() {
 
   const [isStarting, setIsStarting] = React.useState(false);
   const [startError, setStartError] = React.useState<string | null>(null);
-  const [answerInput, setAnswerInput] = React.useState('');
 
   const isMounted = React.useRef(true);
 
@@ -50,7 +50,7 @@ export default function LobbyPage() {
       isMounted.current = false;
       setRoom({ code: null, id: null, status: null, hostId: null });
     };
-  }, [roomCode, roomIdParam, setRoom]);
+  }, [roomCode, roomIdParam, setRoom, room.id]);
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -128,23 +128,21 @@ export default function LobbyPage() {
   }, [socket, room.id, roomIdParam]);
 
   const handleSubmitAnswer = React.useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!answerInput.trim() || !game.currentQuestion) return;
+    (answer: string) => {
+      if (!game.currentQuestion) return;
 
       const activeRoomId = room.id || roomIdParam;
       if (socket && activeRoomId) {
         socket.emit('SubmitAnswer', {
           roomId: activeRoomId,
           questionId: game.currentQuestion.id,
-          answer: answerInput.trim(),
+          answer: answer,
           responseTimeMs: 0, // Simplified for now, will be implemented in a later task
         });
       }
-      setSubmittedAnswer(answerInput.trim());
-      setAnswerInput('');
+      setSubmittedAnswer(answer);
     },
-    [answerInput, game.currentQuestion, socket, room.id, roomIdParam, setSubmittedAnswer],
+    [game.currentQuestion, socket, room.id, roomIdParam, setSubmittedAnswer],
   );
 
   // Show loading state while checking auth
@@ -385,31 +383,11 @@ export default function LobbyPage() {
                       </p>
                     </div>
                   ) : (
-                    <form onSubmit={handleSubmitAnswer} className="max-w-md mx-auto space-y-4">
-                      <div className="space-y-2">
-                        <label htmlFor="answer-input" className="sr-only">
-                          Your Answer
-                        </label>
-                        <input
-                          id="answer-input"
-                          type="text"
-                          placeholder="Type your guess here..."
-                          value={answerInput}
-                          onChange={(e) => setAnswerInput(e.target.value)}
-                          className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-4 text-center text-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all shadow-inner"
-                          autoComplete="off"
-                          autoFocus
-                          disabled={game.timerRemaining === 0}
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={!answerInput.trim() || game.timerRemaining === 0}
-                        className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-indigo-600/20 disabled:shadow-none hover:scale-[1.01] active:scale-[0.99] disabled:scale-100 cursor-pointer disabled:cursor-not-allowed transition-all"
-                      >
-                        Submit Answer
-                      </button>
-                    </form>
+                    <AnswerSubmission
+                      key={game.currentQuestion.id}
+                      onSubmit={handleSubmitAnswer}
+                      timerRemaining={game.timerRemaining}
+                    />
                   )}
                 </div>
               ) : (
