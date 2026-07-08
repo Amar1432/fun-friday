@@ -1,21 +1,19 @@
 # Active Task
 
-## FFH-079: Build Lobby Controls
+## FFH-080: Connect StartGame Event
 
 ### Description
 
-Provide host controls before gameplay begins.
+Wire Start Game button to the Socket.IO event.
 
 ### Acceptance Criteria
 
-Controls include:
-
-- [x] Start game
-- [x] Player count
-- [x] Ready player count
-
-Unavailable actions are visually disabled.
+- Button emits StartGame event.
+- Loading state displayed.
+- Duplicate clicks prevented.
+- Errors displayed appropriately.
+- Successful response transitions UI.
 
 ### Status
 
-Completed.
+In Progress.
