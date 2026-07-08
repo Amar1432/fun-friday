@@ -289,6 +289,20 @@ describe('LobbyPage Component', () => {
     expect(screen.getByText('Charlie')).toBeInTheDocument();
   });
 
+  it('navigates to dashboard when clicking Return to Dashboard on Finished screen', () => {
+    mockRoomState.status = 'FINISHED';
+    mockStoreLeaderboard = [
+      { rank: 1, playerId: 'p-1', displayName: 'Alice', score: 200, streak: 3 },
+    ];
+
+    render(<LobbyPage />);
+
+    const returnBtn = screen.getByRole('button', { name: 'Return to Dashboard' });
+    expect(returnBtn).toBeInTheDocument();
+    fireEvent.click(returnBtn);
+    expect(mockPush).toHaveBeenCalledWith('/dashboard');
+  });
+
   it('submits answer and handles SubmitAnswerAck successfully', async () => {
     mockRoomState.status = 'IN_PROGRESS';
     mockRoomState.hostId = 'host-123';
