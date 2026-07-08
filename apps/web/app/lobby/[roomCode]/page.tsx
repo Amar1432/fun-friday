@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { config } from '@/lib/config';
 import { RoomInformationPanel } from '@/components/room-information-panel';
 import { PlayerList } from '@/components/player-list';
+import { LobbyControls } from '@/components/lobby-controls';
 import { useGameStore } from '@/lib/store/use-game-store';
 
 export default function LobbyPage() {
@@ -145,17 +146,7 @@ export default function LobbyPage() {
             <RoomInformationPanel />
             <PlayerList />
 
-            <div className="text-center space-y-4">
-              <p className="text-sm text-slate-400">
-                Share the room code with players so they can join your session
-              </p>
-              <button
-                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold text-sm shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer opacity-50 cursor-not-allowed"
-                disabled
-              >
-                Start Game (Waiting for players...)
-              </button>
-            </div>
+            <LobbyControls />
           </div>
         </div>
       </main>

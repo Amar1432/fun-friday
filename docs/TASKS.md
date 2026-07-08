@@ -1556,6 +1556,10 @@ Controls include:
 
 Unavailable actions are visually disabled.
 
+### Status
+
+**COMPLETED** - Implemented the `LobbyControls` component at `apps/web/components/lobby-controls.tsx` showing connected player count and ready player status. Integrated it on the lobby page, added disabled/loading/error states, and wrote unit tests for the component and its sub-flows.
+
 ---
 
 ## FFH-080: Connect StartGame Event

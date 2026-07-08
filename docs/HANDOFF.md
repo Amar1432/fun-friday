@@ -2,6 +2,22 @@
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+**Date/Time:** 2026-07-08 10:15 (Local Time)
+**Agent:** Antigravity (Gemini 3.5 Flash)
+**Ticket:** FFH-079
+
+- **What Changed:**
+  - Implemented the `LobbyControls` UI component at `apps/web/components/lobby-controls.tsx` showing connected player count and ready player status.
+  - Added a "Start Game" button that disables if not all connected players are ready (requires at least 1 player, and all players to have `isReady: true`).
+  - Added loading indicator and disabled states for starting interactions, as well as an error status display.
+  - Created a comprehensive test suite `apps/web/components/lobby-controls.spec.tsx` verifying empty state formatting, ready stats comparison logic, error/loading feedback UI, and click callbacks.
+  - Integrated `LobbyControls` component inside the host lobby page `apps/web/app/lobby/[roomCode]/page.tsx` replacing the previous static button block.
+  - All workspace tests, linter, and typechecks pass successfully.
+- **Why:** To satisfy all requirements of FFH-079 by providing interactive host lobby controls that visually reflect player status and readiness.
+- **What's Next:** Start `FFH-080: Connect StartGame Event`.
+
+---
+
 **Date/Time:** 2026-07-08 10:05 (Local Time)
 **Agent:** Antigravity (Gemini 3.5 Flash)
 **Ticket:** FFH-078

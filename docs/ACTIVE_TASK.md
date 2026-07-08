@@ -10,12 +10,12 @@ Provide host controls before gameplay begins.
 
 Controls include:
 
-- [ ] Start game
-- [ ] Player count
-- [ ] Ready player count
+- [x] Start game
+- [x] Player count
+- [x] Ready player count
 
 Unavailable actions are visually disabled.
 
 ### Status
 
-In Progress.
+Completed.
