@@ -9,6 +9,8 @@ import { PlayerList } from '@/components/player-list';
 import { LobbyControls } from '@/components/lobby-controls';
 import { useGameStore } from '@/lib/store/use-game-store';
 import { useSocket, useSocketEvent } from '@/lib/socket/socket-context';
+import { QuestionDisplay } from '@/components/question-display';
+import { CountdownTimer } from '@/components/countdown-timer';
 
 export default function LobbyPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -348,41 +350,18 @@ export default function LobbyPage() {
           {/* Question / Gameplay Controller (Left 2 cols) */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-8 space-y-8 flex flex-col justify-between min-h-[450px]">
-              <div className="flex justify-between items-center border-b border-slate-800/50 pb-4">
-                <div className="space-y-1">
-                  <span className="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-semibold border border-indigo-500/20">
-                    Emoji Guess
-                  </span>
-                  <h2 className="text-lg font-bold text-white mt-1.5">
-                    Round {game.currentRoundIndex + 1} of {game.totalRounds}
-                  </h2>
-                </div>
-
-                {game.timerRemaining !== null && (
-                  <div className="flex flex-col items-center">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                      Time Remaining
-                    </span>
-                    <span
-                      className={`text-3xl font-extrabold tabular-nums transition-colors duration-300 ${
-                        game.timerRemaining <= 5 ? 'text-rose-500 animate-pulse' : 'text-slate-100'
-                      }`}
-                    >
-                      {game.timerRemaining}s
-                    </span>
-                  </div>
-                )}
+              <div className="flex justify-end items-center border-b border-slate-800/50 pb-4">
+                <CountdownTimer timerRemaining={game.timerRemaining} />
               </div>
 
               {/* Active Question Display */}
               {game.currentQuestion ? (
-                <div className="text-center space-y-6 py-8">
-                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
-                    Guess the movie prompt
-                  </span>
-                  <div className="text-6xl md:text-7xl font-extrabold tracking-wide py-4 select-none drop-shadow-lg">
-                    {game.currentQuestion.prompt}
-                  </div>
+                <div className="text-center space-y-6">
+                  <QuestionDisplay
+                    question={game.currentQuestion}
+                    currentRoundIndex={game.currentRoundIndex}
+                    totalRounds={game.totalRounds}
+                  />
 
                   {game.correctAnswer ? (
                     <div className="space-y-3 max-w-sm mx-auto p-5 bg-green-500/10 border border-green-500/20 rounded-2xl animate-fade-in">

@@ -1,17 +1,21 @@
 # Active Task
 
-## FFH-087: Build Question Display Component
+## FFH-089: Build Answer Submission Component
 
 ### Description
 
-Render the active question.
+Allow players to submit answers.
 
 ### Acceptance Criteria
 
-- [ ] Prompt
-- [ ] Metadata
-- [ ] Round number
-- [ ] Correct answer is never rendered.
+Component supports:
+
+- [ ] Text input or game-specific interaction
+- [ ] Submit button
+- [ ] Disabled state after submission
+- [ ] Loading state
+
+Duplicate submissions prevented.
 
 ### Status
 
