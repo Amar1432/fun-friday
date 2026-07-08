@@ -1,19 +1,20 @@
 # Active Task
 
-## FFH-080: Connect StartGame Event
+## FFH-081: Build Join Room Screen
 
 ### Description
 
-Wire Start Game button to the Socket.IO event.
+Create guest entry page.
 
 ### Acceptance Criteria
 
-- [x] Button emits StartGame event.
-- [x] Loading state displayed.
-- [x] Duplicate clicks prevented.
-- [x] Errors displayed appropriately.
-- [x] Successful response transitions UI.
+- [ ] Room code input
+- [ ] Display name input
+- [ ] Join button
+- [ ] Validation errors
+- [ ] Loading state
+- [ ] Tailwind styling applied
 
 ### Status
 
-Completed.
+In Progress.
