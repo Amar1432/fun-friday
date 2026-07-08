@@ -1,15 +1,16 @@
 # Active Task
 
-## FFH-094: Build Game Completion Screen
+## FFH-095: Implement Incoming Event Handlers
 
 ### Description
 
-Display final game results.
+Connect all incoming Socket.IO events to UI updates.
 
 ### Acceptance Criteria
 
-- [ ] Screen includes final rankings, winner, player scores, and return action.
-- [ ] Screen is displayed after GameFinished event.
+- [ ] Handlers exist for every event defined in ROOM_PROTOCOL.md.
+- [ ] Each event updates the correct UI.
+- [ ] Unhandled events are logged safely.
 
 ### Status
 
