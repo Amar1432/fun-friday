@@ -12,6 +12,7 @@ import { useSocket, useSocketEvent } from '@/lib/socket/socket-context';
 import { QuestionDisplay } from '@/components/question-display';
 import { CountdownTimer } from '@/components/countdown-timer';
 import { AnswerSubmission } from '@/components/answer-submission';
+import { LiveLeaderboard } from '@/components/live-leaderboard';
 
 export default function LobbyPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -608,43 +609,7 @@ export default function LobbyPage() {
           {/* Real-time Standings (Right 1 col) */}
           <div className="space-y-6">
             {/* Live Leaderboard */}
-            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 space-y-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800/50 pb-3">
-                Live Leaderboard
-              </h3>
-
-              {leaderboard.length > 0 ? (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                  {leaderboard.map((entry) => (
-                    <div
-                      key={entry.playerId}
-                      className="flex items-center justify-between p-3 bg-slate-950/50 border border-slate-800/50 rounded-xl hover:border-slate-700/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-extrabold text-slate-500">#{entry.rank}</span>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-slate-200">
-                            {entry.displayName}
-                          </span>
-                          {entry.streak > 1 && (
-                            <span className="text-[10px] text-amber-500 font-bold tracking-wide">
-                              🔥 {entry.streak} STREAK
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-sm font-extrabold text-indigo-400">
-                        {entry.score} pts
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6 text-slate-500 text-sm font-medium">
-                  Waiting for score calculations...
-                </div>
-              )}
-            </div>
+            <LiveLeaderboard entries={leaderboard} />
 
             {/* Connected players presence list */}
             <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 space-y-4">
