@@ -1,17 +1,18 @@
 # Active Task
 
-## FFH-083: Connect JoinRoom Flow
+## FFH-084: Build Waiting Room Screen
 
 ### Description
 
-Wire guest join flow to authentication and WebSocket connection.
+Display lobby while waiting for the game to begin.
 
 ### Acceptance Criteria
 
-- [ ] Guest authentication
-- [ ] Socket authentication
-- [ ] JoinRoom event
-- [ ] Room synchronization
+- [ ] Room code
+- [ ] Connected players
+- [ ] Ready status
+- [ ] Host information
+- [ ] Waiting message
 
 ### Status
 
