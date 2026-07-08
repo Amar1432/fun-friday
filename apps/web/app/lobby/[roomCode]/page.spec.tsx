@@ -209,6 +209,61 @@ describe('LobbyPage Component', () => {
     expect(screen.getByText('Next Round')).toBeInTheDocument();
   });
 
+  it('renders answer input form for non-host players and hides host controls', () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+    mockGameState.timerRemaining = 15;
+
+    // Override user to be a normal player
+    mockUseAuth.mockReturnValue({
+      user: { id: 'player-1', name: 'Player 1', email: 'player@example.com' },
+      token: 'player-token',
+      isLoading: false,
+    });
+
+    render(<LobbyPage />);
+
+    // Non-host should see the input field
+    expect(screen.getByPlaceholderText('Type your guess here...')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Submit Answer' })).toBeInTheDocument();
+
+    // Non-host should not see host controls
+    expect(screen.queryByText('End Game')).not.toBeInTheDocument();
+    expect(screen.queryByText('End Game Early')).not.toBeInTheDocument();
+    expect(screen.queryByText('Next Round')).not.toBeInTheDocument();
+  });
+
+  it('renders submitted answer state for non-host players', () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+    mockGameState.submittedAnswer = 'Harry Potter';
+
+    // Override user to be a normal player
+    mockUseAuth.mockReturnValue({
+      user: { id: 'player-1', name: 'Player 1', email: 'player@example.com' },
+      token: 'player-token',
+      isLoading: false,
+    });
+
+    render(<LobbyPage />);
+
+    expect(screen.getByText('Your Answer')).toBeInTheDocument();
+    expect(screen.getByText('Harry Potter')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for other players...')).toBeInTheDocument();
+  });
+
   it('transitions UI and renders Podium / Finished screen when room status is FINISHED', () => {
     mockRoomState.status = 'FINISHED';
     mockStoreLeaderboard = [

@@ -22,11 +22,15 @@ export default function LobbyPage() {
   const game = useGameStore((state) => state.game);
   const players = useGameStore((state) => state.players);
   const leaderboard = useGameStore((state) => state.leaderboard);
+  const setSubmittedAnswer = useGameStore((state) => state.setSubmittedAnswer);
+
+  const isHost = user?.id === room.hostId;
 
   const { socket, status: socketStatus } = useSocket();
 
   const [isStarting, setIsStarting] = React.useState(false);
   const [startError, setStartError] = React.useState<string | null>(null);
+  const [answerInput, setAnswerInput] = React.useState('');
 
   const isMounted = React.useRef(true);
 
@@ -120,6 +124,26 @@ export default function LobbyPage() {
       socket.emit('EndGame', { roomId: activeRoomId });
     }
   }, [socket, room.id, roomIdParam]);
+
+  const handleSubmitAnswer = React.useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!answerInput.trim() || !game.currentQuestion) return;
+
+      const activeRoomId = room.id || roomIdParam;
+      if (socket && activeRoomId) {
+        socket.emit('SubmitAnswer', {
+          roomId: activeRoomId,
+          questionId: game.currentQuestion.id,
+          answer: answerInput.trim(),
+          responseTimeMs: 0, // Simplified for now, will be implemented in a later task
+        });
+      }
+      setSubmittedAnswer(answerInput.trim());
+      setAnswerInput('');
+    },
+    [answerInput, game.currentQuestion, socket, room.id, roomIdParam, setSubmittedAnswer],
+  );
 
   // Show loading state while checking auth
   if (authLoading) {
@@ -309,12 +333,14 @@ export default function LobbyPage() {
               </span>
             </button>
 
-            <button
-              onClick={handleEndGame}
-              className="text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 px-4 py-2 rounded-xl transition-all cursor-pointer"
-            >
-              End Game
-            </button>
+            {isHost && (
+              <button
+                onClick={handleEndGame}
+                className="text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 px-4 py-2 rounded-xl transition-all cursor-pointer"
+              >
+                End Game
+              </button>
+            )}
           </div>
         </header>
 
@@ -365,10 +391,46 @@ export default function LobbyPage() {
                       </span>
                       <p className="text-2xl font-black text-white">{game.correctAnswer}</p>
                     </div>
-                  ) : (
+                  ) : isHost ? (
                     <p className="text-sm font-medium text-slate-400 animate-pulse">
                       Waiting for players to submit answers...
                     </p>
+                  ) : game.submittedAnswer ? (
+                    <div className="space-y-3 max-w-sm mx-auto p-5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl animate-fade-in">
+                      <span className="text-xs text-indigo-400 font-bold uppercase tracking-wider">
+                        Your Answer
+                      </span>
+                      <p className="text-2xl font-black text-white">{game.submittedAnswer}</p>
+                      <p className="text-xs text-slate-400 mt-2 animate-pulse">
+                        Waiting for other players...
+                      </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmitAnswer} className="max-w-md mx-auto space-y-4">
+                      <div className="space-y-2">
+                        <label htmlFor="answer-input" className="sr-only">
+                          Your Answer
+                        </label>
+                        <input
+                          id="answer-input"
+                          type="text"
+                          placeholder="Type your guess here..."
+                          value={answerInput}
+                          onChange={(e) => setAnswerInput(e.target.value)}
+                          className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-4 text-center text-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all shadow-inner"
+                          autoComplete="off"
+                          autoFocus
+                          disabled={game.timerRemaining === 0}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={!answerInput.trim() || game.timerRemaining === 0}
+                        className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-indigo-600/20 disabled:shadow-none hover:scale-[1.01] active:scale-[0.99] disabled:scale-100 cursor-pointer disabled:cursor-not-allowed transition-all"
+                      >
+                        Submit Answer
+                      </button>
+                    </form>
                   )}
                 </div>
               ) : (
@@ -397,23 +459,25 @@ export default function LobbyPage() {
               )}
 
               {/* Host Control Actions */}
-              <div className="border-t border-slate-800/50 pt-6 flex justify-end gap-4">
-                <button
-                  onClick={handleEndGame}
-                  className="px-5 py-3 border border-slate-800 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-sm rounded-xl cursor-pointer transition-colors"
-                >
-                  End Game Early
-                </button>
-
-                {game.correctAnswer && (
+              {isHost && (
+                <div className="border-t border-slate-800/50 pt-6 flex justify-end gap-4">
                   <button
-                    onClick={handleNextRound}
-                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/20 hover:scale-[1.01] active:scale-[0.99] cursor-pointer transition-all"
+                    onClick={handleEndGame}
+                    className="px-5 py-3 border border-slate-800 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-sm rounded-xl cursor-pointer transition-colors"
                   >
-                    Next Round
+                    End Game Early
                   </button>
-                )}
-              </div>
+
+                  {game.correctAnswer && (
+                    <button
+                      onClick={handleNextRound}
+                      className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/20 hover:scale-[1.01] active:scale-[0.99] cursor-pointer transition-all"
+                    >
+                      Next Round
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
