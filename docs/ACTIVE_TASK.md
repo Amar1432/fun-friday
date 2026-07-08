@@ -1,21 +1,17 @@
 # Active Task
 
-## FFH-089: Build Answer Submission Component
+## FFH-090: Connect SubmitAnswer Event
 
 ### Description
 
-Allow players to submit answers.
+Wire answer submission to Socket.IO.
 
 ### Acceptance Criteria
 
-Component supports:
-
-- [ ] Text input or game-specific interaction
-- [ ] Submit button
-- [ ] Disabled state after submission
-- [ ] Loading state
-
-Duplicate submissions prevented.
+- [ ] SubmitAnswer event emitted.
+- [ ] Submission acknowledgement handled.
+- [ ] Errors displayed.
+- [ ] UI locked after successful submission.
 
 ### Status
 
