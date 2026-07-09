@@ -22,7 +22,7 @@ export function PlayerList() {
           <p className="text-sm text-slate-500 font-medium">Waiting for players to join...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="player-list-grid">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="player-list-grid">
           {players.map((player) => {
             const isConnected = player.isConnected !== false;
             const initials = player.displayName.charAt(0).toUpperCase();
@@ -40,7 +40,7 @@ export function PlayerList() {
             const avatarGradient = colors[hash % colors.length];
 
             return (
-              <div
+              <li
                 key={player.id}
                 data-testid={`player-card-${player.id}`}
                 className={`bg-slate-900/60 border backdrop-blur-xl rounded-2xl p-4 flex items-center justify-between hover:border-slate-700/80 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 ${
@@ -52,6 +52,7 @@ export function PlayerList() {
                   <div className="relative">
                     <div
                       className={`h-11 w-11 rounded-xl bg-gradient-to-tr ${avatarGradient} flex items-center justify-center font-bold text-base text-white shadow-md`}
+                      aria-hidden="true"
                     >
                       {initials}
                     </div>
@@ -64,6 +65,7 @@ export function PlayerList() {
                           : 'bg-amber-500 shadow-amber-500/20'
                       }`}
                       title={isConnected ? 'Connected' : 'Disconnected'}
+                      aria-label={isConnected ? 'Connected' : 'Disconnected'}
                     />
                   </div>
 
@@ -84,6 +86,7 @@ export function PlayerList() {
                         className="w-3.5 h-3.5 text-amber-500"
                         fill="currentColor"
                         viewBox="0 0 20 20"
+                        aria-hidden="true"
                       >
                         <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                       </svg>
@@ -101,14 +104,15 @@ export function PlayerList() {
                         ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-sm shadow-green-500/5'
                         : 'bg-slate-900/40 text-slate-500 border-slate-800'
                     }`}
+                    aria-label={player.isReady ? 'Ready' : 'Waiting to be ready'}
                   >
                     {player.isReady ? 'Ready' : 'Waiting'}
                   </div>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

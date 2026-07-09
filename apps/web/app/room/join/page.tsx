@@ -135,7 +135,7 @@ function JoinRoomForm() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-3 group cursor-pointer"
+            className="flex items-center gap-3 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-xl"
           >
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
               F
@@ -147,7 +147,7 @@ function JoinRoomForm() {
 
           <button
             onClick={() => router.push('/')}
-            className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+            className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           >
             <svg
               className="w-4 h-4"
@@ -244,8 +244,8 @@ function JoinRoomForm() {
                     errors.roomCode
                       ? 'border-red-500/50 focus:border-red-500'
                       : 'border-slate-800 focus:border-indigo-500'
-                  } rounded-xl px-4 py-3 text-base text-white placeholder-slate-600 focus:outline-none focus:ring-1 ${
-                    errors.roomCode ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
+                  } rounded-xl px-4 py-3 text-base text-white placeholder-slate-600 focus:outline-none focus:ring-2 ${
+                    errors.roomCode ? 'focus:ring-red-500/50' : 'focus:ring-indigo-500/50'
                   } transition-all font-mono tracking-widest text-center uppercase disabled:opacity-50`}
                 />
                 {errors.roomCode && (
@@ -288,8 +288,8 @@ function JoinRoomForm() {
                     errors.displayName
                       ? 'border-red-500/50 focus:border-red-500'
                       : 'border-slate-800 focus:border-indigo-500'
-                  } rounded-xl px-4 py-3 text-base text-white placeholder-slate-600 focus:outline-none focus:ring-1 ${
-                    errors.displayName ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
+                  } rounded-xl px-4 py-3 text-base text-white placeholder-slate-600 focus:outline-none focus:ring-2 ${
+                    errors.displayName ? 'focus:ring-red-500/50' : 'focus:ring-indigo-500/50'
                   } transition-all disabled:opacity-50`}
                 />
                 {errors.displayName && (
@@ -307,7 +307,7 @@ function JoinRoomForm() {
                 type="submit"
                 id="join-room-button"
                 disabled={isSubmitting}
-                className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-800 text-white rounded-xl font-semibold text-base shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed mt-6"
+                className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-800 text-white rounded-xl font-semibold text-base shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed mt-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               >
                 {isSubmitting ? (
                   <>

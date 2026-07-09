@@ -58,10 +58,18 @@ export function SocketStatusIndicator() {
     <div
       className={`inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full border text-xs font-semibold select-none transition-all duration-300 backdrop-blur-sm cursor-help ${config.bg}`}
       title={config.desc}
+      role="status"
+      aria-live="polite"
+      aria-label={`Real-time server connection status: ${config.text}. ${config.desc}`}
       data-testid="socket-status-indicator"
     >
-      <span className={`h-2 w-2 rounded-full transition-all duration-300 ${config.dot}`} />
-      <span className="tracking-wide hidden sm:inline">{config.text}</span>
+      <span
+        className={`h-2 w-2 rounded-full transition-all duration-300 ${config.dot}`}
+        aria-hidden="true"
+      />
+      <span className="tracking-wide hidden sm:inline" aria-hidden="true">
+        {config.text}
+      </span>
     </div>
   );
 }

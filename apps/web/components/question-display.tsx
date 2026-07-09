@@ -20,6 +20,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     <div className="space-y-6 text-center py-8">
       <div className="space-y-1">
         <span className="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-semibold border border-indigo-500/20 mr-2">
+          <span className="sr-only">Difficulty: </span>
           {question.difficulty}
         </span>
         <h2 className="text-lg font-bold text-white mt-1.5 inline-block">

@@ -117,7 +117,7 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
       </div>
 
       {uniqueEntries.length > 0 ? (
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+        <ol className="space-y-3 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
           {uniqueEntries.map((entry) => {
             const isSelf = entry.playerId === currentUserId;
             const change = scoreChanges[entry.playerId];
@@ -129,7 +129,12 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
 
             if (entry.rank === 1) {
               rankBadge = (
-                <span className="text-base" data-testid="rank-badge-1" aria-label="First Place">
+                <span
+                  className="text-base"
+                  role="img"
+                  data-testid="rank-badge-1"
+                  aria-label="First Place"
+                >
                   👑
                 </span>
               );
@@ -137,7 +142,12 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
               rankTextStyles = 'text-yellow-500 font-extrabold';
             } else if (entry.rank === 2) {
               rankBadge = (
-                <span className="text-base" data-testid="rank-badge-2" aria-label="Second Place">
+                <span
+                  className="text-base"
+                  role="img"
+                  data-testid="rank-badge-2"
+                  aria-label="Second Place"
+                >
                   🥈
                 </span>
               );
@@ -145,7 +155,12 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
               rankTextStyles = 'text-slate-300 font-extrabold';
             } else if (entry.rank === 3) {
               rankBadge = (
-                <span className="text-base" data-testid="rank-badge-3" aria-label="Third Place">
+                <span
+                  className="text-base"
+                  role="img"
+                  data-testid="rank-badge-3"
+                  aria-label="Third Place"
+                >
                   🥉
                 </span>
               );
@@ -160,7 +175,7 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
             }
 
             return (
-              <div
+              <li
                 key={entry.playerId}
                 data-testid={`leaderboard-row-${entry.playerId}`}
                 className={`flex items-center justify-between p-3.5 border rounded-2xl transition-all duration-300 ${rowStyles}`}
@@ -202,6 +217,7 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
                     <div
                       data-testid={`score-change-${entry.playerId}`}
                       className="animate-score-change inline-flex items-center px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded-full"
+                      aria-label={`Increased by ${change} points`}
                     >
                       +{change.toLocaleString()}
                     </div>
@@ -212,10 +228,10 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
                     {entry.score.toLocaleString()} pts
                   </span>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
       ) : (
         <div className="text-center py-8 text-slate-500 text-sm font-medium">
           Waiting for score calculations...

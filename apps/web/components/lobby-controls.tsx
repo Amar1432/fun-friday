@@ -77,6 +77,7 @@ export function LobbyControls({
           <div
             className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-medium rounded-xl flex items-center justify-center gap-2"
             data-testid="lobby-error-message"
+            role="alert"
           >
             <svg
               className="w-4 h-4 flex-shrink-0"
@@ -100,7 +101,7 @@ export function LobbyControls({
           onClick={onStartGame}
           disabled={isStartDisabled}
           data-testid="start-game-button"
-          className={`w-full py-4 px-6 rounded-xl font-bold text-sm tracking-wide shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 ${
+          className={`w-full py-4 px-6 rounded-xl font-bold text-sm tracking-wide shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
             isStartDisabled
               ? 'bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed shadow-none'
               : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-indigo-500/20 hover:shadow-indigo-500/30 hover:scale-[1.01] hover:brightness-110 active:scale-[0.99] border-0'

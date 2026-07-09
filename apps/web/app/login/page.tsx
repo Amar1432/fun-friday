@@ -76,7 +76,10 @@ export default function LoginPage() {
       {/* Header */}
       <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 sm:px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link
+            href="/"
+            className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-xl"
+          >
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
               F
             </div>
@@ -86,7 +89,7 @@ export default function LoginPage() {
           </Link>
           <Link
             href="/"
-            className="text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+            className="text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-md"
           >
             <svg
               className="w-4 h-4"
@@ -127,7 +130,10 @@ export default function LoginPage() {
 
             {/* Error State Banner */}
             {error && (
-              <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-sm flex items-start gap-3 animate-fade-in relative">
+              <div
+                className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-sm flex items-start gap-3 animate-fade-in relative"
+                role="alert"
+              >
                 <svg
                   className="w-5 h-5 text-red-400 shrink-0 mt-0.5"
                   fill="none"
@@ -145,7 +151,7 @@ export default function LoginPage() {
                 <div className="flex-1 pr-6">{error}</div>
                 <button
                   onClick={() => setError(null)}
-                  className="absolute top-3 right-3 text-red-400 hover:text-red-200 transition-colors"
+                  className="absolute top-3 right-3 text-red-400 hover:text-red-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-md"
                   aria-label="Dismiss error"
                 >
                   <svg
@@ -200,7 +206,7 @@ export default function LoginPage() {
                   id="google-login-button"
                   onClick={() => handleLogin('google')}
                   disabled={loadingProvider !== null}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
                   {loadingProvider === 'google' ? (
                     <svg
@@ -256,7 +262,7 @@ export default function LoginPage() {
                   id="microsoft-login-button"
                   onClick={() => handleLogin('microsoft')}
                   disabled={loadingProvider !== null}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-slate-950 text-white font-semibold text-sm hover:bg-slate-900 border border-slate-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-slate-950 text-white font-semibold text-sm hover:bg-slate-900 border border-slate-800 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
                   {loadingProvider === 'microsoft' ? (
                     <svg
@@ -301,11 +307,17 @@ export default function LoginPage() {
             <div className="mt-8 pt-6 border-t border-slate-800/60">
               <p className="text-xs text-slate-500 text-center leading-relaxed">
                 By signing in, you agree to our{' '}
-                <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+                <Link
+                  href="/"
+                  className="text-indigo-400 hover:text-indigo-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded"
+                >
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+                <Link
+                  href="/"
+                  className="text-indigo-400 hover:text-indigo-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded"
+                >
                   Privacy Policy
                 </Link>
                 . Only corporate identity providers are supported.

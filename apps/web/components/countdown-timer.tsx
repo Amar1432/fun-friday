@@ -12,8 +12,15 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ timerRemaining }
   const isLowTime = timerRemaining <= 5;
 
   return (
-    <div className="flex flex-col items-center">
-      <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+    <div
+      className="flex flex-col items-center"
+      role="timer"
+      aria-label={`Time remaining: ${timerRemaining} seconds`}
+    >
+      <span
+        className="text-xs text-slate-500 uppercase tracking-wider font-semibold"
+        aria-hidden="true"
+      >
         Time Remaining
       </span>
       <span

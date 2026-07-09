@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Button } from '@fun-friday/ui';
 import { config } from '@/lib/config';
 
 export default function Home() {
@@ -38,7 +37,7 @@ export default function Home() {
             </span>
             <Link
               href="/login"
-              className="text-sm font-medium text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-lg transition-all cursor-pointer"
+              className="text-sm font-medium text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             >
               Host Login
             </Link>
@@ -64,11 +63,17 @@ export default function Home() {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
-              <Link href="/login" className="no-underline">
-                <Button variant="primary">Create a Room</Button>
+              <Link
+                href="/login"
+                className="px-4 py-2 rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-indigo-600 hover:bg-indigo-700 text-white focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-950 shadow-md hover:shadow-lg inline-block"
+              >
+                Create a Room
               </Link>
-              <Link href="/room/join" className="no-underline">
-                <Button variant="secondary">Join Room</Button>
+              <Link
+                href="/room/join"
+                className="px-4 py-2 rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-gray-100 hover:bg-gray-200 text-gray-800 focus-visible:ring-gray-400 focus-visible:ring-offset-slate-950 border border-gray-200 inline-block"
+              >
+                Join Room
               </Link>
             </div>
           </div>
@@ -113,7 +118,8 @@ export default function Home() {
                     </div>
                     <button
                       onClick={() => handleCopy(config.apiUrl, 'api')}
-                      className="px-3 bg-slate-850 hover:bg-slate-800 border border-slate-800/60 hover:border-slate-700/80 rounded-lg text-xs font-medium text-slate-350 hover:text-white transition-all cursor-pointer flex items-center justify-center min-w-[70px]"
+                      aria-label="Copy API Endpoint URL"
+                      className="px-3 bg-slate-850 hover:bg-slate-800 border border-slate-800/60 hover:border-slate-700/80 rounded-lg text-xs font-medium text-slate-350 hover:text-white transition-all cursor-pointer flex items-center justify-center min-w-[70px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                     >
                       {copiedKey === 'api' ? 'Copied' : 'Copy'}
                     </button>
@@ -134,7 +140,8 @@ export default function Home() {
                     </div>
                     <button
                       onClick={() => handleCopy(config.authCallbackUrl, 'auth')}
-                      className="px-3 bg-slate-850 hover:bg-slate-800 border border-slate-800/60 hover:border-slate-700/80 rounded-lg text-xs font-medium text-slate-350 hover:text-white transition-all cursor-pointer flex items-center justify-center min-w-[70px]"
+                      aria-label="Copy Auth Callback URL"
+                      className="px-3 bg-slate-850 hover:bg-slate-800 border border-slate-800/60 hover:border-slate-700/80 rounded-lg text-xs font-medium text-slate-350 hover:text-white transition-all cursor-pointer flex items-center justify-center min-w-[70px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                     >
                       {copiedKey === 'auth' ? 'Copied' : 'Copy'}
                     </button>
@@ -163,13 +170,16 @@ export default function Home() {
           <div className="flex gap-6">
             <a
               href="https://nextjs.org/docs"
-              className="hover:text-slate-300 transition-colors"
+              className="hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-md"
               target="_blank"
               rel="noreferrer"
             >
               Next.js Docs
             </a>
-            <a href="/api/v1" className="hover:text-slate-300 transition-colors">
+            <a
+              href="/api/v1"
+              className="hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-md"
+            >
               REST API
             </a>
           </div>

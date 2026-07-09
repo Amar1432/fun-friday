@@ -15,7 +15,13 @@ export function RoomInformationPanel() {
           bg: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
           text: 'Lobby',
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -30,7 +36,13 @@ export function RoomInformationPanel() {
           bg: 'bg-green-500/10 text-green-400 border-green-500/20',
           text: 'In Progress',
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -51,7 +63,13 @@ export function RoomInformationPanel() {
           bg: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
           text: 'Finished',
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -66,7 +84,13 @@ export function RoomInformationPanel() {
           bg: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
           text: 'Unknown',
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

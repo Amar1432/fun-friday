@@ -138,7 +138,7 @@ export const AnswerSubmission: React.FC<AnswerSubmissionProps> = ({
         type="submit"
         disabled={isButtonDisabled}
         data-testid="submit-answer-button"
-        className={`w-full py-4 font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+        className={`w-full py-4 font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
           isButtonDisabled
             ? 'bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed shadow-none hover:scale-100 active:scale-100'
             : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20 hover:scale-[1.01] active:scale-[0.99]'
