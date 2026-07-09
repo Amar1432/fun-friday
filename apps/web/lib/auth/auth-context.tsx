@@ -3,6 +3,7 @@
 
 import * as React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { setOnUnauthorizedHandler } from '@/lib/api';
 
 export interface UserProfile {
   id: string;
@@ -28,6 +29,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Register global 401 handler to auto-logout on expired tokens
+  React.useEffect(() => {
+    setOnUnauthorizedHandler(() => {
+      // Securely wipe local auth state
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      // Full redirect to login with session_expired indicator
+      window.location.href = '/login?session_expired=true';
+    });
+    return () => setOnUnauthorizedHandler(null);
+  }, []);
 
   // Restore session on mount
   React.useEffect(() => {

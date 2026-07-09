@@ -38,6 +38,20 @@ export interface CreateRoomResponse {
 }
 
 // ---------------------------------------------------------------------------
+// Global 401 Unauthorized Handler
+// ---------------------------------------------------------------------------
+
+let onUnauthorizedHandler: (() => void) | null = null;
+
+/**
+ * Register a callback that fires whenever any API request receives a 401.
+ * Used by AuthProvider to automatically log out on expired tokens.
+ */
+export function setOnUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorizedHandler = handler;
+}
+
+// ---------------------------------------------------------------------------
 // Core Fetch Wrapper
 // ---------------------------------------------------------------------------
 
@@ -63,6 +77,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (!res.ok) {
+    // Fire the global 401 handler so AuthProvider can log out & redirect
+    if (res.status === 401 && onUnauthorizedHandler) {
+      onUnauthorizedHandler();
+    }
+
     const body = await res.json().catch(() => ({}));
     const message =
       (body as { message?: string }).message ?? `API request failed with status ${res.status}`;

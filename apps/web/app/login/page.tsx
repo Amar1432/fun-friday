@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { config } from '@/lib/config';
 import { ssoLogin } from '@/lib/api';
 import { requestGoogleCredential } from '@/lib/auth/google';
@@ -10,6 +11,43 @@ import { requestMicrosoftCredential } from '@/lib/auth/microsoft';
 import { useAuth } from '@/lib/auth/auth-context';
 
 type Provider = 'google' | 'microsoft';
+
+// ---------------------------------------------------------------------------
+// Session Expired Banner
+// ---------------------------------------------------------------------------
+
+function SessionExpiredBanner() {
+  const searchParams = useSearchParams();
+  const isExpired = searchParams.get('session_expired') === 'true';
+
+  if (!isExpired) return null;
+
+  return (
+    <div
+      className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm flex items-start gap-3 animate-fade-in relative"
+      role="alert"
+    >
+      <svg
+        className="w-5 h-5 text-amber-400 shrink-0 mt-0.5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-7.364A9 9 0 1112 3a9 9 0 017.364 4.636z"
+        />
+      </svg>
+      <div className="flex-1 pr-6">
+        <strong className="font-semibold">Session expired.</strong> Your authentication token is no
+        longer valid. Please sign in again to continue hosting.
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -116,6 +154,11 @@ export default function LoginPage() {
           {/* Card Container */}
           <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Session Expired Banner */}
+            <React.Suspense fallback={null}>
+              <SessionExpiredBanner />
+            </React.Suspense>
 
             {/* Application Branding */}
             <div className="text-center mb-8">

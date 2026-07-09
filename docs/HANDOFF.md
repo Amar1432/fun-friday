@@ -15,6 +15,20 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 **Date/Time:** 2026-07-09 (Local Time)
 **Agent:** Freebuff (Buffy)
+**Ticket:** FFH-104
+
+- **What Changed:**
+  - Added `setOnUnauthorizedHandler` global callback to `apps/web/lib/api.ts` that fires on any 401 response.
+  - Registered the handler in `AuthProvider` (`apps/web/lib/auth/auth-context.tsx`) via a `useEffect` — securely wipes localStorage state and redirects to `/login?session_expired=true` via `window.location.href`.
+  - Added `SessionExpiredBanner` component on the login page (`apps/web/app/login/page.tsx`) that reads the `?session_expired=true` search param and shows an amber toast banner explaining the session expired.
+  - Verified: `pnpm typecheck` ✅, `pnpm lint` ✅, `pnpm build` ✅ — all pass cleanly.
+- **Why:** To satisfy all acceptance criteria for FFH-104, handling expired host tokens gracefully by logging out and redirecting the user with a clear message.
+- **What's Next:** Start `FFH-105: Anonymous Guest Onboarding Flow`.
+
+---
+
+**Date/Time:** 2026-07-09 (Local Time)
+**Agent:** Freebuff (Buffy)
 **Ticket:** FFH-103
 
 - **What Changed:**

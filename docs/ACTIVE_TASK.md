@@ -1,18 +1,18 @@
 # Active Task
 
-**Ticket:** FFH-104
-**Title:** Implement Global 401 Auth Interceptor
+**Ticket:** FFH-105
+**Title:** Anonymous Guest Onboarding Flow
 
 ## Objective
 
-Handle expired host tokens gracefully by logging out the user instead of letting them stay stuck on restricted pages.
+Strip away any residual authentication barriers for guests. They should only need a display name and room code to jump right in.
 
 ## Execution Requirements
 
-1. **API Interceptor:** Add a response interceptor to the API client (`apps/web/lib/api.ts`) that catches any `401 Unauthorized` responses.
-2. **State Cleanup:** Securely wipe the local auth state/token immediately upon detecting a 401.
-3. **User Redirection:** Gracefully redirect the user back to `/login` with an informative toast notification explaining their session expired.
+1. **Guest Endpoints:** Verify guest endpoints accept `displayName` and `roomCode` with zero auth requirements. The backend `/auth/guest` endpoint already exists — confirm it works without an Authorization header.
+2. **Room Token Scoping:** Ensure the room token generated for guests is scoped exclusively to their active temporary session (not a persistent JWT).
+3. **Integration Tests:** Write or confirm integration tests that unauthenticated guests can connect to socket rooms safely.
 
 ## Completion
 
-Once the auth interceptor is implemented and verified, commit the changes, update `docs/HANDOFF.md`, and update this file to point to the next logical step.
+Once the guest auth flow is hardened and verified, commit the changes, update `docs/HANDOFF.md`, and update this file to point to the next logical step.
