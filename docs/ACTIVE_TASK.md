@@ -1,19 +1,20 @@
 # Active Task
 
-## FFH-099: Optimize Responsive Layouts
+## FFH-100: Add Loading, Empty & Error States
 
 ### Description
 
-Ensure all interfaces function across supported viewport sizes.
+Complete all user feedback states.
 
 ### Acceptance Criteria
 
-- [ ] Verify Login page layout responsiveness
-- [ ] Verify Host Dashboard layout responsiveness
-- [ ] Verify Lobby and Waiting Room layout responsiveness
-- [ ] Verify Gameplay view layout responsiveness
-- [ ] Verify Leaderboard layout responsiveness
-- [ ] Ensure all layouts remain fully usable without horizontal scrolling across all supported viewports
+Every major screen includes:
+
+- [ ] Loading state
+- [ ] Empty state
+- [ ] Error state
+- [ ] Retry action where appropriate
+- [ ] No blank screens remain.
 
 ### Status
 
