@@ -13,6 +13,8 @@ const config = {
   moduleNameMapper: {
     // Handle module aliases
     '^@/(.*)$': '<rootDir>/$1',
+    // @heroui/react uses ESM-only exports, not resolvable via require() in Jest
+    '^@heroui/react$': '<rootDir>/__mocks__/heroui-react.tsx',
   },
   // Ensure we collect coverage
   collectCoverageFrom: [

@@ -1,17 +1,17 @@
 # Active Task
 
-**Ticket:** FFH-112
-**Title:** Landing Page Overhaul
+**Ticket:** FFH-113
+**Title:** Global UI Consistency Audit
 
 ## Objective
 
-Redesign the application root (`/`) to serve as a modern, high-converting entry point using HeroUI and Framer Motion.
+Ensure no legacy Tailwind-only components clash with the new HeroUI aesthetic across all pages.
 
 ## Acceptance Criteria
 
-- Hero section utilizes glassmorphism, bold typography, and a clear call-to-action ("Join Game" and "Host Game").
-- Background features subtle, animated geometric shapes or gradients.
-- Fully responsive on mobile, tablet, and desktop viewports.
+- Host Login screen revamped with HeroUI Cards and Inputs.
+- Create Room flow matches the new design language.
+- All toasts, modals, and error boundaries consistently use HeroUI primitives.
 
 ## Completion
 
