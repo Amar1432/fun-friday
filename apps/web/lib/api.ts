@@ -126,4 +126,21 @@ export async function loginAsGuest(
   return envelope.data;
 }
 
+export interface GetRoomsResponse {
+  id: string;
+  code: string;
+  status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+  createdAt: string;
+}
+
+export async function getRooms(token: string): Promise<GetRoomsResponse[]> {
+  const envelope = await request<ApiResponse<GetRoomsResponse[]>>('/rooms', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return envelope.data;
+}
+
 export { ApiError };

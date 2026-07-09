@@ -5,10 +5,70 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth/auth-context';
 import { config } from '@/lib/config';
 import { SocketStatusIndicator } from '@/components/socket-status-indicator';
+import { getRooms, GetRoomsResponse, ApiError } from '@/lib/api';
+
+// Modern skeleton placeholder loader
+const TableSkeleton = () => (
+  <div className="space-y-4 animate-pulse" data-testid="dashboard-skeleton">
+    {[1, 2, 3].map((i) => (
+      <div
+        key={i}
+        className="h-20 bg-slate-900/40 border border-slate-800/60 rounded-2xl flex items-center justify-between px-6"
+      >
+        <div className="flex gap-4 items-center flex-1">
+          <div className="h-11 w-11 bg-slate-800 rounded-xl" />
+          <div className="space-y-2 flex-1 max-w-[200px]">
+            <div className="h-4 bg-slate-800 rounded w-3/4" />
+            <div className="h-3 bg-slate-800 rounded w-1/2" />
+          </div>
+        </div>
+        <div className="h-8 w-24 bg-slate-800 rounded-xl" />
+      </div>
+    ))}
+  </div>
+);
 
 export default function DashboardPage() {
-  const { user, logout, isLoading } = useAuth();
+  const { user, token, logout, isLoading } = useAuth();
   const [activeTab, setActiveTab] = React.useState<'games' | 'templates' | 'analytics'>('games');
+  const [rooms, setRooms] = React.useState<GetRoomsResponse[]>([]);
+  const [isLoadingRooms, setIsLoadingRooms] = React.useState(true);
+  const [roomsError, setRoomsError] = React.useState<string | null>(null);
+  const [isLoadingTemplates, setIsLoadingTemplates] = React.useState(false);
+
+  const fetchRooms = React.useCallback(async () => {
+    if (!token) return;
+    setIsLoadingRooms(true);
+    setRoomsError(null);
+    try {
+      const data = await getRooms(token);
+      setRooms(data);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setRoomsError(err.message);
+      } else {
+        setRoomsError('Failed to fetch rooms. Please try again.');
+      }
+    } finally {
+      setIsLoadingRooms(false);
+    }
+  }, [token]);
+
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchRooms();
+  }, [fetchRooms]);
+
+  React.useEffect(() => {
+    if (activeTab === 'templates') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoadingTemplates(true);
+      const timer = setTimeout(() => {
+        setIsLoadingTemplates(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
 
   // While checking auth status, show a sleek loading screen
   if (isLoading || !user) {
@@ -234,110 +294,258 @@ export default function DashboardPage() {
 
           {/* Tab Specific Views */}
           {activeTab === 'games' && (
-            <div className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 text-center space-y-4">
-              <div className="inline-flex h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-400 items-center justify-center">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
-                </svg>
-              </div>
-              <div className="max-w-sm mx-auto space-y-1">
-                <h3 className="text-lg font-bold text-white">No active game rooms</h3>
-                <p className="text-sm text-slate-400">
-                  Rooms are temporary multiplayer lobbies where players connect, answer, and compete
-                  live.
-                </p>
-              </div>
-              <Link
-                href="/room/create"
-                className="px-4 py-2 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-sm font-semibold rounded-xl text-slate-300 hover:text-white transition-colors cursor-pointer"
-              >
-                Create Room
-              </Link>
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-white mb-2">Active Lobbies</h2>
+
+              {isLoadingRooms ? (
+                <TableSkeleton />
+              ) : roomsError ? (
+                <div
+                  className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center space-y-4"
+                  data-testid="dashboard-error-state"
+                >
+                  <div className="text-red-400 text-3xl">⚠️</div>
+                  <div className="max-w-md mx-auto space-y-1">
+                    <h3 className="text-base font-bold text-white">Failed to Load Rooms</h3>
+                    <p className="text-sm text-slate-400">{roomsError}</p>
+                  </div>
+                  <button
+                    onClick={fetchRooms}
+                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-650 text-sm font-semibold rounded-xl text-slate-200 hover:text-white transition-all cursor-pointer inline-flex items-center gap-2"
+                  >
+                    Retry Loading
+                  </button>
+                </div>
+              ) : rooms.filter((r) => r.status !== 'FINISHED').length === 0 ? (
+                <div
+                  className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 text-center space-y-4"
+                  data-testid="dashboard-empty-state"
+                >
+                  <div className="inline-flex h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-400 items-center justify-center">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="max-w-sm mx-auto space-y-1">
+                    <h3 className="text-lg font-bold text-white">No active game rooms</h3>
+                    <p className="text-sm text-slate-400">
+                      Rooms are temporary multiplayer lobbies where players connect, answer, and
+                      compete live.
+                    </p>
+                  </div>
+                  <Link
+                    href="/room/create"
+                    className="px-4 py-2 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-sm font-semibold rounded-xl text-slate-300 hover:text-white transition-colors cursor-pointer inline-block"
+                  >
+                    Create Room
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3" data-testid="dashboard-rooms-list">
+                  {rooms
+                    .filter((r) => r.status !== 'FINISHED')
+                    .map((room) => (
+                      <div
+                        key={room.id}
+                        className="bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-slate-700 transition-all duration-350"
+                      >
+                        <div className="flex gap-4 items-center">
+                          <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-purple-600/20 border border-indigo-500/20 flex items-center justify-center font-mono font-bold text-indigo-300 text-lg">
+                            {room.code.substring(0, 1)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold text-white font-mono tracking-wider">
+                                {room.code}
+                              </span>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
+                                  room.status === 'LOBBY'
+                                    ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                    : 'bg-green-500/10 text-green-400 border-green-500/20'
+                                }`}
+                              >
+                                {room.status === 'LOBBY' ? 'Lobby' : 'In Progress'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Created on {new Date(room.createdAt).toLocaleDateString()} at{' '}
+                              {new Date(room.createdAt).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/lobby/${room.code}?roomId=${room.id}`}
+                          className="w-full sm:w-auto text-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-indigo-650/20 transition-all cursor-pointer"
+                        >
+                          {room.status === 'LOBBY' ? 'Enter Lobby' : 'Resume Game'}
+                        </Link>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'templates' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Sample template card */}
-              <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 hover:border-indigo-500/30 transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="px-2.5 py-1 bg-indigo-500/10 text-indigo-300 rounded-lg text-xs font-semibold">
-                    Trivia
-                  </span>
-                  <span className="text-xs text-slate-500">10 Questions</span>
-                </div>
-                <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition-colors">
-                  Friday Tech Trivia
-                </h3>
-                <p className="text-xs text-slate-400 mt-2 mb-4">
-                  Test your engineering team&apos;s knowledge on current software design patterns.
-                </p>
-                <div className="flex gap-2">
-                  <button className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer">
-                    Edit Questions
-                  </button>
-                  <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer">
-                    Host Game
-                  </button>
-                </div>
-              </div>
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-white mb-2">Quiz Templates</h2>
 
-              {/* Sample template card 2 */}
-              <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 hover:border-indigo-500/30 transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="px-2.5 py-1 bg-purple-500/10 text-purple-300 rounded-lg text-xs font-semibold">
-                    Icebreaker
-                  </span>
-                  <span className="text-xs text-slate-500">5 Questions</span>
+              {isLoadingTemplates ? (
+                <TableSkeleton />
+              ) : (
+                <div
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in"
+                  data-testid="dashboard-templates-list"
+                >
+                  {/* Sample template card */}
+                  <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 hover:border-indigo-500/30 transition-all group">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="px-2.5 py-1 bg-indigo-500/10 text-indigo-300 rounded-lg text-xs font-semibold">
+                        Trivia
+                      </span>
+                      <span className="text-xs text-slate-500">10 Questions</span>
+                    </div>
+                    <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition-colors">
+                      Friday Tech Trivia
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-2 mb-4">
+                      Test your engineering team&apos;s knowledge on current software design
+                      patterns.
+                    </p>
+                    <div className="flex gap-2">
+                      <button className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer">
+                        Edit Questions
+                      </button>
+                      <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer">
+                        Host Game
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Sample template card 2 */}
+                  <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 hover:border-indigo-500/30 transition-all group">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="px-2.5 py-1 bg-purple-500/10 text-purple-300 rounded-lg text-xs font-semibold">
+                        Icebreaker
+                      </span>
+                      <span className="text-xs text-slate-500">5 Questions</span>
+                    </div>
+                    <h3 className="text-base font-bold text-white group-hover:text-purple-300 transition-colors">
+                      Meet the Team Match
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-2 mb-4">
+                      Fun, interactive emoji association questions to break the ice with new hires.
+                    </p>
+                    <div className="flex gap-2">
+                      <button className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer">
+                        Edit Questions
+                      </button>
+                      <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer">
+                        Host Game
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-base font-bold text-white group-hover:text-purple-300 transition-colors">
-                  Meet the Team Match
-                </h3>
-                <p className="text-xs text-slate-400 mt-2 mb-4">
-                  Fun, interactive emoji association questions to break the ice with new hires.
-                </p>
-                <div className="flex gap-2">
-                  <button className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer">
-                    Edit Questions
-                  </button>
-                  <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer">
-                    Host Game
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           )}
 
           {activeTab === 'analytics' && (
-            <div className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 text-center space-y-4">
-              <div className="inline-flex h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-400 items-center justify-center">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
-                  />
-                </svg>
-              </div>
-              <div className="max-w-sm mx-auto space-y-1">
-                <h3 className="text-lg font-bold text-white">No historical data yet</h3>
-                <p className="text-sm text-slate-400">
-                  Detailed scoreboard statistics, completion rates, and player insights will show up
-                  after a game is finished.
-                </p>
-              </div>
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-white mb-2">Historical Analytics</h2>
+
+              {isLoadingRooms ? (
+                <TableSkeleton />
+              ) : roomsError ? (
+                <div
+                  className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center space-y-4"
+                  data-testid="dashboard-analytics-error"
+                >
+                  <div className="text-red-400 text-3xl">⚠️</div>
+                  <div className="max-w-md mx-auto space-y-1">
+                    <h3 className="text-base font-bold text-white">Failed to Load Analytics</h3>
+                    <p className="text-sm text-slate-400">{roomsError}</p>
+                  </div>
+                  <button
+                    onClick={fetchRooms}
+                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-650 text-sm font-semibold rounded-xl text-slate-200 hover:text-white transition-all cursor-pointer inline-flex items-center gap-2"
+                  >
+                    Retry Loading
+                  </button>
+                </div>
+              ) : rooms.filter((r) => r.status === 'FINISHED').length === 0 ? (
+                <div
+                  className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 text-center space-y-4"
+                  data-testid="dashboard-analytics-empty"
+                >
+                  <div className="inline-flex h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-400 items-center justify-center">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="max-w-sm mx-auto space-y-1">
+                    <h3 className="text-lg font-bold text-white">No historical data yet</h3>
+                    <p className="text-sm text-slate-400">
+                      Detailed scoreboard statistics, completion rates, and player insights will
+                      show up after a game is finished.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3" data-testid="dashboard-analytics-list">
+                  {rooms
+                    .filter((r) => r.status === 'FINISHED')
+                    .map((room) => (
+                      <div
+                        key={room.id}
+                        className="bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-slate-700 transition-all duration-350"
+                      >
+                        <div className="flex gap-4 items-center">
+                          <div className="h-11 w-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center font-mono font-bold text-purple-300 text-lg">
+                            ✓
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold text-white font-mono tracking-wider">
+                                {room.code}
+                              </span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold border bg-purple-500/10 text-purple-400 border-purple-500/20">
+                                Finished
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Played on {new Date(room.createdAt).toLocaleDateString()} at{' '}
+                              {new Date(room.createdAt).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/lobby/${room.code}?roomId=${room.id}`}
+                          className="w-full sm:w-auto text-center px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-750 text-slate-200 hover:text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
+                        >
+                          View Results
+                        </Link>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
         </main>
