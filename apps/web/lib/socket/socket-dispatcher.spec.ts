@@ -211,6 +211,47 @@ describe('SocketDispatcher', () => {
     });
   });
 
+  describe('kickPlayer', () => {
+    it('should emit KickPlayer event when socket is connected', () => {
+      const payload = {
+        roomId: 'room123',
+        playerId: 'player456',
+      };
+
+      dispatcher.kickPlayer(payload);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith('KickPlayer', payload);
+    });
+
+    it('should not emit KickPlayer event when socket is not connected', () => {
+      mockSocket.connected = false;
+      const payload = {
+        roomId: 'room123',
+        playerId: 'player456',
+      };
+
+      dispatcher.kickPlayer(payload);
+
+      expect(mockSocket.emit).not.toHaveBeenCalled();
+    });
+
+    it('should warn when socket is not connected', () => {
+      mockSocket.connected = false;
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const payload = {
+        roomId: 'room123',
+        playerId: 'player456',
+      };
+
+      dispatcher.kickPlayer(payload);
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[SocketDispatcher] Cannot emit KickPlayer: socket not connected',
+      );
+      consoleWarnSpy.mockRestore();
+    });
+  });
+
   describe('reconnectRequest', () => {
     it('should emit ReconnectRequest event when socket is connected', () => {
       const payload = {

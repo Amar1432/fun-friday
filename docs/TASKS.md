@@ -100,3 +100,87 @@ Add responsive user feedback through subtle animations and audio toggles.
 - `canvas-confetti` runs immediately upon correct answers.
 - Audio engine utilities loaded for correct feedback and timer warnings.
 - Header includes a global persistence mute/unmute control button.
+
+# Sprint 5 — Admin Controls & Global Polish
+
+**Sprint Goal**
+Empower the host with lobby management tools (player kicking, real-time presence monitoring), handle guest edge cases (duplicate names), and perform a complete global NextUI revamp, focusing heavily on the landing page.
+
+---
+
+# Epic 27 — Admin Controls & Presence
+
+---
+
+## FFH-109: Implement Host Kick Functionality
+
+### Description
+
+Allow the host to remove unwanted players from the room securely.
+
+### Acceptance Criteria
+
+- Backend: Create a `KickPlayer` socket event that requires host authentication.
+- Backend: Target socket is forcefully disconnected and removed from Redis room state.
+- Frontend: Add a "Kick" action (e.g., an 'X' icon or dropdown) to each guest card in the Host Lobby UI.
+- Frontend: Kicked guest is redirected to the landing page with an alert: "You have been removed by the host."
+
+## FFH-110: Real-Time Presence & Offline Status
+
+### Description
+
+Visually distinguish between players who are actively connected and those who have temporarily dropped off.
+
+### Acceptance Criteria
+
+- Backend: Redis state correctly flags `status: 'offline'` immediately on socket disconnect without removing the player instantly.
+- Frontend: NextUI player cards apply a visual "offline" state (e.g., grayscale, reduced opacity, or an "Offline" badge) for disconnected players.
+- Reconnections seamlessly remove the offline visual state.
+
+---
+
+# Epic 28 — Guest Experience Enhancements
+
+---
+
+## FFH-111: Duplicate Name Resolution
+
+### Description
+
+Prevent guests from being blocked from joining if someone else used their preferred display name.
+
+### Acceptance Criteria
+
+- Backend `JoinRoom` handler intercepts duplicate `displayName` requests.
+- Logic appends a numbered suffix (e.g., "John (1)", "John (2)") if the exact name already exists in the Redis room state.
+- Guest successfully connects and their UI reflects their newly suffixed name.
+
+---
+
+# Epic 29 — Global UI Revamp
+
+---
+
+## FFH-112: Landing Page Overhaul
+
+### Description
+
+Redesign the application root (`/`) to serve as a modern, high-converting entry point using NextUI and Framer Motion.
+
+### Acceptance Criteria
+
+- Hero section utilizes glassmorphism, bold typography, and a clear call-to-action ("Join Game" and "Host Game").
+- Background features subtle, animated geometric shapes or gradients.
+- Fully responsive on mobile, tablet, and desktop viewports.
+
+## FFH-113: Global NextUI Consistency Audit
+
+### Description
+
+Ensure no legacy Tailwind-only components clash with the new NextUI aesthetic.
+
+### Acceptance Criteria
+
+- Host Login screen revamped with NextUI Cards and Inputs.
+- Create Room flow matches the new design language.
+- All toasts, modals, and error boundaries consistently use NextUI primitives.

@@ -78,6 +78,7 @@ export interface ServerToClientEvents {
       responseTimeMs: number;
     };
   }) => void;
+  Kicked: (data: { message: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -94,6 +95,7 @@ export interface ClientToServerEvents {
     responseTimeMs: number;
   }) => void;
   ReconnectRequest: (payload: { playerId: string; roomId: string }) => void;
+  KickPlayer: (payload: { roomId: string; playerId: string }) => void;
 }
 
 export type ConnectionStatus =

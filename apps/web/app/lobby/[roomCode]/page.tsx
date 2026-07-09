@@ -161,6 +161,14 @@ export default function LobbyPage() {
     }, []),
   );
 
+  // Socket event listener for being kicked
+  useSocketEvent(
+    'Kicked',
+    React.useCallback(() => {
+      router.push('/?kicked=true');
+    }, [router]),
+  );
+
   const handleStartGame = React.useCallback(() => {
     const activeRoomId = room.id || roomIdParam;
     if (socketStatus !== 'connected') {
@@ -855,6 +863,7 @@ export default function LobbyPage() {
                 currentUserId={user?.id ?? null}
                 currentUserIsGuest={!!user && (!user.email || user.email.trim() === '')}
                 roomId={room.id || roomIdParam}
+                isHost={isHost}
               />
             </div>
           </div>

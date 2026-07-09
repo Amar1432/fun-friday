@@ -23,6 +23,7 @@ import { StartGameDto } from './dto/start-game.dto';
 import { NextRoundDto } from './dto/next-round.dto';
 import { EndGameDto } from './dto/end-game.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { KickPlayerDto } from './dto/kick-player.dto';
 
 /** Grace period (ms) before an unexpectedly disconnected player is removed. */
 const DISCONNECT_CLEANUP_DELAY_MS = 30_000;
@@ -2217,6 +2218,134 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
           code: 'INTERNAL_SERVER_ERROR',
           message: err.message,
         },
+      });
+      throw err;
+    }
+  }
+
+  @SubscribeMessage('KickPlayer')
+  @UsePipes(new WsValidationPipe())
+  async handleKickPlayer(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: KickPlayerDto,
+  ): Promise<void> {
+    const clientData = client.data as {
+      user?: TokenPayload;
+      roomCode?: string;
+    };
+    const user = clientData.user;
+
+    // Only host can kick players
+    if (!user || user.role !== 'host') {
+      const err = new WsException('Only the host can kick players');
+      client.emit('error', {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: err.message },
+      });
+      throw err;
+    }
+
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: { id: payload.roomId },
+      });
+
+      if (!room) {
+        const err = new WsException('Room does not exist');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      // Verify the host owns this room
+      if (room.hostId !== user.sub) {
+        const err = new WsException('You are not the host of this room');
+        client.emit('error', {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: err.message },
+        });
+        throw err;
+      }
+
+      // Cannot kick yourself
+      if (user.sub === payload.playerId) {
+        const err = new WsException('Cannot kick yourself');
+        client.emit('error', {
+          success: false,
+          error: { code: 'INVALID_TARGET', message: err.message },
+        });
+        throw err;
+      }
+
+      const roomCode = room.code.toUpperCase();
+
+      // Cancel any pending cleanup timer for the kicked player
+      const pendingTimer = this.disconnectTimers.get(payload.playerId);
+      if (pendingTimer) {
+        clearTimeout(pendingTimer);
+        this.disconnectTimers.delete(payload.playerId);
+        this.logger.log(
+          `Cancelled pending cleanup timer for kicked player ${payload.playerId}`,
+        );
+      }
+
+      // Remove player from Redis room state
+      await this.redisRoomRepository.removePlayer(roomCode, payload.playerId);
+
+      // Find and forcefully disconnect the target socket
+      const sockets = await this.server.in(roomCode).fetchSockets();
+      for (const socket of sockets) {
+        const data = socket.data as { user?: TokenPayload };
+        if (data.user?.sub === payload.playerId) {
+          // Emit Kicked event before disconnecting so client can react
+          socket.emit('Kicked', {
+            message: 'You have been removed by the host.',
+          });
+          socket.disconnect(true);
+          this.logger.log(
+            `Kicked player ${payload.playerId} from room ${roomCode}`,
+          );
+          break;
+        }
+      }
+
+      // Broadcast PlayerLeft to remaining clients
+      this.server
+        .to(roomCode)
+        .emit('PlayerLeft', { playerId: payload.playerId });
+
+      // Fetch updated room state and broadcast
+      const playersMap = await this.redisRoomRepository.getPlayers(roomCode);
+      const playerCount = Object.keys(playersMap).length;
+
+      if (playerCount === 0) {
+        await this.redisRoomRepository.deleteRoomState(roomCode);
+        this.stopTimer(roomCode);
+        this.logger.log(
+          `Room ${roomCode} is now empty after kick and has been deleted`,
+        );
+      } else {
+        const roomStatePayload = await this.buildRoomStatePayload(
+          roomCode,
+          room.status,
+        );
+        this.server.to(roomCode).emit('RoomStateUpdated', roomStatePayload);
+      }
+
+      this.logger.log(
+        `Player ${payload.playerId} was kicked from room ${roomCode} by host ${user.sub}`,
+      );
+    } catch (error) {
+      if (error instanceof WsException) throw error;
+
+      const message =
+        error instanceof Error ? error.message : 'Failed to kick player';
+      const err = new WsException(message);
+      client.emit('error', {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: err.message },
       });
       throw err;
     }

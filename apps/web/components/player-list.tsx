@@ -9,6 +9,7 @@ interface PlayerListProps {
   currentUserId?: string | null;
   currentUserIsGuest?: boolean;
   roomId?: string | null;
+  isHost?: boolean;
 }
 
 export function PlayerList({
@@ -16,6 +17,7 @@ export function PlayerList({
   currentUserId,
   currentUserIsGuest = false,
   roomId,
+  isHost = false,
 }: PlayerListProps) {
   const players = useGameStore((state) => state.players);
 
@@ -95,6 +97,36 @@ export function PlayerList({
                     </span>
                   </div>
                 </div>
+
+                {/* Kick Button (Host Only) */}
+                {isHost && player.id !== currentUserId && (
+                  <button
+                    type="button"
+                    data-testid={`player-kick-btn-${player.id}`}
+                    onClick={() => {
+                      if (dispatcher && roomId) {
+                        dispatcher.kickPlayer({ roomId, playerId: player.id });
+                      }
+                    }}
+                    aria-label={`Kick ${player.displayName}`}
+                    title={`Remove ${player.displayName} from the room`}
+                    className="shrink-0 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 p-1.5 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
 
                 {/* Ready Status / Toggle */}
                 <div className="shrink-0">

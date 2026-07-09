@@ -112,4 +112,15 @@ export class SocketDispatcher {
     }
     this.socket.emit('ReconnectRequest', payload);
   }
+
+  /**
+   * Emit KickPlayer event
+   */
+  kickPlayer(payload: { roomId: string; playerId: string }): void {
+    if (!this.socket?.connected) {
+      console.warn('[SocketDispatcher] Cannot emit KickPlayer: socket not connected');
+      return;
+    }
+    this.socket.emit('KickPlayer', payload);
+  }
 }

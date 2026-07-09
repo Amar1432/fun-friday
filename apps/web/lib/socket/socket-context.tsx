@@ -42,6 +42,7 @@ const VALID_SERVER_EVENTS: Array<keyof ServerToClientEvents> = [
   'StateSync',
   'error',
   'SubmitAnswerAck',
+  'Kicked',
 ];
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
