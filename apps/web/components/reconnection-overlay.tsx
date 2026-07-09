@@ -46,7 +46,7 @@ export function ReconnectionOverlay() {
       data-testid="reconnection-overlay"
       className="fixed inset-0 z-[100] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in"
     >
-      <div className="bg-slate-900/80 border border-slate-800/80 max-w-md w-full rounded-3xl p-8 space-y-6 text-center shadow-2xl relative overflow-hidden">
+      <div className="bg-slate-900/80 border border-slate-800/80 max-w-md w-full rounded-3xl p-6 sm:p-8 space-y-6 text-center shadow-2xl relative overflow-hidden">
         {/* Background ambient glow inside card */}
         <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-indigo-500/5 blur-[80px] pointer-events-none" />
 

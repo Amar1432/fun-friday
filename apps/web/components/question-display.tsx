@@ -30,7 +30,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
       <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mt-4">
         Guess the prompt
       </span>
-      <div className="text-6xl md:text-7xl font-extrabold tracking-wide py-4 select-none drop-shadow-lg break-words">
+      <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-wide py-4 select-none drop-shadow-lg break-words">
         {question.prompt}
       </div>
     </div>

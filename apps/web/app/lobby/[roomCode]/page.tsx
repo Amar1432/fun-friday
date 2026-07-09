@@ -281,7 +281,7 @@ export default function LobbyPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 
         {/* Header */}
-        <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
+        <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <button
               onClick={() => router.push('/dashboard')}
@@ -290,7 +290,7 @@ export default function LobbyPage() {
               <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
                 F
               </div>
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent hidden sm:inline">
                 {config.appName}
               </span>
             </button>
@@ -314,11 +314,11 @@ export default function LobbyPage() {
 
             {/* Podium Display */}
             {podiumWinners.length > 0 && (
-              <div className="grid grid-cols-3 gap-4 items-end max-w-xl mx-auto pt-8">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 items-end max-w-xl mx-auto pt-8">
                 {/* 2nd Place */}
                 {podiumWinners[1] && (
-                  <div className="flex flex-col items-center space-y-2">
-                    <span className="text-sm font-semibold text-slate-300">
+                  <div className="flex flex-col items-center space-y-2 min-w-0">
+                    <span className="text-xs sm:text-sm font-semibold text-slate-300 truncate w-full text-center block px-1">
                       {podiumWinners[1].displayName}
                     </span>
                     <span className="text-xs text-indigo-400 font-medium">
@@ -332,9 +332,9 @@ export default function LobbyPage() {
 
                 {/* 1st Place */}
                 {podiumWinners[0] && (
-                  <div className="flex flex-col items-center space-y-2">
-                    <div className="animate-bounce">👑</div>
-                    <span className="text-base font-bold text-white text-center">
+                  <div className="flex flex-col items-center space-y-2 min-w-0">
+                    <div className="animate-bounce text-sm sm:text-base">👑</div>
+                    <span className="text-sm sm:text-base font-bold text-white text-center truncate w-full block px-1">
                       {podiumWinners[0].displayName}
                     </span>
                     <span className="text-sm text-yellow-400 font-semibold">
@@ -348,8 +348,8 @@ export default function LobbyPage() {
 
                 {/* 3rd Place */}
                 {podiumWinners[2] && (
-                  <div className="flex flex-col items-center space-y-2">
-                    <span className="text-sm font-semibold text-slate-300">
+                  <div className="flex flex-col items-center space-y-2 min-w-0">
+                    <span className="text-xs sm:text-sm font-semibold text-slate-300 truncate w-full text-center block px-1">
                       {podiumWinners[2].displayName}
                     </span>
                     <span className="text-xs text-indigo-400 font-medium">
@@ -408,7 +408,7 @@ export default function LobbyPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 
         {/* Header */}
-        <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
+        <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <button
               onClick={handleEndGame}
@@ -417,7 +417,7 @@ export default function LobbyPage() {
               <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white">
                 F
               </div>
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent hidden sm:inline">
                 {config.appName}
               </span>
             </button>
@@ -436,10 +436,10 @@ export default function LobbyPage() {
           </div>
         </header>
 
-        <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 relative z-10">
           {/* Question / Gameplay Controller (Left 2 cols) */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-8 space-y-8 flex flex-col justify-between min-h-[450px]">
+            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 space-y-6 sm:space-y-8 flex flex-col justify-between min-h-[380px] sm:min-h-[450px]">
               <div className="flex justify-end items-center border-b border-slate-800/50 pb-4">
                 <CountdownTimer timerRemaining={game.timerRemaining} />
               </div>
@@ -659,7 +659,7 @@ export default function LobbyPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 
       {/* Header */}
-      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
+      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push('/dashboard')}
@@ -668,7 +668,7 @@ export default function LobbyPage() {
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
               F
             </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent hidden sm:inline">
               {config.appName}
             </span>
           </button>
@@ -700,9 +700,9 @@ export default function LobbyPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative z-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-8 space-y-8">
+          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 space-y-6 sm:space-y-8">
             <div className="text-center space-y-4">
               <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 items-center justify-center mx-auto shadow-lg shadow-indigo-500/20">
                 <svg

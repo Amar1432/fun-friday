@@ -53,19 +53,19 @@ export default function DashboardPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 
       {/* Header */}
-      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
+      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-3 group">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
               F
             </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent hidden sm:inline">
               {config.appName}
             </span>
           </Link>
 
           {/* User Profile and Actions */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             <SocketStatusIndicator />
             <div className="hidden md:flex flex-col text-right">
               <span className="text-sm font-semibold text-white">{user.name}</span>
@@ -78,7 +78,7 @@ export default function DashboardPage() {
 
             <button
               onClick={logout}
-              className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+              className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 p-2 sm:px-4 sm:py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
             >
               <svg
                 className="w-4 h-4"
@@ -94,29 +94,34 @@ export default function DashboardPage() {
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Layout */}
-      <div className="max-w-7xl mx-auto w-full px-6 py-8 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 relative z-10">
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8 relative z-10">
         {/* Sidebar / Placeholder Navigation */}
-        <aside className="lg:col-span-1 space-y-2">
-          <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 space-y-1">
-            <h3 className="px-3 mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase">
+        <aside className="lg:col-span-1 space-y-4">
+          <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-2 sm:p-4 grid grid-cols-3 lg:flex lg:flex-col gap-2 lg:gap-1">
+            <h3 className="px-3 mb-2 text-[10px] font-bold tracking-wider text-slate-500 uppercase hidden lg:block">
               Host Navigation
             </h3>
             <button
               onClick={() => setActiveTab('games')}
-              className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-3 cursor-pointer ${
+              className={`px-3 py-2.5 rounded-xl text-xs lg:text-sm font-medium transition-all flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-start gap-1 lg:gap-3 cursor-pointer text-center lg:text-left ${
                 activeTab === 'games'
                   ? 'bg-indigo-600/20 text-indigo-200 border border-indigo-500/20'
                   : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -130,18 +135,23 @@ export default function DashboardPage() {
                   d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              Live Rooms
+              <span className="truncate">Live Rooms</span>
             </button>
 
             <button
               onClick={() => setActiveTab('templates')}
-              className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-3 cursor-pointer ${
+              className={`px-3 py-2.5 rounded-xl text-xs lg:text-sm font-medium transition-all flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-start gap-1 lg:gap-3 cursor-pointer text-center lg:text-left ${
                 activeTab === 'templates'
                   ? 'bg-indigo-600/20 text-indigo-200 border border-indigo-500/20'
                   : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -149,18 +159,25 @@ export default function DashboardPage() {
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                 />
               </svg>
-              Game Templates
+              <span>
+                <span className="hidden lg:inline">Game </span>Templates
+              </span>
             </button>
 
             <button
               onClick={() => setActiveTab('analytics')}
-              className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-3 cursor-pointer ${
+              className={`px-3 py-2.5 rounded-xl text-xs lg:text-sm font-medium transition-all flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-start gap-1 lg:gap-3 cursor-pointer text-center lg:text-left ${
                 activeTab === 'analytics'
                   ? 'bg-indigo-600/20 text-indigo-200 border border-indigo-500/20'
                   : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -168,11 +185,13 @@ export default function DashboardPage() {
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 />
               </svg>
-              Past Analytics
+              <span>
+                <span className="hidden lg:inline">Past </span>Analytics
+              </span>
             </button>
           </div>
 
-          <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-5 space-y-4">
+          <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-5 space-y-4 hidden lg:block">
             <h4 className="text-sm font-semibold text-white">Need Inspiration?</h4>
             <p className="text-xs text-slate-400 leading-relaxed">
               Explore preset Trivia, Speed Quiz, or Emoji Puzzles tailored for virtual corporate
@@ -325,7 +344,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 px-6 py-6 text-center text-xs text-slate-600 z-10 mt-auto">
+      <footer className="border-t border-slate-900 px-4 sm:px-6 py-6 text-center text-xs text-slate-600 z-10 mt-auto">
         <p>
           © {new Date().getFullYear()} {config.appName}. Secure connection verified.
         </p>

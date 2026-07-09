@@ -74,13 +74,13 @@ export default function LoginPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/10 blur-[120px] pointer-events-none" />
 
       {/* Header */}
-      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-6 py-4">
+      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 sm:px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
               F
             </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent hidden sm:inline">
               {config.appName}
             </span>
           </Link>
@@ -108,10 +108,10 @@ export default function LoginPage() {
       </header>
 
       {/* Main Login Card Section */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12 relative z-10">
         <div className="max-w-md w-full">
           {/* Card Container */}
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
             {/* Application Branding */}
@@ -316,7 +316,7 @@ export default function LoginPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 px-6 py-6 text-center text-xs text-slate-600 z-10">
+      <footer className="border-t border-slate-900 px-4 sm:px-6 py-6 text-center text-xs text-slate-600 z-10">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>
             © {new Date().getFullYear()} {config.appName}. Secure connection verified.

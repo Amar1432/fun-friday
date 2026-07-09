@@ -62,7 +62,7 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
   return (
     <div
       data-testid="live-leaderboard"
-      className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 space-y-4 shadow-xl relative overflow-hidden"
+      className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-4 sm:p-6 space-y-4 shadow-xl relative overflow-hidden"
     >
       <style
         dangerouslySetInnerHTML={{
@@ -165,8 +165,8 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
                 data-testid={`leaderboard-row-${entry.playerId}`}
                 className={`flex items-center justify-between p-3.5 border rounded-2xl transition-all duration-300 ${rowStyles}`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-6 flex items-center justify-center">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-6 flex items-center justify-center shrink-0">
                     {rankBadge ? (
                       rankBadge
                     ) : (
@@ -175,13 +175,15 @@ export const LiveLeaderboard: React.FC<LiveLeaderboardProps> = ({ entries, activ
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col min-w-0">
                     <span
-                      className={`text-sm font-semibold flex items-center gap-2 ${isSelf ? 'text-white font-extrabold' : 'text-slate-200'}`}
+                      className={`text-sm font-semibold flex items-center gap-2 min-w-0 ${isSelf ? 'text-white font-extrabold' : 'text-slate-200'}`}
                     >
-                      {entry.displayName}
+                      <span className="truncate max-w-[100px] min-[400px]:max-w-[140px] sm:max-w-[200px] inline-block">
+                        {entry.displayName}
+                      </span>
                       {isSelf && (
-                        <span className="text-[9px] font-black tracking-widest bg-indigo-500 text-white px-1.5 py-0.5 rounded uppercase">
+                        <span className="text-[9px] font-black tracking-widest bg-indigo-500 text-white px-1.5 py-0.5 rounded uppercase shrink-0">
                           You
                         </span>
                       )}

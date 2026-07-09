@@ -88,7 +88,7 @@ export function SocketErrorAlert() {
     return (
       <div
         data-testid="socket-error-toast"
-        className="fixed bottom-6 right-6 z-[100] max-w-md w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl rounded-2xl p-4 flex gap-3 animate-fade-in"
+        className="fixed bottom-6 left-6 right-6 sm:left-auto sm:right-6 sm:bottom-6 z-[100] sm:max-w-md bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl rounded-2xl p-4 flex gap-3 animate-fade-in"
       >
         <div className="h-10 w-10 shrink-0 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-450 font-bold">
           ⚠️
@@ -119,7 +119,7 @@ export function SocketErrorAlert() {
       data-testid="socket-error-overlay"
       className="fixed inset-0 z-[100] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in"
     >
-      <div className="bg-slate-900/80 border border-slate-800/80 max-w-md w-full rounded-3xl p-8 space-y-6 text-center shadow-2xl relative overflow-hidden">
+      <div className="bg-slate-900/80 border border-slate-800/80 max-w-md w-full rounded-3xl p-6 sm:p-8 space-y-6 text-center shadow-2xl relative overflow-hidden">
         {/* Background ambient glow inside card */}
         <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-rose-500/5 blur-[80px] pointer-events-none" />
 
