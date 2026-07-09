@@ -20,27 +20,26 @@ export function PlayerList({
   const players = useGameStore((state) => state.players);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-        <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
           <span>Players</span>
-          <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-medium">
-            {players.length} connected
+          <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full font-medium">
+            {players.length}
           </span>
         </h2>
       </div>
 
       {players.length === 0 ? (
-        <div className="text-center py-10 bg-slate-900/40 border border-slate-800/60 rounded-2xl border-dashed">
-          <p className="text-sm text-slate-500 font-medium">Waiting for players to join...</p>
+        <div className="text-center py-6 bg-slate-900/40 border border-slate-800/60 rounded-xl border-dashed">
+          <p className="text-xs text-slate-500 font-medium">Waiting for players to join...</p>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="player-list-grid">
+        <ul className="grid grid-cols-1 gap-1.5" data-testid="player-list-grid">
           {players.map((player) => {
             const isConnected = player.isConnected !== false;
             const initials = player.displayName.charAt(0).toUpperCase();
 
-            // Distinctive gradient based on playerId to make avatars unique
             const colors = [
               'from-rose-500 to-orange-500',
               'from-green-400 to-blue-500',
@@ -56,26 +55,25 @@ export function PlayerList({
               <li
                 key={player.id}
                 data-testid={`player-card-${player.id}`}
-                className={`bg-slate-900/60 border backdrop-blur-xl rounded-2xl p-4 flex items-center justify-between hover:border-slate-700/80 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 ${
-                  isConnected ? 'border-slate-800/80' : 'border-red-500/20 bg-red-950/5'
+                className={`flex items-center justify-between gap-2 px-3 py-2 bg-slate-900/60 border rounded-xl transition-all duration-200 ${
+                  isConnected
+                    ? 'border-slate-800/80 hover:border-slate-700/80'
+                    : 'border-red-500/20 bg-red-950/5'
                 }`}
               >
-                <div className="flex items-center gap-3.5 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0">
                   {/* Avatar */}
-                  <div className="relative">
+                  <div className="relative shrink-0">
                     <div
-                      className={`h-11 w-11 rounded-xl bg-gradient-to-tr ${avatarGradient} flex items-center justify-center font-bold text-base text-white shadow-md`}
+                      className={`h-7 w-7 rounded-lg bg-gradient-to-tr ${avatarGradient} flex items-center justify-center font-bold text-[10px] text-white`}
                       aria-hidden="true"
                     >
                       {initials}
                     </div>
-                    {/* Connection Status Dot */}
                     <div
                       data-testid={`player-conn-dot-${player.id}`}
-                      className={`absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-slate-900 ${
-                        isConnected
-                          ? 'bg-green-500 shadow-green-500/20'
-                          : 'bg-amber-500 shadow-amber-500/20'
+                      className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-[1.5px] border-slate-900 ${
+                        isConnected ? 'bg-green-500' : 'bg-amber-500'
                       }`}
                       title={isConnected ? 'Connected' : 'Disconnected'}
                       aria-label={isConnected ? 'Connected' : 'Disconnected'}
@@ -83,33 +81,23 @@ export function PlayerList({
                   </div>
 
                   {/* Player Info */}
-                  <div className="min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-100 truncate">
-                        {player.displayName}
-                      </p>
-                      {!isConnected && (
-                        <span className="text-[10px] font-semibold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 uppercase tracking-wider">
-                          Offline
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                      <svg
-                        className="w-3.5 h-3.5 text-amber-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        aria-hidden="true"
-                      >
-                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                      </svg>
-                      <span>{player.score} pts</span>
-                    </div>
+                  <div className="min-w-0 flex items-center gap-2">
+                    <p className="text-xs font-semibold text-slate-100 truncate">
+                      {player.displayName}
+                    </p>
+                    {!isConnected && (
+                      <span className="text-[9px] font-semibold text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded border border-amber-400/20 uppercase tracking-wider">
+                        Offline
+                      </span>
+                    )}
+                    <span className="text-[10px] text-slate-500 font-medium">
+                      {player.score} pts
+                    </span>
                   </div>
                 </div>
 
                 {/* Ready Status / Toggle */}
-                <div>
+                <div className="shrink-0">
                   {currentUserIsGuest && player.id === currentUserId ? (
                     <button
                       type="button"
@@ -125,9 +113,9 @@ export function PlayerList({
                           ? 'You are ready, click to unready'
                           : 'Mark yourself as ready'
                       }
-                      className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer ${
+                      className={`text-[10px] px-2 py-1 rounded-lg border font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer ${
                         player.isReady
-                          ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-sm shadow-green-500/5 hover:bg-green-500/20'
+                          ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20'
                           : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/20'
                       }`}
                     >
@@ -136,9 +124,9 @@ export function PlayerList({
                   ) : (
                     <div
                       data-testid={`player-ready-badge-${player.id}`}
-                      className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all duration-300 ${
+                      className={`text-[10px] px-2 py-1 rounded-lg border font-semibold ${
                         player.isReady
-                          ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-sm shadow-green-500/5'
+                          ? 'bg-green-500/10 text-green-400 border-green-500/20'
                           : 'bg-slate-900/40 text-slate-500 border-slate-800'
                       }`}
                       aria-label={player.isReady ? 'Ready' : 'Waiting to be ready'}

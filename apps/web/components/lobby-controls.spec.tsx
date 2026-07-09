@@ -20,15 +20,13 @@ describe('LobbyControls Component', () => {
     render(<LobbyControls />);
 
     expect(screen.getByTestId('player-count')).toHaveTextContent('0');
-    expect(screen.getByTestId('ready-count')).toHaveTextContent('0 / 0');
+    expect(screen.getByTestId('ready-count')).toHaveTextContent('0/0');
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeDisabled();
     expect(startButton).toHaveTextContent('Start Game');
 
-    expect(screen.getByTestId('lobby-status-message')).toHaveTextContent(
-      'Waiting for players to join the lobby...',
-    );
+    expect(screen.getByTestId('lobby-status-message')).toHaveTextContent('Waiting for players...');
   });
 
   it('renders correctly when some players are not ready', () => {
@@ -40,14 +38,12 @@ describe('LobbyControls Component', () => {
     render(<LobbyControls />);
 
     expect(screen.getByTestId('player-count')).toHaveTextContent('2');
-    expect(screen.getByTestId('ready-count')).toHaveTextContent('1 / 2');
+    expect(screen.getByTestId('ready-count')).toHaveTextContent('1/2');
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeDisabled();
 
-    expect(screen.getByTestId('lobby-status-message')).toHaveTextContent(
-      'Waiting for all connected players to mark themselves as ready.',
-    );
+    expect(screen.getByTestId('lobby-status-message')).toHaveTextContent('Waiting for ready...');
   });
 
   it('renders enabled Start Game button when all connected players are ready', () => {
@@ -60,14 +56,12 @@ describe('LobbyControls Component', () => {
     render(<LobbyControls onStartGame={onStartGameSpy} />);
 
     expect(screen.getByTestId('player-count')).toHaveTextContent('2');
-    expect(screen.getByTestId('ready-count')).toHaveTextContent('2 / 2');
+    expect(screen.getByTestId('ready-count')).toHaveTextContent('2/2');
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeEnabled();
 
-    expect(screen.getByTestId('lobby-status-message')).toHaveTextContent(
-      'All players are ready! You can now start the game.',
-    );
+    expect(screen.getByTestId('lobby-status-message')).toHaveTextContent('All players ready!');
 
     fireEvent.click(startButton);
     expect(onStartGameSpy).toHaveBeenCalledTimes(1);
@@ -80,7 +74,7 @@ describe('LobbyControls Component', () => {
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeDisabled();
-    expect(startButton).toHaveTextContent('Starting Game...');
+    expect(startButton).toHaveTextContent('Starting...');
   });
 
   it('renders error message when error prop is provided', () => {

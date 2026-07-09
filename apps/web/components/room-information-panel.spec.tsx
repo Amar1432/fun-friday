@@ -74,7 +74,7 @@ describe('RoomInformationPanel Component', () => {
 
     render(<RoomInformationPanel />);
 
-    expect(screen.getByText('Room Code')).toBeInTheDocument();
+    expect(screen.getByText('Room')).toBeInTheDocument();
     expect(screen.getByText('ABCDEF')).toBeInTheDocument();
     expect(screen.getByText('Lobby')).toBeInTheDocument();
 
@@ -133,10 +133,9 @@ describe('RoomInformationPanel Component', () => {
 
     render(<RoomInformationPanel />);
 
-    expect(screen.getByText('Game Progress')).toBeInTheDocument();
     expect(screen.getByText('Round')).toBeInTheDocument();
     expect(screen.getByText('3/5')).toBeInTheDocument();
-    expect(screen.getByText('Time Left')).toBeInTheDocument();
+    expect(screen.getByText('Time')).toBeInTheDocument();
     expect(screen.getByText('12s')).toBeInTheDocument();
   });
 });

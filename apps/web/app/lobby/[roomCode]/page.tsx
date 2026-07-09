@@ -719,34 +719,34 @@ export default function LobbyPage() {
     );
   }
 
-  // Default Lobby view (Lobby status: LOBBY or null)
+  // Default Lobby view (Lobby status: LOBBY or null) — compact dashboard grid
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans relative overflow-hidden">
+    <div className="h-screen bg-slate-950 text-slate-100 flex flex-col font-sans relative overflow-hidden">
       {/* Background ambient glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 
-      {/* Header */}
-      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-50">
+      {/* Compact Header */}
+      <header className="border-b border-slate-800/80 bg-slate-950/50 backdrop-blur-md px-4 py-2 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-3 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-xl"
+            className="flex items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-lg"
           >
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-base shadow-lg shadow-indigo-500/20 text-white group-hover:scale-105 transition-transform">
               F
             </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent hidden sm:inline">
+            <span className="text-base font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent hidden sm:inline">
               {config.appName}
             </span>
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <SocketStatusIndicator />
-            {/* Copy Invite Link Button */}
+            {/* Share Invite Button — compact */}
             <button
               onClick={handleCopyInviteLink}
-              className={`text-sm font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
+              className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
                 copied
                   ? 'bg-green-500/15 border border-green-500/30 text-green-400'
                   : 'text-indigo-400 hover:text-white hover:bg-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/40'
@@ -755,7 +755,12 @@ export default function LobbyPage() {
             >
               {copied ? (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -767,7 +772,12 @@ export default function LobbyPage() {
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -775,21 +785,62 @@ export default function LobbyPage() {
                       d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                     />
                   </svg>
-                  Share Invite
+                  Share
                 </>
               )}
             </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content — side-by-side split grid */}
+      <main className="flex-1 flex flex-col relative z-10 overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4">
+            {/* Left: Room Info Panel */}
+            <div className="space-y-3">
+              <RoomInformationPanel />
+
+              {/* Quick stats chip */}
+              {isHost && (
+                <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-2">
+                    Your Room
+                  </p>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Share the room code with friends to invite them. Players can mark themselves
+                    ready below.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Right: Player List */}
+            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3">
+              <PlayerList
+                dispatcher={dispatcher}
+                currentUserId={user?.id ?? null}
+                currentUserIsGuest={!!user && (!user.email || user.email.trim() === '')}
+                roomId={room.id || roomIdParam}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Fixed Bottom Bar — host controls */}
+        <div className="border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-md px-4 py-2.5 shrink-0">
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+            <LobbyControls
+              onStartGame={handleStartGame}
+              isStarting={isStarting}
+              error={startError}
+            />
+
             <button
               onClick={() => router.push('/dashboard')}
-              className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -797,50 +848,8 @@ export default function LobbyPage() {
                   d="M10 19l-7-7m0 0l7-7m-7 7h18"
                 />
               </svg>
-              Leave Room
+              Leave
             </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative z-10">
-        <div className="w-full max-w-2xl">
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 space-y-6 sm:space-y-8">
-            <div className="text-center space-y-4">
-              <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 items-center justify-center mx-auto shadow-lg shadow-indigo-500/20">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-white">Lobby</h1>
-              </div>
-            </div>
-
-            <RoomInformationPanel />
-            <PlayerList
-              dispatcher={dispatcher}
-              currentUserId={user?.id ?? null}
-              currentUserIsGuest={!!user && (!user.email || user.email.trim() === '')}
-              roomId={room.id || roomIdParam}
-            />
-
-            <LobbyControls
-              onStartGame={handleStartGame}
-              isStarting={isStarting}
-              error={startError}
-            />
           </div>
         </div>
       </main>

@@ -20,7 +20,8 @@ describe('PlayerList Component', () => {
     render(<PlayerList />);
 
     expect(screen.getByText('Players')).toBeInTheDocument();
-    expect(screen.getByText('0 connected')).toBeInTheDocument();
+    // Badge now shows just the number without 'connected' suffix
+    expect(screen.getByText('0')).toBeInTheDocument();
     expect(screen.getByText('Waiting for players to join...')).toBeInTheDocument();
   });
 
@@ -32,7 +33,7 @@ describe('PlayerList Component', () => {
 
     render(<PlayerList />);
 
-    expect(screen.getByText('2 connected')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('120 pts')).toBeInTheDocument();
     expect(screen.getByText('Ready')).toBeInTheDocument();

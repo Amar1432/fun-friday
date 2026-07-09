@@ -118,52 +118,47 @@ export function RoomInformationPanel() {
   }
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 space-y-5">
+    <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-xl p-3 space-y-3">
       {/* Room Code and Status */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Room Code</p>
-          <p className="text-2xl font-bold tracking-widest text-indigo-400">{room.code}</p>
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Room</p>
+          <p className="text-lg font-bold tracking-widest text-indigo-400 truncate">{room.code}</p>
         </div>
         <div
-          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold ${statusConfig.bg}`}
+          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-semibold shrink-0 ${statusConfig.bg}`}
         >
           {statusConfig.icon}
           <span>{statusConfig.text}</span>
         </div>
       </div>
 
-      {/* Host Information */}
+      {/* Host Information — compact chip */}
       {user && (
-        <div className="flex items-center gap-3 p-3 bg-slate-950/50 rounded-xl border border-slate-800">
-          <div className="h-10 w-10 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center font-bold text-sm text-indigo-300">
+        <div className="flex items-center gap-2 p-2 bg-slate-950/50 rounded-lg border border-slate-800">
+          <div className="h-7 w-7 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center font-bold text-[10px] text-indigo-300 shrink-0">
             {user.name.charAt(0).toUpperCase()}
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-white">{user.name}</p>
-            <p className="text-xs text-slate-500">Host</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-white truncate">{user.name}</p>
+            <p className="text-[10px] text-slate-500">Host</p>
           </div>
         </div>
       )}
 
-      {/* Current Game State */}
+      {/* Current Game State — compact */}
       {gameInfo && (
-        <div className="space-y-3">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">
-            Game Progress
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-950/50 rounded-lg border border-slate-800 p-3 text-center">
-              <p className="text-xs text-slate-500 mb-1">Round</p>
-              <p className="text-lg font-bold text-white">{gameInfo.round}</p>
-            </div>
-            {gameInfo.timer && (
-              <div className="bg-slate-950/50 rounded-lg border border-slate-800 p-3 text-center">
-                <p className="text-xs text-slate-500 mb-1">Time Left</p>
-                <p className="text-lg font-bold text-white">{gameInfo.timer}</p>
-              </div>
-            )}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-slate-950/50 rounded-lg border border-slate-800 p-2 text-center">
+            <p className="text-[10px] text-slate-500">Round</p>
+            <p className="text-sm font-bold text-white">{gameInfo.round}</p>
           </div>
+          {gameInfo.timer && (
+            <div className="bg-slate-950/50 rounded-lg border border-slate-800 p-2 text-center">
+              <p className="text-[10px] text-slate-500">Time</p>
+              <p className="text-sm font-bold text-white">{gameInfo.timer}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

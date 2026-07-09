@@ -1,18 +1,18 @@
 # Active Task
 
-**Ticket:** FFH-106
-**Title:** Shareable Lobby Links & Auto-Fill
+**Ticket:** FFH-108
+**Title:** Micro-Animations & Sound Engine
 
 ## Objective
 
-Generate instant shareable invite links for hosts to distribute to players.
+Add responsive user feedback through subtle animations and audio toggles.
 
 ## Execution Requirements
 
-1. **Copy Invite Link:** The host lobby UI displays a prominent "Copy Invite Link" action button that copies `/room/join?code=D9FD81` to the clipboard.
-2. **Auto-Fill Room Code:** When the invite link is opened by a guest, the Room Code field on the Join page is locked/auto-filled, requiring only their display name.
-3. **Clipboard UX:** Show a brief "Copied!" confirmation state after clicking the copy button.
+1. Install `canvas-confetti` and run confetti upon correct answers.
+2. Load audio engine utilities for correct feedback and timer warnings.
+3. Add a global persistence mute/unmute control button in the header.
 
 ## Completion
 
-Once the shareable links feature is implemented and verified, commit the changes, update `docs/HANDOFF.md`, and update this file to point to the next logical step.
+Once micro-animations and sound engine are implemented and verified, commit the changes, update `docs/HANDOFF.md`, and update this file to point to the next logical step.
