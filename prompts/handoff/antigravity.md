@@ -27,3 +27,11 @@ Before ending this session, you MUST execute the following terminal commands in 
 4. Update `docs/ACTIVE_TASK.md` to reflect the next logical step.
 
 Keep changes focused entirely on the assigned ticket. Do not refactor out-of-scope code.
+
+### Self-Maintenance & Context Pruning
+
+Before updating any `.md` files in the `docs/` directory, check their length. If a file (like `HANDOFF.md` or `TASKS.md`) has grown exceedingly large and contains outdated sprint data, you MUST auto-prune it.
+
+1. Move the completed/outdated information into a uniquely named file in `docs/archive/`.
+2. Leave a clean summary and a link to the archive in the original file.
+3. Proceed with your regular task updates.

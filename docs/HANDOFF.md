@@ -11,7 +11,22 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
-## 🚀 Active Sprint: Sprint 3 (Frontend Integration & UI)
+## 🚀 Active Sprint: Sprint 4 (Frictionless Entry & UI/UX Revamp)
+
+**Date/Time:** 2026-07-09 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-103
+
+- **What Changed:**
+  - Installed and configured **HeroUI v3** (`@heroui/react` + `@heroui/styles`) in the monorepo workspace.
+  - Installed the official `heroui-react` skill for best-practice integration guidance.
+  - Updated `apps/web/app/globals.css` to import `@import "@heroui/styles"` after the Tailwind v4 import.
+  - HeroUI v3 is fully CSS-based — no Provider wrapper, no framer-motion, no Tailwind plugin needed.
+  - Verified: `pnpm typecheck` ✅, `pnpm lint` ✅, `pnpm build` ✅ — all pass cleanly.
+- **Why:** To satisfy all acceptance criteria for FFH-103, providing the HeroUI glassmorphic UI kit for the frontend overhaul.
+- **What's Next:** Start `FFH-104: Implement Global 401 Auth Interceptor`.
+
+---
 
 **Date/Time:** 2026-07-09 21:50 (Local Time)
 **Agent:** Freebuff (Buffy)

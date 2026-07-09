@@ -8,27 +8,28 @@ You are an AI coding agent working on the **Fun Friday Hub** monorepo. Read this
 - **Focus:** You must only work on the ticket defined in `docs/ACTIVE_TASK.md`. Do not touch unrelated files.
 - **State Logging:** Before you finish any session, you **must** update `docs/HANDOFF.md` with what changed, why it changed, and what is next.
 
-## 2. Reading Order
+## 2. Environment & Startup
 
-Always read the documentation in this exact order before beginning a task:
+- **Monorepo Execution:** This is a pnpm workspace. To start the entire stack (Next.js frontend and NestJS backend) simultaneously, ALWAYS run `pnpm dev` from the root directory. Do not attempt to start the applications separately or guess framework-specific commands.
 
-1. `docs/PRD.md`
-2. `docs/ARCHITECTURE.md`
-3. `docs/DATABASE.md`
-4. `docs/API.md`
+## 3. Reading Order
+
+Always read the documentation in this exact order before beginning a task. Do not read older or archived files unless explicitly told to.
+
+1. `docs/ACTIVE_TASK.md`
+2. `docs/HANDOFF.md`
+3. `docs/TASKS.md`
+4. `docs/ARCHITECTURE.md`
 5. `docs/ROOM_PROTOCOL.md`
-6. `docs/ACTIVE_TASK.md`
-7. `docs/HANDOFF.md`
-8. `docs/DECISIONS.md`
 
-## 3. Architecture & Coding Conventions
+## 4. Architecture & Coding Conventions
 
-- **Frontend (`apps/web`):** Use Next.js App Router, React functional components, TypeScript, and Tailwind CSS.
-- **Backend (`apps/api`):** Use NestJS, Node.js, and strictly route real-time pathways through Socket.IO.
-- **Database (`packages/shared` / `apps/api`):** Always route persistent modifications via Prisma client profiles pointing to PostgreSQL. Use Redis strictly for ephemeral state (live rooms, timers).
-- **Testing:** Keep tests close to the code inside `apps/web` and `apps/api` rather than a top-level directory.
+- **Frontend (`apps/web`):** Next.js App Router, React functional components, TypeScript, and Tailwind CSS.
+- **Backend (`apps/api`):** NestJS, Node.js, and strictly route real-time pathways through Socket.IO.
+- **Database:** Always route persistent modifications via Prisma client pointing to PostgreSQL. Use Redis strictly for ephemeral state (live rooms, timers).
+- **Testing:** Keep tests close to the code inside `apps/web` and `apps/api`.
 
-## 4. Git Rules
+## 5. Git & Execution Rules
 
-- Commit code after every successful micro-feature.
-- Ensure commit messages reference the ticket number (e.g., "feat(api): [FFH-001] Scaffold NestJS").
+- Actively utilize your terminal and CLI execution skills to build, test, and verify your work.
+- Commit code after every successful micro-feature. Ensure commit messages reference the ticket number (e.g., "feat(api): [FFH-103] Add Shadcn").

@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* HeroUI v3 styles */
+@import '@heroui/styles';
+
 @source "../../../packages/ui/src";
 
 :root {
