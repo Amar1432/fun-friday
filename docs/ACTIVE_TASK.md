@@ -1,20 +1,20 @@
 # Active Task
 
-## FFH-100: Add Loading, Empty & Error States
+## FFH-101: Implement Accessibility Improvements
 
 ### Description
 
-Complete all user feedback states.
+Improve accessibility across the frontend.
 
 ### Acceptance Criteria
 
-Every major screen includes:
+UI includes:
 
-- [ ] Loading state
-- [ ] Empty state
-- [ ] Error state
-- [ ] Retry action where appropriate
-- [ ] No blank screens remain.
+- [ ] Keyboard navigation
+- [ ] Visible focus states
+- [ ] Semantic HTML
+- [ ] Accessible labels
+- [ ] Screen reader friendly controls
 
 ### Status
 
