@@ -70,9 +70,28 @@ export interface GameStore {
   setLeaderboard: (leaderboard: LeaderboardEntry[]) => void;
   setGameFinished: (finalRankings: LeaderboardEntry[]) => void;
   syncState: (data: {
-    status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+    room: {
+      id: string;
+      code: string;
+      status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+    };
     players: Player[];
     leaderboard?: LeaderboardEntry[];
+    game?: {
+      gameId: string | null;
+      totalRounds: number;
+      currentRoundIndex: number;
+      currentRoundId: string | null;
+      currentQuestion: {
+        id: string;
+        prompt: string;
+        timeLimitSeconds: number;
+        difficulty: string;
+      } | null;
+      timerRemaining: number | null;
+      correctAnswer: string | null;
+      submittedAnswer: string | null;
+    } | null;
   }) => void;
 }
 
@@ -228,10 +247,40 @@ export const useGameStore = create<GameStore>((set) => ({
 
   syncState: (syncData) =>
     set((state) => ({
-      room: { ...state.room, status: syncData.status },
+      room: {
+        ...state.room,
+        id: syncData.room?.id || state.room.id,
+        code: syncData.room?.code || state.room.code,
+        status: syncData.room?.status || state.room.status,
+      },
       players: sortPlayers(syncData.players),
       leaderboard: syncData.leaderboard
         ? deduplicateLeaderboard(syncData.leaderboard)
         : state.leaderboard,
+      game: syncData.game
+        ? {
+            ...state.game,
+            gameId: syncData.game.gameId,
+            totalRounds: syncData.game.totalRounds,
+            currentRoundIndex: syncData.game.currentRoundIndex,
+            currentRoundId: syncData.game.currentRoundId,
+            currentQuestion: syncData.game.currentQuestion,
+            timerRemaining: syncData.game.timerRemaining,
+            correctAnswer: syncData.game.correctAnswer,
+            submittedAnswer: syncData.game.submittedAnswer,
+          }
+        : // No active game in the server state (e.g. room is in LOBBY or the
+          // player dropped mid-round). Clear stale transient game UI so the
+          // client does not render questions, timers, or submitted answers
+          // that no longer reflect the authoritative server state.
+          {
+            ...state.game,
+            gameId: null,
+            currentRoundId: null,
+            currentQuestion: null,
+            timerRemaining: null,
+            correctAnswer: null,
+            submittedAnswer: null,
+          },
     })),
 }));

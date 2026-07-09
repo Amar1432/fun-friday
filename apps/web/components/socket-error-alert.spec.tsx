@@ -64,7 +64,7 @@ describe('SocketErrorAlert Component', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders blocking overlay when status is reconnecting in lobby', () => {
+  it('renders nothing when reconnecting (owned by ReconnectionOverlay)', () => {
     mockUseAuth.mockReturnValue({ token: 'valid-token' });
     mockUsePathname.mockReturnValue('/lobby/123456');
     mockUseSocket.mockReturnValue({
@@ -74,11 +74,8 @@ describe('SocketErrorAlert Component', () => {
       connect: jest.fn(),
     });
 
-    render(<SocketErrorAlert />);
-
-    expect(screen.getByTestId('socket-error-overlay')).toBeInTheDocument();
-    expect(screen.getByTestId('overlay-title')).toHaveTextContent('Connection Lost');
-    expect(screen.getByTestId('reconnecting-indicator')).toBeInTheDocument();
+    const { container } = render(<SocketErrorAlert />);
+    expect(container.firstChild).toBeNull();
   });
 
   it('renders blocking overlay for ROOM_NOT_FOUND error in lobby', () => {

@@ -7,8 +7,10 @@ import { useGameStore } from '@/lib/store/use-game-store';
 import { useAuth } from '@/lib/auth/auth-context';
 
 export function useSocketSync() {
-  const { status } = useSocket();
+  const { status, dispatcher } = useSocket();
   const { user } = useAuth();
+  const room = useGameStore((state) => state.room);
+  const prevStatusRef = React.useRef(status);
   const setUser = useGameStore((state) => state.setUser);
   const setConnectionStatus = useGameStore((state) => state.setConnectionStatus);
   const addPlayer = useGameStore((state) => state.addPlayer);
@@ -27,6 +29,25 @@ export function useSocketSync() {
   React.useEffect(() => {
     setUser(user);
   }, [user, setUser]);
+
+  // Handle reconnection state sync automatically
+  React.useEffect(() => {
+    const isReconnectingTransition =
+      (status === 'restoring' || status === 'connected') &&
+      prevStatusRef.current !== 'restoring' &&
+      prevStatusRef.current !== 'connected';
+
+    if (isReconnectingTransition && room.id && room.status && user?.id) {
+      console.log(
+        `[SocketSync] Socket reconnected (status: ${status}). Emitting ReconnectRequest...`,
+      );
+      dispatcher.reconnectRequest({
+        playerId: user.id,
+        roomId: room.id,
+      });
+    }
+    prevStatusRef.current = status;
+  }, [status, room.id, room.status, user?.id, dispatcher]);
 
   // Sync connection status
   React.useEffect(() => {
@@ -134,11 +155,7 @@ export function useSocketSync() {
     'StateSync',
     React.useCallback(
       (data) => {
-        syncState({
-          status: data.status,
-          players: data.players,
-          leaderboard: data.leaderboard,
-        });
+        syncState(data);
       },
       [syncState],
     ),

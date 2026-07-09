@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/auth/auth-context';
 import { SocketProvider } from '@/lib/socket/socket-context';
 import { SocketSyncRoot } from '@/lib/socket/use-socket-sync';
 import { SocketErrorAlert } from '@/components/socket-error-alert';
+import { ReconnectionOverlay } from '@/components/reconnection-overlay';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,6 +35,7 @@ export default function RootLayout({
             {children}
             <SocketSyncRoot />
             <SocketErrorAlert />
+            <ReconnectionOverlay />
           </SocketProvider>
         </AuthProvider>
       </body>

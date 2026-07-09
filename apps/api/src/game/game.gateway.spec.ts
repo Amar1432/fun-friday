@@ -1229,6 +1229,83 @@ describe('GameGateway', () => {
 
       jest.useRealTimers();
     });
+
+    it('should include game state in StateSync when room is IN_PROGRESS', async () => {
+      mockSocket.data.user = {
+        sub: 'guest-123',
+        name: 'Guest',
+        role: 'guest',
+        roomId: 'room-id-123',
+      };
+
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id-123',
+        code: 'ROOM12',
+        status: 'IN_PROGRESS',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        hostId: 'host-123',
+        status: 'IN_PROGRESS',
+        currentRoundIndex: '1',
+        currentRoundId: 'round-id-456',
+        currentQuestionId: 'q-123',
+        timerDuration: '20',
+        timerRemaining: '15',
+        roundStatus: 'IN_PROGRESS',
+        gameId: 'game-123',
+        totalRounds: '5',
+      });
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'guest-123': JSON.stringify({
+          id: 'guest-123',
+          displayName: 'Guest',
+          score: 150,
+          isReady: true,
+        }),
+      });
+      redisRoomRepositoryMock.getLeaderboard.mockResolvedValue([
+        { playerId: 'guest-123', score: 150 },
+      ]);
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-123',
+        prompt: 'What is 2+2?',
+        answer: '4',
+        difficulty: 'EASY',
+        category: 'Math',
+        metadata: null,
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({
+        'guest-123': JSON.stringify({
+          playerId: 'guest-123',
+          answerText: '4',
+          responseTimeMs: 1000,
+        }),
+      });
+
+      await gateway.handleReconnectRequest(mockSocket as unknown as Socket, {
+        playerId: 'guest-123',
+        roomId: 'room-id-123',
+      });
+
+      const calls = mockSocket.emit.mock.calls as unknown[][];
+      const stateSyncCall = calls.find((call) => call[0] === 'StateSync');
+
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+      const stateSyncPayload = stateSyncCall?.[1] as any;
+
+      expect(stateSyncPayload?.room?.status).toBe('IN_PROGRESS');
+      expect(stateSyncPayload?.game).toBeDefined();
+      expect(stateSyncPayload?.game?.gameId).toBe('game-123');
+      expect(stateSyncPayload?.game?.totalRounds).toBe(5);
+      expect(stateSyncPayload?.game?.currentRoundIndex).toBe(1);
+      expect(stateSyncPayload?.game?.currentQuestion?.id).toBe('q-123');
+      expect(stateSyncPayload?.game?.timerRemaining).toBe(15);
+      expect(stateSyncPayload?.game?.correctAnswer).toBeNull();
+      expect(stateSyncPayload?.game?.submittedAnswer).toBe('4');
+      /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+    });
   });
 
   describe('handlePlayerReady', () => {

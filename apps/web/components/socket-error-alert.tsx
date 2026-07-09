@@ -36,9 +36,8 @@ export function SocketErrorAlert() {
       error?.message || 'Your real-time session could not be authenticated. Please log in again.';
     showRetry = true;
   } else if (status === 'reconnecting') {
-    title = 'Connection Lost';
-    message = error?.message || 'We lost connection to the server. Retrying automatically...';
-    showRetry = true;
+    // Reconnection recovery is owned by the dedicated ReconnectionOverlay component.
+    return null;
   } else if (error) {
     if (error.code === 'ROOM_NOT_FOUND') {
       title = 'Room Not Found';
@@ -136,30 +135,6 @@ export function SocketErrorAlert() {
             {message}
           </p>
         </div>
-
-        {status === 'reconnecting' && (
-          <div
-            className="flex items-center justify-center gap-2 text-xs font-medium text-amber-400 animate-pulse"
-            data-testid="reconnecting-indicator"
-          >
-            <svg className="animate-spin h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            Attempting reconnect...
-          </div>
-        )}
 
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           {showDashboard && (

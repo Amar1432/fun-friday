@@ -165,6 +165,7 @@ describe('LobbyPage Component', () => {
   });
 
   it('sets room state on mount and emits JoinRoom socket event', () => {
+    mockRoomState.status = null as any;
     render(<LobbyPage />);
 
     expect(mockSetRoomSpy).toHaveBeenCalledWith({

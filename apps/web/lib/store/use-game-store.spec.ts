@@ -181,15 +181,47 @@ describe('useGameStore', () => {
     ];
 
     store.syncState({
-      status: 'IN_PROGRESS',
+      room: { id: 'room-1', code: 'ABCDEF', status: 'IN_PROGRESS' },
       players,
       leaderboard,
     });
 
     const state = useGameStore.getState();
+    expect(state.room.id).toBe('room-1');
+    expect(state.room.code).toBe('ABCDEF');
     expect(state.room.status).toBe('IN_PROGRESS');
     expect(state.players).toEqual(players);
     expect(state.leaderboard).toEqual(leaderboard);
+  });
+
+  it('should clear stale transient game UI when syncing with no active game', () => {
+    const store = useGameStore.getState();
+    store.setQuestionStarted({
+      id: 'q-1',
+      prompt: 'Stale prompt',
+      timeLimitSeconds: 15,
+      difficulty: 'EASY',
+    });
+    store.setSubmittedAnswer('Stale answer');
+    store.setAnswerReveal('Stale correct');
+
+    const staleState = useGameStore.getState();
+    expect(staleState.game.currentQuestion).not.toBeNull();
+    expect(staleState.game.submittedAnswer).toBe('Stale answer');
+    expect(staleState.game.correctAnswer).toBe('Stale correct');
+
+    // Server reports the room with no active game (player dropped or in LOBBY)
+    store.syncState({
+      room: { id: 'room-1', code: 'ABCDEF', status: 'LOBBY' },
+      players: [],
+    });
+
+    const syncedState = useGameStore.getState();
+    expect(syncedState.room.status).toBe('LOBBY');
+    expect(syncedState.game.currentQuestion).toBeNull();
+    expect(syncedState.game.timerRemaining).toBeNull();
+    expect(syncedState.game.submittedAnswer).toBeNull();
+    expect(syncedState.game.correctAnswer).toBeNull();
   });
 
   it('should deduplicate leaderboard entries by playerId', () => {
@@ -224,7 +256,11 @@ describe('useGameStore', () => {
     ]);
 
     store.syncState({
-      status: 'IN_PROGRESS',
+      room: {
+        id: 'room-123',
+        code: 'ABCDEF',
+        status: 'IN_PROGRESS',
+      },
       players: [],
       leaderboard: rawLeaderboard,
     });

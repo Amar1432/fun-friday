@@ -22,7 +22,11 @@ const mockActions = {
 };
 
 jest.mock('@/lib/store/use-game-store', () => ({
-  useGameStore: (selector: any) => selector(mockActions),
+  useGameStore: (selector: any) =>
+    selector({
+      ...mockActions,
+      room: { id: 'r-123', code: 'ABCDEF', status: 'IN_PROGRESS', hostId: 'h-123' },
+    }),
 }));
 
 // Mock socket hooks

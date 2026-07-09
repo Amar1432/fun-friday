@@ -47,12 +47,18 @@ const VALID_SERVER_EVENTS: Array<keyof ServerToClientEvents> = [
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { token, logout } = useAuth();
   const [status, setStatus] = React.useState<ConnectionStatus>('disconnected');
+  const statusRef = React.useRef(status);
+  React.useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
   const [socket, setSocket] = React.useState<Socket<
     ServerToClientEvents,
     ClientToServerEvents
   > | null>(null);
   const socketRef = React.useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const [dispatcher] = React.useState(() => new SocketDispatcher(null));
+  const reconnectingRef = React.useRef(false);
+  const restoreTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = React.useState<{ code: string; message: string } | null>(null);
 
   const clearError = React.useCallback(() => {
@@ -135,6 +141,17 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             setError({ code, message });
           }
 
+          // When a StateSync arrives while we are restoring after a reconnect,
+          // the server has re-synchronized the room state, so we can return to
+          // the fully connected state.
+          if (event === 'StateSync' && statusRef.current === 'restoring') {
+            if (restoreTimeoutRef.current) {
+              clearTimeout(restoreTimeoutRef.current);
+              restoreTimeoutRef.current = null;
+            }
+            setStatus('connected');
+          }
+
           const callbacks = listenersRef.current[event] as Set<any> | undefined;
           if (callbacks) {
             callbacks.forEach((cb) => {
@@ -161,6 +178,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
     setStatus('disconnected');
     setError(null);
+    reconnectingRef.current = false;
+    if (restoreTimeoutRef.current) {
+      clearTimeout(restoreTimeoutRef.current);
+      restoreTimeoutRef.current = null;
+    }
   }, [dispatcher]);
 
   const connect = React.useCallback(
@@ -179,6 +201,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
       setStatus('connecting');
       setError(null);
+      reconnectingRef.current = false;
 
       // Create a new socket instance
       const newSocket = io(config.socketUrl, {
@@ -201,8 +224,26 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
       // Set up status event handlers
       newSocket.on('connect', () => {
-        setStatus('connected');
-        setError(null);
+        // If this connection is the result of an automatic reconnection, we move
+        // into a transient "restoring" state and wait for a StateSync from the
+        // server to confirm the room state has been re-synchronized.
+        if (reconnectingRef.current) {
+          reconnectingRef.current = false;
+          setStatus('restoring');
+          setError(null);
+
+          // Safety fallback: if the server never sends a StateSync, clear the
+          // restoring state after a short grace period so the UI is not stuck.
+          if (restoreTimeoutRef.current) {
+            clearTimeout(restoreTimeoutRef.current);
+          }
+          restoreTimeoutRef.current = setTimeout(() => {
+            setStatus((prev) => (prev === 'restoring' ? 'connected' : prev));
+          }, 5000);
+        } else {
+          setStatus('connected');
+          setError(null);
+        }
       });
 
       newSocket.on('disconnect', (reason) => {
@@ -211,6 +252,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           setStatus('disconnected');
         } else {
           // the disconnection was temporary, socket.io will auto-reconnect
+          reconnectingRef.current = true;
           setStatus('reconnecting');
         }
       });
@@ -261,6 +303,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   // Clean up on provider unmount
   React.useEffect(() => {
     return () => {
+      if (restoreTimeoutRef.current) {
+        clearTimeout(restoreTimeoutRef.current);
+        restoreTimeoutRef.current = null;
+      }
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;

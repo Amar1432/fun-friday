@@ -13,6 +13,7 @@ import { QuestionDisplay } from '@/components/question-display';
 import { CountdownTimer } from '@/components/countdown-timer';
 import { AnswerSubmission } from '@/components/answer-submission';
 import { LiveLeaderboard } from '@/components/live-leaderboard';
+import { SocketStatusIndicator } from '@/components/socket-status-indicator';
 
 export default function LobbyPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -78,14 +79,21 @@ export default function LobbyPage() {
   // Emit JoinRoom when socket is connected
   React.useEffect(() => {
     if (socketStatus === 'connected' && roomCode) {
-      const isGuest = user && (!user.email || user.email.trim() === '');
-      dispatcher.joinRoom({
-        roomCode: roomCode as string,
-        displayName: user?.name || '',
-        guestToken: isGuest ? token || '' : '',
-      });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsStarting(false);
+      setStartError(null);
+
+      // Only join room if we are not already synced inside this room session
+      if (!room.status) {
+        const isGuest = user && (!user.email || user.email.trim() === '');
+        dispatcher.joinRoom({
+          roomCode: roomCode as string,
+          displayName: user?.name || '',
+          guestToken: isGuest ? token || '' : '',
+        });
+      }
     }
-  }, [socketStatus, roomCode, user, token, dispatcher]);
+  }, [socketStatus, roomCode, user, token, dispatcher, room.status]);
 
   // Socket event listener for game start success
   useSocketEvent(
@@ -286,6 +294,7 @@ export default function LobbyPage() {
                 {config.appName}
               </span>
             </button>
+            <SocketStatusIndicator />
           </div>
         </header>
 
@@ -413,14 +422,17 @@ export default function LobbyPage() {
               </span>
             </button>
 
-            {isHost && (
-              <button
-                onClick={handleEndGame}
-                className="text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 px-4 py-2 rounded-xl transition-all cursor-pointer"
-              >
-                End Game
-              </button>
-            )}
+            <div className="flex items-center gap-4">
+              <SocketStatusIndicator />
+              {isHost && (
+                <button
+                  onClick={handleEndGame}
+                  className="text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 px-4 py-2 rounded-xl transition-all cursor-pointer"
+                >
+                  End Game
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
@@ -662,6 +674,7 @@ export default function LobbyPage() {
           </button>
 
           <div className="flex items-center gap-4">
+            <SocketStatusIndicator />
             <button
               onClick={() => router.push('/dashboard')}
               className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer"

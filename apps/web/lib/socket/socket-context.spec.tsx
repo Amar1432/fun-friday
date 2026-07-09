@@ -311,4 +311,81 @@ describe('SocketProvider and hooks', () => {
     expect(screen.getByTestId('error-code')).toHaveTextContent('ROOM_NOT_FOUND');
     expect(screen.getByTestId('error-message')).toHaveTextContent('Room missing');
   });
+
+  it('transitions reconnecting -> restoring -> connected after reconnection and StateSync', () => {
+    jest.useFakeTimers();
+    mockUseAuth.mockReturnValue({
+      token: 'some-token',
+      logout: jest.fn(),
+    });
+
+    render(
+      <SocketProvider>
+        <TestComponent />
+      </SocketProvider>,
+    );
+
+    const findListener = (event: string) => {
+      const call = mockSocketInstance.on.mock.calls.find((c) => c[0] === event);
+      return call ? (call[1] as (...args: any[]) => void) : undefined;
+    };
+
+    // 1. Simulate a temporary disconnect (auto-reconnect path)
+    act(() => {
+      findListener('disconnect')?.('transport close');
+    });
+    expect(screen.getByTestId('status')).toHaveTextContent('reconnecting');
+
+    // 2. Socket.IO auto-reconnects
+    act(() => {
+      findListener('connect')?.();
+    });
+    // Stuck in "restoring" until a StateSync arrives
+    expect(screen.getByTestId('status')).toHaveTextContent('restoring');
+
+    // 3. Server pushes StateSync -> fully connected
+    act(() => {
+      findListener('StateSync')?.({
+        room: { id: 'r1', code: 'ABCDEF', status: 'IN_PROGRESS' },
+        players: [],
+      });
+    });
+    expect(screen.getByTestId('status')).toHaveTextContent('connected');
+
+    jest.useRealTimers();
+  });
+
+  it('falls back to connected if StateSync never arrives while restoring', () => {
+    jest.useFakeTimers();
+    mockUseAuth.mockReturnValue({
+      token: 'some-token',
+      logout: jest.fn(),
+    });
+
+    render(
+      <SocketProvider>
+        <TestComponent />
+      </SocketProvider>,
+    );
+
+    const findListener = (event: string) => {
+      const call = mockSocketInstance.on.mock.calls.find((c) => c[0] === event);
+      return call ? (call[1] as (...args: any[]) => void) : undefined;
+    };
+
+    act(() => {
+      findListener('disconnect')?.('transport close');
+    });
+    act(() => {
+      findListener('connect')?.();
+    });
+    expect(screen.getByTestId('status')).toHaveTextContent('restoring');
+
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+    expect(screen.getByTestId('status')).toHaveTextContent('connected');
+
+    jest.useRealTimers();
+  });
 });

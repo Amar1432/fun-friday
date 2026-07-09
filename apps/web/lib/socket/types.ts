@@ -43,9 +43,29 @@ export interface ServerToClientEvents {
   LeaderboardUpdated: (data: LeaderboardEntry[]) => void;
   GameFinished: (data: { finalRankings: LeaderboardEntry[] }) => void;
   StateSync: (data: {
-    status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+    room: {
+      id: string;
+      code: string;
+      status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+    };
+    playerId: string;
     players: Player[];
     leaderboard?: LeaderboardEntry[];
+    game?: {
+      gameId: string | null;
+      totalRounds: number;
+      currentRoundIndex: number;
+      currentRoundId: string | null;
+      currentQuestion: {
+        id: string;
+        prompt: string;
+        timeLimitSeconds: number;
+        difficulty: string;
+      } | null;
+      timerRemaining: number | null;
+      correctAnswer: string | null;
+      submittedAnswer: string | null;
+    } | null;
   }) => void;
   error: (error: { code: string; message: string }) => void;
   SubmitAnswerAck: (data: {
@@ -77,4 +97,4 @@ export interface ClientToServerEvents {
 }
 
 export type ConnectionStatus =
-  'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'auth_failed';
+  'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'restoring' | 'auth_failed';

@@ -1979,6 +1979,59 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const leaderboard =
         await this.redisRoomRepository.getLeaderboard(roomCode);
 
+      let gameData: Record<string, unknown> | null = null;
+      if (roomMeta && roomMeta.status === 'IN_PROGRESS') {
+        const roundIndex = parseInt(roomMeta.currentRoundIndex || '0', 10);
+        const question = await this.redisRoomRepository.getQuestion(
+          roomCode,
+          roundIndex,
+        );
+
+        let submittedAnswer = null;
+        if (roomMeta.currentRoundId) {
+          const answers = await this.redisRoomRepository.getAnswers(
+            roomCode,
+            roomMeta.currentRoundId,
+          );
+          const playerAnswerJson = answers[payload.playerId];
+          if (playerAnswerJson) {
+            try {
+              const playerAnswerObj = JSON.parse(playerAnswerJson) as Record<
+                string,
+                unknown
+              >;
+              submittedAnswer =
+                (playerAnswerObj.answerText as string | null) ||
+                (playerAnswerObj.answer as string | null) ||
+                null;
+            } catch (e) {
+              this.logger.error(
+                `Failed to parse player answer JSON: ${String(e)}`,
+              );
+            }
+          }
+        }
+
+        if (question) {
+          gameData = {
+            gameId: roomMeta.gameId || null,
+            totalRounds: parseInt(roomMeta.totalRounds || '0', 10),
+            currentRoundIndex: roundIndex,
+            currentRoundId: roomMeta.currentRoundId || null,
+            currentQuestion: {
+              id: question.id,
+              prompt: question.prompt,
+              timeLimitSeconds: parseInt(roomMeta.timerDuration || '20', 10),
+              difficulty: question.difficulty,
+            },
+            timerRemaining: parseInt(roomMeta.timerRemaining || '0', 10),
+            correctAnswer:
+              roomMeta.roundStatus === 'COMPLETE' ? question.answer : null,
+            submittedAnswer,
+          };
+        }
+      }
+
       client.emit('StateSync', {
         room: {
           id: room.id,
@@ -1988,6 +2041,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         playerId: payload.playerId,
         players,
         leaderboard,
+        ...(gameData ? { game: gameData } : {}),
       });
     } catch (error) {
       if (error instanceof WsException) {

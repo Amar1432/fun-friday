@@ -29,6 +29,13 @@ export function SocketStatusIndicator() {
           text: 'Reconnecting',
           desc: 'Connection lost. Retrying automatically...',
         };
+      case 'restoring':
+        return {
+          bg: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 animate-pulse',
+          dot: 'bg-indigo-400 animate-ping shadow-[0_0_8px_rgba(99,102,241,0.5)]',
+          text: 'Restoring',
+          desc: 'Reconnected. Restoring game state...',
+        };
       case 'auth_failed':
         return {
           bg: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
