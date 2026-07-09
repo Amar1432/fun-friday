@@ -51,6 +51,7 @@ function JoinRoomForm() {
   const [displayName, setDisplayName] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [apiError, setApiError] = React.useState<string | null>(null);
+  const [isCodeFromInvite, setIsCodeFromInvite] = React.useState(false);
 
   // Validation errors
   const [errors, setErrors] = React.useState<{
@@ -63,6 +64,7 @@ function JoinRoomForm() {
     const codeParam = searchParams.get('code') || searchParams.get('roomCode');
     if (codeParam) {
       setRoomCode(codeParam.toUpperCase());
+      setIsCodeFromInvite(true);
     }
   }, [searchParams]);
 
@@ -234,10 +236,11 @@ function JoinRoomForm() {
                       setErrors((prev) => ({ ...prev, roomCode: undefined }));
                     }
                   }}
-                  placeholder="E.g., ABCDEF"
+                  placeholder={isCodeFromInvite ? 'Auto-filled from invite' : 'E.g., ABCDEF'}
                   maxLength={6}
                   required
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isCodeFromInvite}
+                  readOnly={isCodeFromInvite}
                   aria-invalid={!!errors.roomCode}
                   aria-describedby={errors.roomCode ? 'room-code-error' : undefined}
                   className={`w-full bg-slate-950/80 border ${
@@ -246,8 +249,26 @@ function JoinRoomForm() {
                       : 'border-slate-800 focus:border-indigo-500'
                   } rounded-xl px-4 py-3 text-base text-white placeholder-slate-600 focus:outline-none focus:ring-2 ${
                     errors.roomCode ? 'focus:ring-red-500/50' : 'focus:ring-indigo-500/50'
-                  } transition-all font-mono tracking-widest text-center uppercase disabled:opacity-50`}
+                  } transition-all font-mono tracking-widest text-center uppercase disabled:opacity-50 disabled:cursor-not-allowed`}
                 />
+                {isCodeFromInvite && !errors.roomCode && (
+                  <p className="text-xs text-indigo-400 flex items-center gap-1 mt-1">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
+                    Room code auto-filled from invite link
+                  </p>
+                )}
                 {errors.roomCode && (
                   <p
                     id="room-code-error"

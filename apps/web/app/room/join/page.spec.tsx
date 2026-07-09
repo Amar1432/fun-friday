@@ -94,6 +94,21 @@ describe('JoinRoomPage', () => {
     expect(roomCodeInput.value).toBe('ABC123');
   });
 
+  it('locks the room code input when pre-filled from invite link', () => {
+    mockGetSearchParams.mockImplementation((param) => {
+      if (param === 'code') return 'XYZ789';
+      return null;
+    });
+
+    render(<JoinRoomPage />);
+
+    const roomCodeInput = screen.getByLabelText('Room Code') as HTMLInputElement;
+    expect(roomCodeInput.value).toBe('XYZ789');
+    expect(roomCodeInput).toBeDisabled();
+    expect(roomCodeInput).toHaveAttribute('readonly');
+    expect(screen.getByText('Room code auto-filled from invite link')).toBeInTheDocument();
+  });
+
   it('displays validation errors when fields are empty on submit', async () => {
     render(<JoinRoomPage />);
 

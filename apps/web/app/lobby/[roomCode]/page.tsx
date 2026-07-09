@@ -41,8 +41,23 @@ export default function LobbyPage() {
 
   const [isStarting, setIsStarting] = React.useState(false);
   const [startError, setStartError] = React.useState<string | null>(null);
+  const [copied, setCopied] = React.useState(false);
 
   const isMounted = React.useRef(true);
+
+  const handleCopyInviteLink = React.useCallback(() => {
+    if (!roomCode) return;
+    const inviteUrl = `${window.location.origin}/room/join?code=${roomCode}`;
+    navigator.clipboard
+      .writeText(inviteUrl)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        // Clipboard write failed (e.g. permission denied), silently fail
+      });
+  }, [roomCode]);
   const questionStartedAtRef = React.useRef<number | null>(null);
 
   // Set room code and ID from URL params
@@ -728,6 +743,42 @@ export default function LobbyPage() {
 
           <div className="flex items-center gap-4">
             <SocketStatusIndicator />
+            {/* Copy Invite Link Button */}
+            <button
+              onClick={handleCopyInviteLink}
+              className={`text-sm font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
+                copied
+                  ? 'bg-green-500/15 border border-green-500/30 text-green-400'
+                  : 'text-indigo-400 hover:text-white hover:bg-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/40'
+              }`}
+              aria-label={copied ? 'Invite link copied' : 'Copy invite link'}
+            >
+              {copied ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                  Share Invite
+                </>
+              )}
+            </button>
             <button
               onClick={() => router.push('/dashboard')}
               className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
