@@ -807,6 +807,186 @@ describe('GameGateway', () => {
       );
     });
 
+    it('should append suffix (1) when a new player has a duplicate displayName', async () => {
+      mockSocket.data.user = {
+        sub: 'guest-456',
+        name: 'John',
+        role: 'guest',
+        roomId: 'room-id-123',
+      };
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id-123',
+        code: 'ROOM12',
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'guest-123': JSON.stringify({
+          id: 'guest-123',
+          displayName: 'John',
+          score: 50,
+          isReady: true,
+        }),
+      });
+
+      await gateway.handleJoinRoom(mockSocket as unknown as Socket, {
+        roomCode: 'ROOM12',
+      });
+
+      expect(redisRoomRepositoryMock.setPlayer).toHaveBeenCalledWith(
+        'ROOM12',
+        'guest-456',
+        JSON.stringify({
+          id: 'guest-456',
+          displayName: 'John (1)',
+          score: 0,
+          isReady: false,
+        }),
+      );
+    });
+
+    it('should append suffix (2) when both original and (1) are taken', async () => {
+      mockSocket.data.user = {
+        sub: 'guest-789',
+        name: 'John',
+        role: 'guest',
+        roomId: 'room-id-123',
+      };
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id-123',
+        code: 'ROOM12',
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'guest-123': JSON.stringify({
+          id: 'guest-123',
+          displayName: 'John',
+          score: 50,
+          isReady: true,
+        }),
+        'guest-456': JSON.stringify({
+          id: 'guest-456',
+          displayName: 'John (1)',
+          score: 30,
+          isReady: true,
+        }),
+      });
+
+      await gateway.handleJoinRoom(mockSocket as unknown as Socket, {
+        roomCode: 'ROOM12',
+      });
+
+      expect(redisRoomRepositoryMock.setPlayer).toHaveBeenCalledWith(
+        'ROOM12',
+        'guest-789',
+        JSON.stringify({
+          id: 'guest-789',
+          displayName: 'John (2)',
+          score: 0,
+          isReady: false,
+        }),
+      );
+    });
+
+    it('should not suffix displayName when joining with a unique name', async () => {
+      mockSocket.data.user = {
+        sub: 'guest-456',
+        name: 'Alice',
+        role: 'guest',
+        roomId: 'room-id-123',
+      };
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id-123',
+        code: 'ROOM12',
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'guest-123': JSON.stringify({
+          id: 'guest-123',
+          displayName: 'John',
+          score: 50,
+          isReady: true,
+        }),
+      });
+
+      await gateway.handleJoinRoom(mockSocket as unknown as Socket, {
+        roomCode: 'ROOM12',
+      });
+
+      expect(redisRoomRepositoryMock.setPlayer).toHaveBeenCalledWith(
+        'ROOM12',
+        'guest-456',
+        JSON.stringify({
+          id: 'guest-456',
+          displayName: 'Alice',
+          score: 0,
+          isReady: false,
+        }),
+      );
+    });
+
+    it('should not suffix displayName on reconnection (player already in room)', async () => {
+      mockSocket.data.user = {
+        sub: 'guest-123',
+        name: 'John',
+        role: 'guest',
+        roomId: 'room-id-123',
+      };
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id-123',
+        code: 'ROOM12',
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'guest-123': JSON.stringify({
+          id: 'guest-123',
+          displayName: 'John',
+          score: 150,
+          isReady: true,
+        }),
+        'guest-456': JSON.stringify({
+          id: 'guest-456',
+          displayName: 'Alice',
+          score: 0,
+          isReady: false,
+        }),
+      });
+
+      await gateway.handleJoinRoom(mockSocket as unknown as Socket, {
+        roomCode: 'ROOM12',
+      });
+
+      expect(redisRoomRepositoryMock.setPlayer).toHaveBeenCalledWith(
+        'ROOM12',
+        'guest-123',
+        JSON.stringify({
+          id: 'guest-123',
+          displayName: 'John',
+          score: 150,
+          isReady: true,
+        }),
+      );
+    });
+
     it('should catch generic errors, emit internal server error event, and throw WsException', async () => {
       mockSocket.data.user = {
         sub: 'guest-123',

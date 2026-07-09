@@ -1629,9 +1629,41 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       }
 
+      // Resolve the intended display name (used downstream in playerState)
+      let intendedDisplayName = user.name || payload.displayName || 'Guest';
+
+      // Resolve duplicate display names for NEW players (not reconnecting)
+      if (!isAlreadyInRoom && Object.keys(playersMap).length > 0) {
+        const existingDisplayNames = new Set(
+          Object.values(playersMap).map((pJson) => {
+            try {
+              const parsed = JSON.parse(pJson) as {
+                displayName?: string;
+              };
+              return (parsed.displayName || '').toLowerCase();
+            } catch {
+              return '';
+            }
+          }),
+        );
+
+        if (existingDisplayNames.has(intendedDisplayName.toLowerCase())) {
+          let suffix = 1;
+          let resolvedName = `${intendedDisplayName} (${suffix})`;
+          while (existingDisplayNames.has(resolvedName.toLowerCase())) {
+            suffix++;
+            resolvedName = `${intendedDisplayName} (${suffix})`;
+          }
+          intendedDisplayName = resolvedName;
+          this.logger.log(
+            `Duplicate displayName resolved: "${user.name || payload.displayName || 'Guest'}" → "${intendedDisplayName}" for player ${playerId}`,
+          );
+        }
+      }
+
       let playerState = {
         id: playerId,
-        displayName: user.name || payload.displayName || 'Guest',
+        displayName: intendedDisplayName,
         score: 0,
         isReady: false,
       };

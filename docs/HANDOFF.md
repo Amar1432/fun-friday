@@ -18,23 +18,21 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 **Date/Time:** 2026-07-10 (Local Time)
 **Agent:** Freebuff (Buffy)
-**Ticket:** FFH-110
+**Ticket:** FFH-111
 
 ### What Changed
 
-- **Backend (`handleDisconnect`):** After marking the player as disconnected in Redis, immediately broadcasts `RoomStateUpdated` to the room so all remaining clients see `isConnected: false` without waiting for the 30s cleanup timer. Added null guard for `this.server` in the fire-and-forget promise.
-- **Backend (`buildRoomStatePayload`):** Added defensive null/undefined guard for `playersMap` to prevent `Object.values()` from throwing when Redis returns no data.
-- **Frontend (PlayerList):** Disconnected player cards now render with `opacity-50 grayscale` for a pronounced offline visual state. (The avatar `opacity-60` was removed on review to avoid CSS opacity stacking making text illegible at 30%.)
-- **Frontend (IN_PROGRESS sidebar):** Disconnected players in the gameplay sidebar now show `opacity-60 grayscale`, amber connection dot, and an `Offline` badge — consistent with the PlayerList component.
-- **Verified:** `pnpm typecheck` ✅, `pnpm lint` ✅, `pnpm test` — 431/431 tests ✅
+- **Backend (`handleJoinRoom`):** Added duplicate display name resolution logic. When a new player joins with a display name that already exists in the room (case-insensitive), the backend automatically appends a numbered suffix — "John" → "John (1)", "John (1)" → "John (2)", etc. Reconnecting players are not affected — their existing display name is preserved.
+- **Backend (`game.gateway.spec.ts`):** Added 4 test cases covering: basic duplicate suffixing, sequential suffixing when multiple variants exist, unique name passthrough, and reconnection preservation.
+- **Verified:** `pnpm test` — 155/155 tests ✅, `pnpm typecheck` ✅, `pnpm lint` ✅
 
 ### Why
 
-To satisfy all acceptance criteria for FFH-110, giving hosts and players immediate real-time visual feedback when a participant disconnects, with the offline indicator seamlessly clearing on reconnection.
+To satisfy all acceptance criteria for FFH-111, preventing guests from being blocked from joining if someone else already uses their preferred display name.
 
 ### What's Next
 
-Continue Sprint 5 — next ticket: FFH-111 (Duplicate Name Resolution), FFH-112 (Landing Page Overhaul), or FFH-113 (Global UI Consistency Audit).
+Continue Sprint 5 — next ticket: FFH-112 (Landing Page Overhaul) or FFH-113 (Global UI Consistency Audit).
 
 ---
 
