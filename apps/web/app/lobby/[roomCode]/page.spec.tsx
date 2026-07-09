@@ -84,6 +84,25 @@ jest.mock('@/lib/config', () => ({
   },
 }));
 
+// Mock canvas-confetti to prevent JSDOM canvas errors
+jest.mock('canvas-confetti', () => jest.fn());
+
+// Mock sound engine to prevent AudioContext errors in test
+jest.mock('@/lib/sound/sound-engine', () => ({
+  playCorrectSound: jest.fn(),
+  playTimerWarningSound: jest.fn(),
+}));
+
+// Mock sound settings
+jest.mock('@/lib/sound/use-sound-settings', () => ({
+  useSoundSettings: jest.fn(() => ({ isMuted: true, toggleMute: jest.fn(), setMuted: jest.fn() })),
+}));
+
+// Mock confetti hook (no-op in tests)
+jest.mock('@/lib/confetti/use-confetti', () => ({
+  useConfettiOnCorrectAnswer: jest.fn(),
+}));
+
 describe('LobbyPage Component', () => {
   const mockPush = jest.fn();
   const mockSocketEmit = jest.fn();

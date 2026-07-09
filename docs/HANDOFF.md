@@ -18,6 +18,41 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 **Date/Time:** 2026-07-09 (Local Time)
 **Agent:** Freebuff (Buffy)
+**Ticket:** FFH-108
+
+### What Changed
+
+- **canvas-confetti installed & integrated:** `useConfettiOnCorrectAnswer` hook fires confetti from both sides when `game.correctAnswer` transitions from null → value. Uses indigo/purple/pink/gold color palette.
+- **Sound engine (`lib/sound/sound-engine.ts`):** Web Audio API-based with two tones — ascending chime for correct answers (C5→E5), short square-wave beep for timer warnings (final 5 seconds).
+- **Mute persistence (`lib/sound/use-sound-settings.ts`):** React hook with localStorage persistence for global mute state.
+- **SoundToggle component (`components/sound-toggle.tsx`):** Controlled button with speaker/mute SVG icons. Placed in all three lobby headers (FINISHED, IN_PROGRESS, lobby default).
+- **Lobby page integration:** Three `useEffect` hooks — one for correct answer sound, one for timer warning ticks, and the confetti hook. Both sound effects respect `isMuted`.
+- **Controlled component pattern:** `SoundToggle` receives `isMuted` + `onToggle` props from the single `useSoundSettings()` instance owned by the lobby page, preventing stale-state bugs.
+- **Test mocks:** Added mocks for `canvas-confetti`, `sound-engine`, `use-sound-settings`, and `use-confetti` in the lobby page test.
+- **Verified:** `pnpm typecheck` ✅, `pnpm lint` ✅, `pnpm test` — 142/142 tests ✅
+
+### What Changed (Files)
+
+- `apps/web/lib/sound/sound-engine.ts` — New: Web Audio API sound engine
+- `apps/web/lib/sound/use-sound-settings.ts` — New: Mute state with localStorage
+- `apps/web/lib/confetti/use-confetti.ts` — New: Confetti on correct answer
+- `apps/web/components/sound-toggle.tsx` — New: Controlled mute toggle button
+- `apps/web/app/lobby/[roomCode]/page.tsx` — Integrated confetti, sounds, SoundToggle
+- `apps/web/app/lobby/[roomCode]/page.spec.tsx` — Added mocks for new modules
+- `apps/web/package.json` — Added `canvas-confetti` dependency
+
+### Why
+
+To satisfy all acceptance criteria for FFH-108, adding micro-animations (confetti) and a sound engine with persistent mute toggle.
+
+### What's Next
+
+Sprint 4 is complete. Next logical step: Sprint 5 planning — consider production deployment, additional game types, or shared validation package.
+
+---
+
+**Date/Time:** 2026-07-09 (Local Time)
+**Agent:** Freebuff (Buffy)
 **Ticket:** FFH-107
 
 ### What Changed

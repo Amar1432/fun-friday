@@ -14,6 +14,10 @@ import { CountdownTimer } from '@/components/countdown-timer';
 import { AnswerSubmission } from '@/components/answer-submission';
 import { LiveLeaderboard } from '@/components/live-leaderboard';
 import { SocketStatusIndicator } from '@/components/socket-status-indicator';
+import { SoundToggle } from '@/components/sound-toggle';
+import { useConfettiOnCorrectAnswer } from '@/lib/confetti/use-confetti';
+import { useSoundSettings } from '@/lib/sound/use-sound-settings';
+import { playCorrectSound, playTimerWarningSound } from '@/lib/sound/sound-engine';
 
 export default function LobbyPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -59,6 +63,30 @@ export default function LobbyPage() {
       });
   }, [roomCode]);
   const questionStartedAtRef = React.useRef<number | null>(null);
+  const prevCorrectAnswerRef = React.useRef<string | null>(null);
+  const prevTimerRef = React.useRef<number | null>(null);
+
+  // ── FFH-108: Confetti & Sound Effects ──
+  useConfettiOnCorrectAnswer();
+  const { isMuted, toggleMute } = useSoundSettings();
+
+  // Play correct answer sound when correctAnswer appears
+  React.useEffect(() => {
+    if (game.correctAnswer && !prevCorrectAnswerRef.current && !isMuted) {
+      playCorrectSound();
+    }
+    prevCorrectAnswerRef.current = game.correctAnswer;
+  }, [game.correctAnswer, isMuted]);
+
+  // Play timer warning ticks in the final 5 seconds
+  React.useEffect(() => {
+    const t = game.timerRemaining;
+    if (t !== null && t <= 5 && t > 0 && t !== prevTimerRef.current && !isMuted) {
+      playTimerWarningSound();
+    }
+    prevTimerRef.current = t;
+  }, [game.timerRemaining, isMuted]);
+  // ─────────────────────────────────────────
 
   // Set room code and ID from URL params
   React.useEffect(() => {
@@ -362,7 +390,10 @@ export default function LobbyPage() {
                 {config.appName}
               </span>
             </button>
-            <SocketStatusIndicator />
+            <div className="flex items-center gap-2">
+              <SoundToggle isMuted={isMuted} onToggle={toggleMute} />
+              <SocketStatusIndicator />
+            </div>
           </div>
         </header>
 
@@ -490,7 +521,8 @@ export default function LobbyPage() {
               </span>
             </button>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <SoundToggle isMuted={isMuted} onToggle={toggleMute} />
               <SocketStatusIndicator />
               {isHost && (
                 <button
@@ -742,6 +774,7 @@ export default function LobbyPage() {
           </button>
 
           <div className="flex items-center gap-2">
+            <SoundToggle isMuted={isMuted} onToggle={toggleMute} />
             <SocketStatusIndicator />
             {/* Share Invite Button — compact */}
             <button
