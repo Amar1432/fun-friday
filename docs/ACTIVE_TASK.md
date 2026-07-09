@@ -1,20 +1,28 @@
 # Active Task
 
-## FFH-101: Implement Accessibility Improvements
+## FFH-102: Perform End-to-End Frontend Validation
 
 ### Description
 
-Improve accessibility across the frontend.
+Validate the complete frontend integration.
 
 ### Acceptance Criteria
 
-UI includes:
+Verified user journeys:
 
-- [ ] Keyboard navigation
-- [ ] Visible focus states
-- [ ] Semantic HTML
-- [ ] Accessible labels
-- [ ] Screen reader friendly controls
+- [ ] Host login
+- [ ] Room creation
+- [ ] Guest join
+- [ ] Waiting room
+- [ ] Player ready
+- [ ] Game start
+- [ ] Question display
+- [ ] Answer submission
+- [ ] Leaderboard updates
+- [ ] Game completion
+- [ ] Reconnection recovery
+
+All critical user flows complete successfully without blocking issues.
 
 ### Status
 
