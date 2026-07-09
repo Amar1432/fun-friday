@@ -77,12 +77,15 @@ export function LobbyControls({
           <div
             className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-medium rounded-xl flex items-center justify-center gap-2"
             data-testid="lobby-error-message"
+            aria-live="polite"
+            role="alert"
           >
             <svg
               className="w-4 h-4 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -99,6 +102,7 @@ export function LobbyControls({
         <button
           onClick={onStartGame}
           disabled={isStartDisabled}
+          aria-disabled={isStartDisabled}
           data-testid="start-game-button"
           className={`w-full py-4 px-6 rounded-xl font-bold text-sm tracking-wide shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 ${
             isStartDisabled
@@ -113,6 +117,7 @@ export function LobbyControls({
                 fill="none"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
               >
                 <circle
                   className="opacity-25"
@@ -132,7 +137,7 @@ export function LobbyControls({
             </>
           ) : (
             <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -161,6 +166,8 @@ export function LobbyControls({
                 : 'text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg inline-block'
           }`}
           data-testid="lobby-status-message"
+          aria-live="polite"
+          role="status"
         >
           {totalCount === 0
             ? 'Waiting for players to join the lobby...'
