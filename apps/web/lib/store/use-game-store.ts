@@ -216,9 +216,9 @@ export const useGameStore = create<GameStore>((set) => ({
         correctAnswer: null,
         submittedAnswer: null,
         currentRoundIndex:
-          state.game.currentQuestion?.id === question.id
-            ? state.game.currentRoundIndex
-            : state.game.currentRoundIndex + 1,
+          !state.game.currentQuestion || state.game.currentQuestion.id !== question.id
+            ? state.game.currentRoundIndex + 1
+            : state.game.currentRoundIndex,
       },
     })),
 
