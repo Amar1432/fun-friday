@@ -741,14 +741,23 @@ export default function LobbyPage() {
                 {players.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center gap-2 p-2 bg-slate-950/30 rounded-lg border border-slate-800/50 text-xs font-medium text-slate-300"
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-medium transition-all duration-200 ${
+                      p.isConnected
+                        ? 'bg-slate-950/30 border-slate-800/50 text-slate-300'
+                        : 'bg-slate-950/10 border-red-500/20 text-slate-500 opacity-60 grayscale'
+                    }`}
                   >
                     <div
-                      className={`h-2 w-2 rounded-full ${
-                        p.isConnected ? 'bg-green-500' : 'bg-slate-600 animate-pulse'
+                      className={`h-2 w-2 rounded-full transition-all duration-200 ${
+                        p.isConnected ? 'bg-green-500' : 'bg-amber-500'
                       }`}
                     />
                     <span className="truncate">{p.displayName}</span>
+                    {!p.isConnected && (
+                      <span className="text-[8px] font-semibold text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded border border-amber-400/20 uppercase tracking-wider ml-auto shrink-0">
+                        Offline
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

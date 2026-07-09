@@ -16,11 +16,13 @@ You are an AI coding agent working on the **Fun Friday Hub** monorepo. Read this
 
 Always read the documentation in this exact order before beginning a task. Do not read older or archived files unless explicitly told to.
 
-1. `docs/ACTIVE_TASK.md`
-2. `docs/HANDOFF.md`
-3. `docs/TASKS.md`
-4. `docs/ARCHITECTURE.md`
-5. `docs/ROOM_PROTOCOL.md`
+1. `docs/ARCHITECTURE.md`
+2. `docs/DATABASE.md`
+3. `docs/API.md`
+4. `docs/ROOM_PROTOCOL.md`
+5. `docs/ACTIVE_TASK.md`
+6. `docs/HANDOFF.md`
+7. `docs/DECISIONS.md`
 
 ## 4. Architecture & Coding Conventions
 

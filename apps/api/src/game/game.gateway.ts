@@ -117,6 +117,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       [`player:${playerId}:disconnected`]: Date.now().toString(),
     });
 
+    // Broadcast updated room state immediately so all remaining clients
+    // see the player's isConnected=false status without waiting for cleanup
+    void this.buildRoomStatePayload(roomCode).then((payload) => {
+      if (this.server) {
+        this.server.to(roomCode).emit('RoomStateUpdated', payload);
+      }
+    });
+
     // Schedule delayed cleanup
     const timer = setTimeout(() => {
       void this.executeCleanup(playerId, roomCode);
@@ -1432,7 +1440,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.redisRoomRepository.getRoomMetadata(roomCode),
     ]);
 
-    const players = Object.values(playersMap)
+    const players = (playersMap ? Object.values(playersMap) : [])
       .map((playerJson) => {
         try {
           const playerObj = JSON.parse(playerJson) as Record<string, unknown>;

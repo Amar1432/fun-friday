@@ -14,7 +14,29 @@ _(See `docs/archive/SPRINT_4_HANDOFF.md` for Sprint 4 detail)_
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
-## 🚀 Active Sprint: Sprint 4 (Frictionless Entry & UI/UX Revamp)
+## 🚀 Active Sprint: Sprint 5 (Admin Controls & Global Polish)
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-110
+
+### What Changed
+
+- **Backend (`handleDisconnect`):** After marking the player as disconnected in Redis, immediately broadcasts `RoomStateUpdated` to the room so all remaining clients see `isConnected: false` without waiting for the 30s cleanup timer. Added null guard for `this.server` in the fire-and-forget promise.
+- **Backend (`buildRoomStatePayload`):** Added defensive null/undefined guard for `playersMap` to prevent `Object.values()` from throwing when Redis returns no data.
+- **Frontend (PlayerList):** Disconnected player cards now render with `opacity-50 grayscale` for a pronounced offline visual state. (The avatar `opacity-60` was removed on review to avoid CSS opacity stacking making text illegible at 30%.)
+- **Frontend (IN_PROGRESS sidebar):** Disconnected players in the gameplay sidebar now show `opacity-60 grayscale`, amber connection dot, and an `Offline` badge — consistent with the PlayerList component.
+- **Verified:** `pnpm typecheck` ✅, `pnpm lint` ✅, `pnpm test` — 431/431 tests ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-110, giving hosts and players immediate real-time visual feedback when a participant disconnects, with the offline indicator seamlessly clearing on reconnection.
+
+### What's Next
+
+Continue Sprint 5 — next ticket: FFH-111 (Duplicate Name Resolution), FFH-112 (Landing Page Overhaul), or FFH-113 (Global UI Consistency Audit).
+
+---
 
 **Date/Time:** 2026-07-09 (Local Time)
 **Agent:** Freebuff (Buffy)

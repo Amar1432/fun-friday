@@ -60,7 +60,7 @@ export function PlayerList({
                 className={`flex items-center justify-between gap-2 px-3 py-2 bg-slate-900/60 border rounded-xl transition-all duration-200 ${
                   isConnected
                     ? 'border-slate-800/80 hover:border-slate-700/80'
-                    : 'border-red-500/20 bg-red-950/5'
+                    : 'border-red-500/20 bg-red-950/5 opacity-50 grayscale'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -74,7 +74,7 @@ export function PlayerList({
                     </div>
                     <div
                       data-testid={`player-conn-dot-${player.id}`}
-                      className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-[1.5px] border-slate-900 ${
+                      className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-[1.5px] border-slate-900 transition-all duration-200 ${
                         isConnected ? 'bg-green-500' : 'bg-amber-500'
                       }`}
                       title={isConnected ? 'Connected' : 'Disconnected'}
