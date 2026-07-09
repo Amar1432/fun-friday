@@ -1,17 +1,21 @@
 # Active Task
 
-## FFH-098: Implement Reconnection Recovery UI
+## FFH-099: Optimize Responsive Layouts
 
 ### Description
 
-Recover gracefully after temporary network interruptions.
+Ensure all interfaces function across supported viewport sizes.
 
 ### Acceptance Criteria
 
-- [ ] Detect reconnection and display reconnection status
-- [ ] Restore state upon reconnection
-- [ ] Synchronize room state with the server
-- [ ] Remove stale UI elements from previous state
+Pages verified:
+
+- [ ] Login
+- [ ] Host dashboard
+- [ ] Lobby
+- [ ] Waiting room
+- [ ] Gameplay
+- [ ] Leaderboard
 
 ### Status
 
