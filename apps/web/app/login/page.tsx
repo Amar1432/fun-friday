@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Card, Button } from '@heroui/react';
 import { config } from '@/lib/config';
 import { ssoLogin } from '@/lib/api';
 import { requestGoogleCredential } from '@/lib/auth/google';
@@ -105,6 +106,23 @@ export default function LoginPage() {
     [loadingProvider, login],
   );
 
+  // Shared handler for mock login
+  const handleMockLogin = React.useCallback(async () => {
+    setError(null);
+    setLoadingProvider('google');
+    try {
+      const result = await ssoLogin('google', 'mock_token_host@funfriday.com');
+      setSuccess(true);
+      setTimeout(() => {
+        login(result.accessToken, result.user);
+      }, 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Dev login failed');
+    } finally {
+      setLoadingProvider(null);
+    }
+  }, [login]);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans relative overflow-hidden justify-between">
       {/* Background ambient glows */}
@@ -151,8 +169,8 @@ export default function LoginPage() {
       {/* Main Login Card Section */}
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12 relative z-10">
         <div className="max-w-md w-full">
-          {/* Card Container */}
-          <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+          {/* HeroUI Card Container */}
+          <Card className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
             {/* Session Expired Banner */}
@@ -161,15 +179,17 @@ export default function LoginPage() {
             </React.Suspense>
 
             {/* Application Branding */}
-            <div className="text-center mb-8">
+            <Card.Header className="text-center px-0 pt-0 pb-0 mb-8 block">
               <div className="inline-flex h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 items-center justify-center font-bold text-2xl shadow-xl shadow-indigo-500/20 text-white mb-4">
                 F
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Host Sign In</h2>
-              <p className="text-sm text-slate-400">
+              <Card.Title className="text-2xl font-bold tracking-tight text-white mb-2 block">
+                Host Sign In
+              </Card.Title>
+              <Card.Description className="text-sm text-slate-400 block">
                 Authenticate with your corporate identity provider to host team games.
-              </p>
-            </div>
+              </Card.Description>
+            </Card.Header>
 
             {/* Error State Banner */}
             {error && (
@@ -245,34 +265,24 @@ export default function LoginPage() {
               /* Main Buttons List */
               <div className="space-y-4">
                 {/* Dev Mock Login Button */}
-                <button
+                <Button
                   id="dev-login-button"
-                  onClick={async () => {
-                    setError(null);
-                    setLoadingProvider('google');
-                    try {
-                      const result = await ssoLogin('google', 'mock_token_host@funfriday.com');
-                      setSuccess(true);
-                      setTimeout(() => {
-                        login(result.accessToken, result.user);
-                      }, 1200);
-                    } catch (err) {
-                      setError(err instanceof Error ? err.message : 'Dev login failed');
-                    } finally {
-                      setLoadingProvider(null);
-                    }
-                  }}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900 cursor-pointer shadow-md"
+                  fullWidth
+                  onPress={handleMockLogin}
+                  isDisabled={loadingProvider !== null}
+                  className="bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-md"
                 >
                   Dev / Mock Login (host@funfriday.com)
-                </button>
+                </Button>
 
                 {/* Google SSO Button */}
-                <button
+                <Button
                   id="google-login-button"
-                  onClick={() => handleLogin('google')}
-                  disabled={loadingProvider !== null}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                  fullWidth
+                  onPress={() => handleLogin('google')}
+                  isDisabled={loadingProvider !== null}
+                  variant="secondary"
+                  className="bg-white text-slate-900 font-semibold text-sm hover:bg-slate-100 shadow-md border-0"
                 >
                   {loadingProvider === 'google' ? (
                     <svg
@@ -321,14 +331,16 @@ export default function LoginPage() {
                     </svg>
                   )}
                   {loadingProvider === 'google' ? 'Signing in...' : 'Sign in with Google'}
-                </button>
+                </Button>
 
                 {/* Microsoft SSO Button */}
-                <button
+                <Button
                   id="microsoft-login-button"
-                  onClick={() => handleLogin('microsoft')}
-                  disabled={loadingProvider !== null}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-slate-950 text-white font-semibold text-sm hover:bg-slate-900 border border-slate-800 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                  fullWidth
+                  onPress={() => handleLogin('microsoft')}
+                  isDisabled={loadingProvider !== null}
+                  variant="secondary"
+                  className="bg-slate-950 text-white font-semibold text-sm hover:bg-slate-900 border border-slate-800 shadow-md"
                 >
                   {loadingProvider === 'microsoft' ? (
                     <svg
@@ -365,12 +377,12 @@ export default function LoginPage() {
                     </svg>
                   )}
                   {loadingProvider === 'microsoft' ? 'Signing in...' : 'Sign in with Microsoft'}
-                </button>
+                </Button>
               </div>
             )}
 
             {/* Help text */}
-            <div className="mt-8 pt-6 border-t border-slate-800/60">
+            <Card.Footer className="mt-8 pt-6 border-t border-slate-800/60 px-0 pb-0 block">
               <p className="text-xs text-slate-500 text-center leading-relaxed">
                 By signing in, you agree to our{' '}
                 <Link
@@ -388,8 +400,8 @@ export default function LoginPage() {
                 </Link>
                 . Only corporate identity providers are supported.
               </p>
-            </div>
-          </div>
+            </Card.Footer>
+          </Card>
         </div>
       </main>
 

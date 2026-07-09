@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import { Card, Button } from '@heroui/react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { createRoom, ApiError } from '@/lib/api';
 import { config } from '@/lib/config';
@@ -144,9 +145,9 @@ export default function CreateRoomPage() {
       <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="w-full max-w-md">
           {!isSuccess ? (
-            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-8 space-y-6">
-              <div className="text-center space-y-2">
-                <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 items-center justify-center mx-auto shadow-lg shadow-indigo-500/20">
+            <Card className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl p-8 space-y-6 shadow-2xl">
+              <Card.Header className="text-center space-y-2 px-0 pt-0 pb-0 block">
+                <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 items-center justify-center mx-auto shadow-lg shadow-indigo-500/20 mb-4">
                   <svg
                     className="w-8 h-8 text-white"
                     fill="none"
@@ -161,11 +162,13 @@ export default function CreateRoomPage() {
                     />
                   </svg>
                 </div>
-                <h1 className="text-2xl font-bold text-white">Create New Room</h1>
-                <p className="text-sm text-slate-400">
+                <Card.Title className="text-2xl font-bold text-white block">
+                  Create New Room
+                </Card.Title>
+                <Card.Description className="text-sm text-slate-400 block">
                   Generate a room code to start hosting a multiplayer game session.
-                </p>
-              </div>
+                </Card.Description>
+              </Card.Header>
 
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
@@ -186,10 +189,12 @@ export default function CreateRoomPage() {
                 </div>
               )}
 
-              <button
-                onClick={handleCreateRoom}
-                disabled={isCreating}
-                className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-800 text-white rounded-xl font-semibold text-base shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+              <Button
+                fullWidth
+                onPress={handleCreateRoom}
+                isDisabled={isCreating}
+                size="lg"
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-800 text-white font-semibold text-base shadow-xl shadow-indigo-500/20"
               >
                 {isCreating ? (
                   <>
@@ -228,18 +233,18 @@ export default function CreateRoomPage() {
                     Create Room
                   </>
                 )}
-              </button>
+              </Button>
 
               <div className="text-center">
                 <p className="text-xs text-slate-500">
                   Players will use the generated room code to join your session
                 </p>
               </div>
-            </div>
+            </Card>
           ) : (
-            <div className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-8 space-y-6">
-              <div className="text-center space-y-4">
-                <div className="inline-flex h-16 w-16 rounded-2xl bg-green-500/20 border border-green-500/30 items-center justify-center mx-auto">
+            <Card className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl p-8 space-y-6 shadow-2xl">
+              <Card.Header className="text-center space-y-4 px-0 pt-0 pb-0 block">
+                <div className="inline-flex h-16 w-16 rounded-2xl bg-green-500/20 border border-green-500/30 items-center justify-center mx-auto mb-4">
                   <svg
                     className="w-8 h-8 text-green-400"
                     fill="none"
@@ -255,14 +260,16 @@ export default function CreateRoomPage() {
                   </svg>
                 </div>
                 <div className="space-y-2">
-                  <h1 className="text-2xl font-bold text-white">Room Created!</h1>
-                  <p className="text-sm text-slate-400">
+                  <Card.Title className="text-2xl font-bold text-white block">
+                    Room Created!
+                  </Card.Title>
+                  <Card.Description className="text-sm text-slate-400 block">
                     Share this code with players to let them join your session
-                  </p>
+                  </Card.Description>
                 </div>
-              </div>
+              </Card.Header>
 
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
+              <Card.Content className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4 block">
                 <div className="text-center">
                   <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Room Code</p>
                   <div className="text-4xl font-bold tracking-widest text-white bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
@@ -270,9 +277,11 @@ export default function CreateRoomPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={handleCopyRoomCode}
-                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                <Button
+                  fullWidth
+                  onPress={handleCopyRoomCode}
+                  variant="secondary"
+                  className="bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white font-medium text-sm"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -283,10 +292,10 @@ export default function CreateRoomPage() {
                     />
                   </svg>
                   Copy Code
-                </button>
-              </div>
+                </Button>
+              </Card.Content>
 
-              <div className="text-center space-y-2">
+              <Card.Footer className="text-center space-y-2 px-0 pb-0 block">
                 <p className="text-sm text-slate-400">
                   Redirecting to lobby in{' '}
                   <span className="text-indigo-400 font-semibold">3 seconds</span>...
@@ -297,8 +306,8 @@ export default function CreateRoomPage() {
                 >
                   Go to lobby now
                 </button>
-              </div>
-            </div>
+              </Card.Footer>
+            </Card>
           )}
         </div>
       </main>
