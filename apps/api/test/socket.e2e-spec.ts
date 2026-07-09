@@ -5,6 +5,7 @@ import { AppModule } from './../src/app.module';
 import { TokenService } from './../src/auth/token.service';
 import { PrismaService } from './../src/database/prisma.service';
 import { RedisRoomRepository } from './../src/redis/redis-room.repository';
+import request from 'supertest';
 import { io, Socket as ClientSocket } from 'socket.io-client';
 
 interface PlayerState {
@@ -237,6 +238,8 @@ describe('Socket Gateway (Integration)', () => {
       findMany: jest.fn(),
     },
     player: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
       update: jest.fn(),
     },
   };
@@ -319,6 +322,137 @@ describe('Socket Gateway (Integration)', () => {
         });
       });
     });
+  });
+
+  describe('Guest Auth Flow (Unauthenticated → HTTP → Socket)', () => {
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+    it('should allow unauthenticated guest registration via HTTP and then connect via socket', async () => {
+      // 1. Mock Prisma for the guest registration flow
+      const roomId = 'guest-room-uuid';
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: roomId,
+        code: 'GUEST1',
+        status: 'LOBBY',
+        hostId: 'host-1',
+      });
+
+      const createdPlayer = {
+        id: 'guest-player-id-1',
+        roomId,
+        displayName: 'GuestUser',
+        score: 0,
+        createdAt: new Date(),
+      };
+      prismaMock.player.create.mockResolvedValue(createdPlayer);
+
+      // 2. Call the guest HTTP endpoint with NO authorization header
+      const response = await request(app.getHttpServer())
+        .post('/auth/guest')
+        .send({ roomCode: 'GUEST1', displayName: 'GuestUser' })
+        .expect(201);
+
+      // 3. Verify the response contains a guest access token
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.accessToken).toBeDefined();
+      expect(typeof response.body.data.accessToken).toBe('string');
+      expect(response.body.data.player.displayName).toBe('GuestUser');
+      expect(response.body.data.room.id).toBe(roomId);
+      expect(response.body.data.room.code).toBe('GUEST1');
+      expect(response.body.data.expiresIn).toBe(14400);
+
+      const guestToken = response.body.data.accessToken as string;
+
+      // 4. Connect a socket using the guest token from HTTP registration
+      const guestSocket = io(`http://localhost:${port}`, {
+        transports: ['websocket'],
+        auth: { token: `Bearer ${guestToken}` },
+        forceNew: true,
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        guestSocket.on('connect', () => resolve());
+        guestSocket.on('connect_error', (err) => reject(err));
+      });
+
+      expect(guestSocket.connected).toBe(true);
+
+      // 5. Verify the guest can join the room via socket
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: roomId,
+        code: 'GUEST1',
+        status: 'LOBBY',
+        hostId: 'host-1',
+      });
+
+      const roomStatePromise = new Promise<void>((resolve) => {
+        guestSocket.on('RoomStateUpdated', () => resolve());
+      });
+
+      guestSocket.emit('JoinRoom', {
+        roomCode: 'GUEST1',
+        displayName: 'GuestUser',
+      });
+      await roomStatePromise;
+
+      // 6. Verify the guest appears in the room's player list
+      const playersMap = await redisRepository.getPlayers('GUEST1');
+      expect(Object.keys(playersMap).length).toBe(1);
+      const player = JSON.parse(playersMap['guest-player-id-1']) as {
+        id: string;
+        displayName: string;
+        score: number;
+        isReady: boolean;
+      };
+      expect(player.displayName).toBe('GuestUser');
+      expect(player.score).toBe(0);
+      expect(player.isReady).toBe(false);
+
+      // 7. Verify the guest can toggle ready status
+      const readyStatePromise = new Promise<void>((resolve) => {
+        guestSocket.on('RoomStateUpdated', () => resolve());
+      });
+      guestSocket.emit('PlayerReady', {
+        roomId,
+        playerId: 'guest-player-id-1',
+      });
+      await readyStatePromise;
+
+      const updatedPlayersMap = await redisRepository.getPlayers('GUEST1');
+      const updatedPlayer = JSON.parse(
+        updatedPlayersMap['guest-player-id-1'],
+      ) as { isReady: boolean };
+      expect(updatedPlayer.isReady).toBe(true);
+
+      guestSocket.disconnect();
+    });
+
+    it('should reject guest registration when room does not exist', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(null);
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/guest')
+        .send({ roomCode: 'XXXXXX', displayName: 'NoRoom' })
+        .expect(404);
+
+      expect(response.body.message).toContain('Room not found');
+    });
+
+    it('should reject guest registration when room is not in LOBBY', async () => {
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id',
+        code: 'PLAYIN',
+        status: 'IN_PROGRESS',
+        hostId: 'host-1',
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/guest')
+        .send({ roomCode: 'PLAYIN', displayName: 'LateGuest' })
+        .expect(422);
+
+      expect(response.body.message).toContain('no longer accepting');
+    });
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
   });
 
   describe('Lobby & Game Loop Flow', () => {

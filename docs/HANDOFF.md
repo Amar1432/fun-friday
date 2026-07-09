@@ -15,15 +15,20 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 **Date/Time:** 2026-07-09 (Local Time)
 **Agent:** Freebuff (Buffy)
-**Ticket:** FFH-104
+**Ticket:** FFH-105
 
 - **What Changed:**
-  - Added `setOnUnauthorizedHandler` global callback to `apps/web/lib/api.ts` that fires on any 401 response.
-  - Registered the handler in `AuthProvider` (`apps/web/lib/auth/auth-context.tsx`) via a `useEffect` — securely wipes localStorage state and redirects to `/login?session_expired=true` via `window.location.href`.
-  - Added `SessionExpiredBanner` component on the login page (`apps/web/app/login/page.tsx`) that reads the `?session_expired=true` search param and shows an amber toast banner explaining the session expired.
-  - Verified: `pnpm typecheck` ✅, `pnpm lint` ✅, `pnpm build` ✅ — all pass cleanly.
-- **Why:** To satisfy all acceptance criteria for FFH-104, handling expired host tokens gracefully by logging out and redirecting the user with a clear message.
-- **What's Next:** Start `FFH-105: Anonymous Guest Onboarding Flow`.
+  - Verified that the guest auth flow is already fully implemented:
+    - `POST /auth/guest` accepts `roomCode` and `displayName` with zero auth requirements ✅
+    - Guest JWT is scoped to `roomId` with `role: 'guest'` and 4h expiry ✅
+    - Socket gateway validates guest tokens and checks `roomId`/`role` on all handlers ✅
+  - Added comprehensive E2E integration tests in `apps/api/test/socket.e2e-spec.ts` for the guest flow:
+    - HTTP guest registration → socket connection → room join → player ready toggle
+    - Rejection when room doesn't exist (404)
+    - Rejection when room is not in LOBBY (422)
+  - Verified: `pnpm typecheck` ✅, `pnpm lint` ✅, `pnpm test:e2e` — 27/27 tests ✅
+- **Why:** To satisfy all acceptance criteria for FFH-105, confirming that unauthenticated guests can safely connect to socket rooms via the HTTP guest registration flow.
+- **What's Next:** Start `FFH-106: Shareable Lobby Links & Auto-Fill`.
 
 ---
 

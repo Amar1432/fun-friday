@@ -1,18 +1,18 @@
 # Active Task
 
-**Ticket:** FFH-105
-**Title:** Anonymous Guest Onboarding Flow
+**Ticket:** FFH-106
+**Title:** Shareable Lobby Links & Auto-Fill
 
 ## Objective
 
-Strip away any residual authentication barriers for guests. They should only need a display name and room code to jump right in.
+Generate instant shareable invite links for hosts to distribute to players.
 
 ## Execution Requirements
 
-1. **Guest Endpoints:** Verify guest endpoints accept `displayName` and `roomCode` with zero auth requirements. The backend `/auth/guest` endpoint already exists — confirm it works without an Authorization header.
-2. **Room Token Scoping:** Ensure the room token generated for guests is scoped exclusively to their active temporary session (not a persistent JWT).
-3. **Integration Tests:** Write or confirm integration tests that unauthenticated guests can connect to socket rooms safely.
+1. **Copy Invite Link:** The host lobby UI displays a prominent "Copy Invite Link" action button that copies `/room/join?code=D9FD81` to the clipboard.
+2. **Auto-Fill Room Code:** When the invite link is opened by a guest, the Room Code field on the Join page is locked/auto-filled, requiring only their display name.
+3. **Clipboard UX:** Show a brief "Copied!" confirmation state after clicking the copy button.
 
 ## Completion
 
-Once the guest auth flow is hardened and verified, commit the changes, update `docs/HANDOFF.md`, and update this file to point to the next logical step.
+Once the shareable links feature is implemented and verified, commit the changes, update `docs/HANDOFF.md`, and update this file to point to the next logical step.
