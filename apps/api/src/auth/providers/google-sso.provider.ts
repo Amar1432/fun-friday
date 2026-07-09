@@ -13,6 +13,17 @@ export class GoogleSsoProvider implements SsoProvider {
   }
 
   async verifyIdToken(idToken: string): Promise<SsoUserProfile> {
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      idToken.startsWith('mock_token_')
+    ) {
+      const email = idToken.replace('mock_token_', '');
+      return {
+        email,
+        name: email.split('@')[0],
+      };
+    }
+
     try {
       const ticket = await this.client.verifyIdToken({
         idToken,

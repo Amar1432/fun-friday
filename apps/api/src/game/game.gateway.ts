@@ -1578,6 +1578,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         await client.join(roomCode);
         clientData.roomCode = roomCode;
         this.logger.log(`Host joined Socket.IO room: ${roomCode}`);
+        const roomStatePayload = await this.buildRoomStatePayload(
+          roomCode,
+          status,
+        );
+        client.emit('RoomStateUpdated', roomStatePayload);
         return;
       }
 

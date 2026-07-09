@@ -2,8 +2,21 @@
 
 import * as React from 'react';
 import { useGameStore } from '@/lib/store/use-game-store';
+import { SocketDispatcher } from '@/lib/socket/socket-dispatcher';
 
-export function PlayerList() {
+interface PlayerListProps {
+  dispatcher?: SocketDispatcher | null;
+  currentUserId?: string | null;
+  currentUserIsGuest?: boolean;
+  roomId?: string | null;
+}
+
+export function PlayerList({
+  dispatcher,
+  currentUserId,
+  currentUserIsGuest = false,
+  roomId,
+}: PlayerListProps) {
   const players = useGameStore((state) => state.players);
 
   return (
@@ -95,19 +108,44 @@ export function PlayerList() {
                   </div>
                 </div>
 
-                {/* Ready Status Badge */}
+                {/* Ready Status / Toggle */}
                 <div>
-                  <div
-                    data-testid={`player-ready-badge-${player.id}`}
-                    className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all duration-300 ${
-                      player.isReady
-                        ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-sm shadow-green-500/5'
-                        : 'bg-slate-900/40 text-slate-500 border-slate-800'
-                    }`}
-                    aria-label={player.isReady ? 'Ready' : 'Waiting to be ready'}
-                  >
-                    {player.isReady ? 'Ready' : 'Waiting'}
-                  </div>
+                  {currentUserIsGuest && player.id === currentUserId ? (
+                    <button
+                      type="button"
+                      data-testid={`player-ready-toggle-${player.id}`}
+                      onClick={() => {
+                        if (dispatcher && roomId) {
+                          dispatcher.playerReady({ roomId, playerId: player.id });
+                        }
+                      }}
+                      aria-pressed={player.isReady}
+                      aria-label={
+                        player.isReady
+                          ? 'You are ready, click to unready'
+                          : 'Mark yourself as ready'
+                      }
+                      className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer ${
+                        player.isReady
+                          ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-sm shadow-green-500/5 hover:bg-green-500/20'
+                          : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/20'
+                      }`}
+                    >
+                      {player.isReady ? 'Ready ✓' : 'Ready up'}
+                    </button>
+                  ) : (
+                    <div
+                      data-testid={`player-ready-badge-${player.id}`}
+                      className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all duration-300 ${
+                        player.isReady
+                          ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-sm shadow-green-500/5'
+                          : 'bg-slate-900/40 text-slate-500 border-slate-800'
+                      }`}
+                      aria-label={player.isReady ? 'Ready' : 'Waiting to be ready'}
+                    >
+                      {player.isReady ? 'Ready' : 'Waiting'}
+                    </div>
+                  )}
                 </div>
               </li>
             );

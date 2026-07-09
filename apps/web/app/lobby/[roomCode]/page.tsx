@@ -778,7 +778,12 @@ export default function LobbyPage() {
             </div>
 
             <RoomInformationPanel />
-            <PlayerList />
+            <PlayerList
+              dispatcher={dispatcher}
+              currentUserId={user?.id ?? null}
+              currentUserIsGuest={!!user && (!user.email || user.email.trim() === '')}
+              roomId={room.id || roomIdParam}
+            />
 
             <LobbyControls
               onStartGame={handleStartGame}

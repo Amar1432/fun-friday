@@ -12,6 +12,7 @@ async function main() {
   // 2. Create Emoji Guess Game
   const game = await prisma.game.create({
     data: {
+      id: '1cd83808-737f-4c29-ab51-adff5c6a1ef5',
       name: 'Emoji Guess',
       description: 'Guess the movie from emojis!',
       questions: {

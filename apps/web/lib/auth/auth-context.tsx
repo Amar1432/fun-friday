@@ -20,7 +20,7 @@ interface AuthContextType {
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-const PUBLIC_ROUTES = ['/login', '/'];
+const PUBLIC_ROUTES = ['/login', '/', '/room/join'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<UserProfile | null>(null);

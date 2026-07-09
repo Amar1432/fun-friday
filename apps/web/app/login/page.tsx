@@ -201,6 +201,29 @@ export default function LoginPage() {
             ) : (
               /* Main Buttons List */
               <div className="space-y-4">
+                {/* Dev Mock Login Button */}
+                <button
+                  id="dev-login-button"
+                  onClick={async () => {
+                    setError(null);
+                    setLoadingProvider('google');
+                    try {
+                      const result = await ssoLogin('google', 'mock_token_host@funfriday.com');
+                      setSuccess(true);
+                      setTimeout(() => {
+                        login(result.accessToken, result.user);
+                      }, 1200);
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : 'Dev login failed');
+                    } finally {
+                      setLoadingProvider(null);
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900 cursor-pointer shadow-md"
+                >
+                  Dev / Mock Login (host@funfriday.com)
+                </button>
+
                 {/* Google SSO Button */}
                 <button
                   id="google-login-button"
