@@ -9,7 +9,7 @@ import { PlayerList } from '@/components/player-list';
 import { LobbyControls } from '@/components/lobby-controls';
 import { useGameStore } from '@/lib/store/use-game-store';
 import { useSocket, useSocketEvent, useSocketDispatcher } from '@/lib/socket/socket-context';
-import { QuestionDisplay } from '@/components/question-display';
+import { GameModeRenderer } from '@/components/game-mode-renderer';
 import { CountdownTimer } from '@/components/countdown-timer';
 import { AnswerSubmission } from '@/components/answer-submission';
 import { LiveLeaderboard } from '@/components/live-leaderboard';
@@ -31,6 +31,7 @@ export default function LobbyPage() {
   const game = useGameStore((state) => state.game);
   const players = useGameStore((state) => state.players);
   const leaderboard = useGameStore((state) => state.leaderboard);
+  const renderingStrategy = useGameStore((state) => state.game.renderingStrategy);
   const setSubmittedAnswer = useGameStore((state) => state.setSubmittedAnswer);
 
   const isHost = user?.id === room.hostId;
@@ -555,7 +556,8 @@ export default function LobbyPage() {
               {/* Active Question Display */}
               {game.currentQuestion ? (
                 <div className="text-center space-y-6">
-                  <QuestionDisplay
+                  <GameModeRenderer
+                    renderingStrategy={renderingStrategy ?? 'emoji-prompt'}
                     question={game.currentQuestion}
                     currentRoundIndex={game.currentRoundIndex}
                     totalRounds={game.totalRounds}

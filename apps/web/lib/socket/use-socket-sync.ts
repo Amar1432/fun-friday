@@ -5,6 +5,7 @@ import * as React from 'react';
 import { useSocket, useSocketEvent } from './socket-context';
 import { useGameStore } from '@/lib/store/use-game-store';
 import { useAuth } from '@/lib/auth/auth-context';
+import { getStrategyForGameId } from '@/lib/game-modes';
 
 export function useSocketSync() {
   const { status, dispatcher } = useSocket();
@@ -90,7 +91,8 @@ export function useSocketSync() {
     'GameStarted',
     React.useCallback(
       (data) => {
-        setGameStarted(data.gameId, data.totalRounds);
+        const renderingStrategy = getStrategyForGameId(data.gameId);
+        setGameStarted(data.gameId, data.totalRounds, renderingStrategy);
       },
       [setGameStarted],
     ),

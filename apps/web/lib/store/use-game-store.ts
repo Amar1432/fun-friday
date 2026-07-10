@@ -11,6 +11,7 @@ export interface RoomState {
 
 export interface GameState {
   gameId: string | null;
+  renderingStrategy: string | null;
   totalRounds: number;
   currentRoundIndex: number;
   currentRoundId: string | null;
@@ -57,7 +58,7 @@ export interface GameStore {
   updatePlayer: (playerId: string, updates: Partial<Player>) => void;
 
   // Game Actions
-  setGameStarted: (gameId: string, totalRounds: number) => void;
+  setGameStarted: (gameId: string, totalRounds: number, renderingStrategy?: string) => void;
   setQuestionStarted: (question: {
     id: string;
     prompt: string;
@@ -104,6 +105,7 @@ const initialRoomState: RoomState = {
 
 const initialGameState: GameState = {
   gameId: null,
+  renderingStrategy: null,
   totalRounds: 0,
   currentRoundIndex: 0,
   currentRoundId: null,
@@ -193,12 +195,13 @@ export const useGameStore = create<GameStore>((set) => ({
     }),
 
   // Game Actions
-  setGameStarted: (gameId, totalRounds) =>
+  setGameStarted: (gameId, totalRounds, renderingStrategy) =>
     set((state) => ({
       room: { ...state.room, status: 'IN_PROGRESS' },
       game: {
         ...state.game,
         gameId,
+        renderingStrategy: renderingStrategy ?? state.game.renderingStrategy,
         totalRounds,
         currentRoundIndex: 0,
         currentQuestion: null,
@@ -276,6 +279,7 @@ export const useGameStore = create<GameStore>((set) => ({
           {
             ...state.game,
             gameId: null,
+            renderingStrategy: null,
             currentRoundId: null,
             currentQuestion: null,
             timerRemaining: null,

@@ -3,6 +3,7 @@ import * as React from 'react';
 import { render } from '@testing-library/react';
 import { useSocketSync } from './use-socket-sync';
 import { useSocketEvent, useSocket } from './socket-context';
+import { getStrategyForGameId } from '@/lib/game-modes';
 
 // Mock mockActions for Zustand
 const mockActions = {
@@ -27,6 +28,11 @@ jest.mock('@/lib/store/use-game-store', () => ({
       ...mockActions,
       room: { id: 'r-123', code: 'ABCDEF', status: 'IN_PROGRESS', hostId: 'h-123' },
     }),
+}));
+
+// Mock game modes
+jest.mock('@/lib/game-modes', () => ({
+  getStrategyForGameId: jest.fn(() => 'emoji-prompt'),
 }));
 
 // Mock socket hooks
@@ -113,7 +119,8 @@ describe('useSocketSync Hook', () => {
     const gameStartedCb = findCallback('GameStarted');
     expect(gameStartedCb).toBeDefined();
     gameStartedCb({ gameId: 'g1', totalRounds: 5 });
-    expect(mockActions.setGameStarted).toHaveBeenCalledWith('g1', 5);
+    expect(getStrategyForGameId).toHaveBeenCalledWith('g1');
+    expect(mockActions.setGameStarted).toHaveBeenCalledWith('g1', 5, 'emoji-prompt');
 
     // Trigger QuestionStarted
     const questionStartedCb = findCallback('QuestionStarted');

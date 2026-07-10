@@ -20,6 +20,7 @@ describe('useGameStore', () => {
     });
     expect(state.game).toEqual({
       gameId: null,
+      renderingStrategy: null,
       totalRounds: 0,
       currentRoundIndex: 0,
       currentRoundId: null,
@@ -109,6 +110,20 @@ describe('useGameStore', () => {
     expect(state.game.gameId).toBe('game-abc');
     expect(state.game.totalRounds).toBe(5);
     expect(state.game.currentRoundIndex).toBe(0);
+  });
+
+  it('should set renderingStrategy when provided', () => {
+    const store = useGameStore.getState();
+    store.setGameStarted('game-abc', 5, 'gibberish-text');
+    expect(useGameStore.getState().game.renderingStrategy).toBe('gibberish-text');
+
+    // Without renderingStrategy, keeps previous value
+    store.setGameStarted('game-def', 3);
+    expect(useGameStore.getState().game.renderingStrategy).toBe('gibberish-text');
+
+    // Explicit override
+    store.setGameStarted('game-ghi', 4, 'emoji-prompt');
+    expect(useGameStore.getState().game.renderingStrategy).toBe('emoji-prompt');
   });
 
   it('should handle question started and round updates', () => {
