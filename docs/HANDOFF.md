@@ -18,6 +18,65 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-121: Seed Emoji Guess Questions
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-121
+
+### What Changed
+
+- **Expanded seed script** (`scripts/seed-games.ts`): Increased Emoji Guess question bank from 5 to 43 questions across three difficulty levels and two categories.
+- **Difficulty distribution:** 13 EASY, 15 MEDIUM, 15 HARD — balanced for progressive gameplay.
+- **Categories:** Movies and TV Shows — covering classics, blockbusters, and popular series.
+- **Question quality:** Each question includes a unique emoji prompt, correct answer, difficulty level, category, and metadata with a hint for players.
+- **Fixed duplicates:** Resolved duplicate answers (Finding Nemo, Breaking Bad, Phantom of the Opera) to ensure unique questions per game session.
+- **Improved emoji clarity:** Fixed formatting issues (e.g., `toy⚔️🚀` → `🧸🚀🌟`) and ambiguous emoji combinations.
+- **Seed script verification:** Script correctly logs total questions and difficulty breakdown at completion.
+- **Verified:** Seed runs successfully (43 questions), `pnpm test` — 170/170 tests ✅, `pnpm tsc --noEmit` ✅, `pnpm lint` ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-121 — the database now contains a comprehensive set of Emoji Guess questions with proper difficulty levels, categories, and metadata for engaging gameplay.
+
+### What's Next
+
+Start `FFH-122: Build Emoji Guess Gameplay UI`.
+
+---
+
+## 🚀 FFH-120: Create Shared Game Mode Renderer
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-120
+
+### What Changed
+
+- **Created frontend game mode registry** (`apps/web/lib/game-modes.ts`): Mirrors the backend `GameModeRegistry` with `GameModeDefinition` interface, `GAME_MODES` array (Emoji Guess, Bad Movie Description, Gibberish), helper functions (`getGameModeByIdentifier`, `getGameModeByStrategy`, `getAllGameModes`), and a `GAME_ID_TO_STRATEGY` mapping that bridges database game IDs to rendering strategies.
+- **Created `GameModeRenderer` component** (`apps/web/components/game-mode-renderer.tsx`): Strategy-pattern component that maps `renderingStrategy` → presentation component via `STRATEGY_MAP`. Includes:
+  - **`EmojiPromptRenderer`**: Large playful emoji display with decode label (purple theme).
+  - **`DescriptionTextRenderer`**: Quoted italic text with movie label (amber theme).
+  - **`GibberishTextRenderer`**: Distorted playful text with decipher label (cyan theme).
+  - **`FallbackRenderer`**: Plain text fallback for unknown strategies.
+  - **Shared layout**: Round info, difficulty badge, and mode-specific prompt label shared across all renderers.
+- **Updated game store** (`apps/web/lib/store/use-game-store.ts`): Added `renderingStrategy: string | null` to `GameState`. Updated `setGameStarted` to accept optional `renderingStrategy` parameter (backward compatible via `??` fallback). `syncState` resets `renderingStrategy` to `null` when no active game.
+- **Updated socket sync** (`apps/web/lib/socket/use-socket-sync.ts`): Imports `getStrategyForGameId` and resolves the rendering strategy when `GameStarted` fires, passing it to `setGameStarted`.
+- **Updated lobby page** (`apps/web/app/lobby/[roomCode]/page.tsx`): Replaced `QuestionDisplay` with `GameModeRenderer`, reading `renderingStrategy` from the game store with `'emoji-prompt'` fallback.
+- **Removed dead code**: Deleted `QuestionDisplay` component and its spec (no longer imported anywhere).
+- **Tests written** (`game-mode-renderer.spec.tsx`): 30+ tests covering shared layout (round info, difficulty, prompt, fallback), individual renderers (Emoji, Description, Gibberish, Fallback), strategy map, per-strategy rendering, game mode registry (all modes, unique identifiers, helpers), and `getStrategyForGameId` (known and unknown IDs). Updated `use-socket-sync.spec.tsx` and `use-game-store.spec.ts` with renderingStrategy mocks and assertions.
+- **Verified:** `pnpm test` — 170/170 tests ✅, `pnpm tsc --noEmit` ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-120 — the frontend now has a shared, extensible game mode renderer that dynamically selects the correct presentation based on rendering strategy, uses a common layout, prevents duplicate UI implementations, and keeps gameplay state shared.
+
+### What's Next
+
+Start `FFH-121: Seed Emoji Guess Questions`.
+
+---
+
 ## 🚀 FFH-119: Create Game Mode Registry
 
 **Date/Time:** 2026-07-10 (Local Time)
