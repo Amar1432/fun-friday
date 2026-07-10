@@ -45,17 +45,26 @@ export interface GameModeRendererProps {
 
 /**
  * Emoji Prompt Renderer
- * Displays emoji prompts in a large, playful format.
+ * Displays emoji prompts in a large, playful format with enhanced visual presentation.
  */
 const EmojiPromptRenderer: React.FC<PromptRendererProps> = ({ prompt }) => (
-  <div className="space-y-3">
-    <span className="text-xs text-purple-400 font-bold uppercase tracking-wider">
-      🎭 Decode the Emojis
-    </span>
-    <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-wide py-4 select-none drop-shadow-lg break-words leading-tight">
-      {prompt}
+  <div className="space-y-4">
+    <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full">
+      <span className="text-lg" role="img" aria-hidden="true">
+        🎭
+      </span>
+      <span className="text-xs text-purple-400 font-bold uppercase tracking-wider">
+        Decode the Emojis
+      </span>
     </div>
-    <p className="text-xs text-slate-500 mt-2">
+    <div className="relative">
+      {/* Decorative background glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-pink-500/10 rounded-3xl blur-xl animate-pulse" />
+      <div className="relative text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-wide py-6 px-4 select-none drop-shadow-lg break-words leading-tight text-white">
+        {prompt}
+      </div>
+    </div>
+    <p className="text-sm text-slate-400 mt-2 font-medium">
       What movie, show, or phrase do these emojis represent?
     </p>
   </div>

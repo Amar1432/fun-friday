@@ -18,6 +18,35 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-122: Build Emoji Guess Gameplay UI
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-122
+
+### What Changed
+
+- **Enhanced EmojiPromptRenderer** (`apps/web/components/game-mode-renderer.tsx`): Improved visual presentation with:
+  - **Pill badge**: Added a styled badge with 🎭 icon and "Decode the Emojis" label using purple theme.
+  - **Decorative background glow**: Added a subtle animated gradient glow effect behind the emoji display using `animate-pulse`.
+  - **White text color**: Changed from gradient text to solid white for better contrast on dark backgrounds.
+  - **Improved spacing and typography**: Enhanced the overall layout with better padding and font sizing.
+- **Verified:** All acceptance criteria met:
+  - UI displays: Emoji prompt ✅, Round information ✅, Timer ✅, Answer input ✅
+  - Rendering remains responsive ✅
+  - Correct answers are never exposed ✅
+- **Verified:** `pnpm test` — 170/170 tests ✅, `pnpm typecheck` ✅, `pnpm lint` ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-122 — enhancing the Emoji Guess gameplay UI with a more polished, visually engaging presentation that provides clear feedback and maintains responsive rendering.
+
+### What's Next
+
+Start `FFH-123: Validate Emoji Guess Answers`.
+
+---
+
 ## 🚀 FFH-121: Seed Emoji Guess Questions
 
 **Date/Time:** 2026-07-10 (Local Time)
