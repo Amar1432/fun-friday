@@ -1,18 +1,21 @@
 # Active Task
 
-**Ticket:** FFH-119
-**Title:** Create Game Mode Registry
+**Ticket:** FFH-120
+**Title:** Create Shared Game Mode Renderer
 
 ## Objective
 
-Implement a centralized registry of supported game modes.
+Build a frontend rendering layer capable of displaying different game modes.
 
 ## Execution Requirements
 
-1. **Registry contains:** Emoji Guess, Bad Movie Description, Gibberish.
-2. **Registry provides:** Identifier, Display name, Description, Icon reference, Rendering strategy.
-3. **Registry supports future expansion.**
+1. **Renderer:**
+   - Receives game type.
+   - Chooses correct presentation.
+   - Uses shared layout.
+   - Prevents duplicate UI implementations.
+2. **Gameplay state remains shared.**
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-120).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-121).

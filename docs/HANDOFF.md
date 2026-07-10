@@ -18,6 +18,38 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-119: Create Game Mode Registry
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-119
+
+### What Changed
+
+- **Created `GameModeRegistryService`** (`apps/api/src/game/game-mode-registry/game-mode-registry.service.ts`): New injectable NestJS service that serves as the centralized registry of all supported game modes. Defines a `GameModeDefinition` interface with `identifier`, `displayName`, `description`, `iconRef`, and `renderingStrategy` fields.
+- **Three game modes registered:**
+  - **Emoji Guess** (`emoji-guess`): Guess the movie/show from emojis. Icon: 🎭. Strategy: `emoji-prompt`.
+  - **Bad Movie Description** (`bad-movie-description`): Identify movies from terrible descriptions. Icon: 🎬. Strategy: `description-text`.
+  - **Gibberish** (`gibberish`): Decode funny gibberish phrases. Icon: 🔤. Strategy: `gibberish-text`.
+- **`getAll()` returns a copy** of the internal array to prevent external mutation.
+- **`getByIdentifier(identifier)`** returns a single mode or `null` for unknown modes.
+- **`exists(identifier)`** checks if a mode is registered.
+- **Created `GameModeRegistryModule`** (`apps/api/src/game/game-mode-registry/game-mode-registry.module.ts`): Standard NestJS module that provides and exports `GameModeRegistry`.
+- **Updated `GameModule`** (`apps/api/src/game/game.module.ts`): Added `GameModeRegistryModule` to imports.
+- **Registation supports future expansion:** Adding a new mode = adding one entry to the `modes` array — no other code changes needed.
+- **Tests written** (`game-mode-registry.service.spec.ts`): 18 new unit tests covering `getAll` (all modes present, required fields, unique identifiers, immutability), `getByIdentifier` (each mode, null for unknown, case-sensitivity), and `exists` (each mode + false for unknown).
+- **Verified:** `pnpm test` — 382/382 tests ✅ (up from 364, +18 new tests)
+
+### Why
+
+To satisfy all acceptance criteria for FFH-119 — the game mode registry now provides a centralized, expandable definition of all supported game modes with identifier, display name, description, icon reference, and rendering strategy.
+
+### What's Next
+
+Start `FFH-120: Create Shared Game Mode Renderer`.
+
+---
+
 ## 🚀 FFH-118: Create Answer Evaluation Test Suite
 
 **Date/Time:** 2026-07-10 (Local Time)
