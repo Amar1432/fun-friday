@@ -14,7 +14,33 @@ _(See `docs/archive/SPRINT_4_HANDOFF.md` for Sprint 4 detail)_
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
-## 🚀 Active Sprint: Sprint 5 (Admin Controls & Global Polish)
+## 🚀 Active Sprint: Sprint 6 (Game Modes & Answer Evaluation)
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-114
+
+### What Changed
+
+- **Created `AnswerEvaluationModule`** (`apps/api/src/game/answer-evaluation/answer-evaluation.module.ts`): New standalone NestJS module that provides and exports `AnswerEvaluationService`.
+- **Created `AnswerEvaluationService`** (`apps/api/src/game/answer-evaluation/answer-evaluation.service.ts`): Injectable service with a public `evaluate(input, target): boolean` method. Currently performs case-insensitive, whitespace-trimmed comparison. Fully isolated from Socket.IO — designed to be extended with fuzzy matching, normalization, and typo tolerance in FFH-115+.
+- **Integrated into `GameGateway`**: Injected `AnswerEvaluationService` into the gateway via constructor. Replaced the hardcoded `payload.answer.trim().toLowerCase() === question.answer.trim().toLowerCase()` with `this.answerEvaluationService.evaluate(payload.answer, question.answer)`.
+- **Updated `GameModule`** (`apps/api/src/game/game.module.ts`): Added `AnswerEvaluationModule` to imports array.
+- **Tests written** (`answer-evaluation.service.spec.ts`): 13 unit tests covering exact match, case insensitivity, whitespace trimming, empty strings, numbers, special characters, mixed cases.
+- **Updated gateway spec** (`game.gateway.spec.ts`): Added mock for `AnswerEvaluationService`, registered in test module, added test verifying `evaluate` is called with correct args, fixed two existing submission tests to set mock return values.
+- **Verified:** `pnpm test` — 303/303 tests ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-114 — creating a dedicated, testable answer evaluation module that is isolated from game logic and socket handlers, setting the foundation for future fuzzy matching.
+
+### What's Next
+
+Start `FFH-115: Implement Answer Normalization`.
+
+---
+
+## 🚀 Earlier: Sprint 5 (Admin Controls & Global Polish)
 
 **Date/Time:** 2026-07-10 (Local Time)
 **Agent:** Freebuff (Buffy)

@@ -1,19 +1,18 @@
 # Active Task
 
-**Ticket:** FFH-114
-**Title:** Create Answer Evaluation Module
+**Ticket:** FFH-115
+**Title:** Implement Answer Normalization
 
 ## Objective
 
-Create a dedicated, standalone NestJS module in `apps/api` responsible for evaluating player answers independently of any specific game mode. This sets the foundation for the fuzzy-matching logic.
+Normalize incoming answers before evaluation. The normalizer should perform: lowercase conversion, trim whitespace, collapse multiple spaces, remove punctuation, ignore hyphens and underscores.
 
 ## Execution Requirements
 
-1. **Module Creation:** Scaffold a new NestJS module (`AnswerEvaluationModule`) and a corresponding service (`AnswerEvaluationService`) within the backend.
-2. **Isolation:** Ensure this service is isolated from Socket.IO handlers. It should expose a public interface (e.g., an `evaluate(input, target)` method) that simply returns a boolean for now (we will add fuzzy matching in the next ticket).
-3. **Integration:** Inject this new service into your existing game loop/answer submission handler. Replace any existing hardcoded `===` equality checks with a call to this new service.
-4. **Verification:** Start the stack (`pnpm dev`) and run your backend tests (`pnpm test` in `apps/api`) to ensure the module is injected correctly and existing tests still pass.
+1. **Normalization Logic:** Add a `normalize(input: string): string` method to the existing `AnswerEvaluationService` that transforms the input using all the specified rules.
+2. **Update evaluate():** Update the `evaluate()` method to call `normalize()` on both input and target before comparing them.
+3. **Verification:** Run backend tests (`pnpm test` in `apps/api`) to ensure all existing tests pass, and any new normalization tests (FFH-118) are green.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-115).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-116).
