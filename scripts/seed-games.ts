@@ -24,7 +24,10 @@ async function main() {
             answer: 'The Lion King',
             difficulty: QuestionDifficulty.EASY,
             category: 'Movies',
-            metadata: { hint: "Simba's journey to becoming king" },
+            metadata: {
+              hint: "Simba's journey to becoming king",
+              acceptedAnswers: ['Lion King'],
+            },
           },
           {
             prompt: '🕷️🕸️👦',
@@ -66,7 +69,10 @@ async function main() {
             answer: 'Teenage Mutant Ninja Turtles',
             difficulty: QuestionDifficulty.EASY,
             category: 'Movies',
-            metadata: { hint: 'Heroes in a half shell' },
+            metadata: {
+              hint: 'Heroes in a half shell',
+              acceptedAnswers: ['TMNT', 'Ninja Turtles'],
+            },
           },
           {
             prompt: '🏰👩‍🦰🐉',
@@ -87,7 +93,10 @@ async function main() {
             answer: 'The Greatest Showman',
             difficulty: QuestionDifficulty.EASY,
             category: 'Movies',
-            metadata: { hint: 'This is the greatest show' },
+            metadata: {
+              hint: 'This is the greatest show',
+              acceptedAnswers: ['Greatest Showman'],
+            },
           },
           // TV Shows - Easy
           {
@@ -109,7 +118,10 @@ async function main() {
             answer: 'The Walking Dead',
             difficulty: QuestionDifficulty.EASY,
             category: 'TV Shows',
-            metadata: { hint: 'Survivors in a zombie apocalypse' },
+            metadata: {
+              hint: 'Survivors in a zombie apocalypse',
+              acceptedAnswers: ['Walking Dead'],
+            },
           },
 
           // ─── MEDIUM QUESTIONS ──────────────────────────────────────────
@@ -140,7 +152,10 @@ async function main() {
             answer: 'The Lord of the Rings',
             difficulty: QuestionDifficulty.MEDIUM,
             category: 'Movies',
-            metadata: { hint: 'One ring to rule them all' },
+            metadata: {
+              hint: 'One ring to rule them all',
+              acceptedAnswers: ['Lord of the Rings', 'LOTR'],
+            },
           },
           {
             prompt: '🏰👸🍎',
@@ -154,21 +169,30 @@ async function main() {
             answer: 'The Phantom of the Opera',
             difficulty: QuestionDifficulty.MEDIUM,
             category: 'Movies',
-            metadata: { hint: 'Music of the night' },
+            metadata: {
+              hint: 'Music of the night',
+              acceptedAnswers: ['Phantom of the Opera'],
+            },
           },
           {
             prompt: '🎬🎭😱',
             answer: 'The Silence of the Lambs',
             difficulty: QuestionDifficulty.MEDIUM,
             category: 'Movies',
-            metadata: { hint: 'A FBI agent interviews a cannibal' },
+            metadata: {
+              hint: 'A FBI agent interviews a cannibal',
+              acceptedAnswers: ['Silence of the Lambs'],
+            },
           },
           {
             prompt: '🎄👻👴',
             answer: 'A Christmas Carol',
             difficulty: QuestionDifficulty.MEDIUM,
             category: 'Movies',
-            metadata: { hint: 'Scrooge learns the meaning of Christmas' },
+            metadata: {
+              hint: 'Scrooge learns the meaning of Christmas',
+              acceptedAnswers: ['Christmas Carol'],
+            },
           },
           {
             prompt: '🦖🏟️🔬',
@@ -190,7 +214,10 @@ async function main() {
             answer: 'Game of Thrones',
             difficulty: QuestionDifficulty.MEDIUM,
             category: 'TV Shows',
-            metadata: { hint: 'Winter is coming' },
+            metadata: {
+              hint: 'Winter is coming',
+              acceptedAnswers: ['GoT'],
+            },
           },
           {
             prompt: '👨‍🔬🧪💊',
@@ -211,7 +238,10 @@ async function main() {
             answer: 'The Expanse',
             difficulty: QuestionDifficulty.MEDIUM,
             category: 'TV Shows',
-            metadata: { hint: 'Solar system politics and warfare' },
+            metadata: {
+              hint: 'Solar system politics and warfare',
+              acceptedAnswers: ['Expanse'],
+            },
           },
           {
             prompt: '🕵️‍♂️🔍🧩',
@@ -235,21 +265,30 @@ async function main() {
             answer: 'The Shawshank Redemption',
             difficulty: QuestionDifficulty.HARD,
             category: 'Movies',
-            metadata: { hint: 'Hope is a good thing' },
+            metadata: {
+              hint: 'Hope is a good thing',
+              acceptedAnswers: ['Shawshank Redemption'],
+            },
           },
           {
             prompt: '🃏🃏🃏',
             answer: 'The Dark Knight',
             difficulty: QuestionDifficulty.HARD,
             category: 'Movies',
-            metadata: { hint: 'Why so serious?' },
+            metadata: {
+              hint: 'Why so serious?',
+              acceptedAnswers: ['Dark Knight'],
+            },
           },
           {
             prompt: '👨‍🚀🌙🌌',
             answer: '2001: A Space Odyssey',
             difficulty: QuestionDifficulty.HARD,
             category: 'Movies',
-            metadata: { hint: 'Open the pod bay doors, HAL' },
+            metadata: {
+              hint: 'Open the pod bay doors, HAL',
+              acceptedAnswers: ['2001 A Space Odyssey'],
+            },
           },
           {
             prompt: '🗡️👑🏰',
@@ -277,7 +316,10 @@ async function main() {
             answer: 'L.A. Confidential',
             difficulty: QuestionDifficulty.HARD,
             category: 'Movies',
-            metadata: { hint: 'Crime and corruption in 1950s Hollywood' },
+            metadata: {
+              hint: 'Crime and corruption in 1950s Hollywood',
+              acceptedAnswers: ['LA Confidential'],
+            },
           },
           {
             prompt: '🎭🔪🩸',
@@ -301,35 +343,50 @@ async function main() {
             answer: 'The Princess Bride',
             difficulty: QuestionDifficulty.HARD,
             category: 'Movies',
-            metadata: { hint: 'As you wish' },
+            metadata: {
+              hint: 'As you wish',
+              acceptedAnswers: ['Princess Bride'],
+            },
           },
           {
             prompt: '👨‍🚀🚀☄️',
             answer: 'The Mandalorian',
             difficulty: QuestionDifficulty.HARD,
             category: 'TV Shows',
-            metadata: { hint: 'This is the way' },
+            metadata: {
+              hint: 'This is the way',
+              acceptedAnswers: ['Mandalorian'],
+            },
           },
           {
             prompt: '🏰👑⚔️',
             answer: 'The Crown',
             difficulty: QuestionDifficulty.HARD,
             category: 'TV Shows',
-            metadata: { hint: 'Royal family drama' },
+            metadata: {
+              hint: 'Royal family drama',
+              acceptedAnswers: ['Crown'],
+            },
           },
           {
             prompt: '👨‍⚕️💊🏥',
             answer: 'House M.D.',
             difficulty: QuestionDifficulty.HARD,
             category: 'TV Shows',
-            metadata: { hint: 'Everybody lies' },
+            metadata: {
+              hint: 'Everybody lies',
+              acceptedAnswers: ['House', 'House MD'],
+            },
           },
           {
             prompt: '🕵️‍♂️🕵️‍♀️🕵️‍♂️',
             answer: 'True Detective',
             difficulty: QuestionDifficulty.HARD,
             category: 'TV Shows',
-            metadata: { hint: 'Time is a flat circle' },
+            metadata: {
+              hint: 'Time is a flat circle',
+              acceptedAnswers: ['True Detective'],
+            },
           },
         ],
       },

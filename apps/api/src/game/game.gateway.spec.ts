@@ -3097,7 +3097,7 @@ describe('GameGateway', () => {
       expectLastErrorCode(mockSocket.emit, 'DUPLICATE_SUBMISSION');
     });
 
-    it('should use AnswerEvaluationService to evaluate answers', async () => {
+    it('should use AnswerEvaluationService with typo threshold to evaluate answers', async () => {
       prismaMock.room.findUnique.mockResolvedValue(mockRoom);
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
         status: 'IN_PROGRESS',
@@ -3119,9 +3119,11 @@ describe('GameGateway', () => {
         responseTimeMs: 1200,
       });
 
+      // Should pass the answer, primary target, and typo threshold of 1
       expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
         '  harry potter  ',
         'Harry Potter',
+        1,
       );
       expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
         'ROOM12',

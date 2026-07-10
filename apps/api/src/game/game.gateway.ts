@@ -1263,9 +1263,21 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw err;
       }
 
+      // Build accepted targets: primary answer + optional alternate spellings from metadata
+      const questionMetadata = question.metadata as
+        Record<string, unknown> | undefined;
+      const acceptedAnswers = Array.isArray(questionMetadata?.acceptedAnswers)
+        ? (questionMetadata.acceptedAnswers as string[])
+        : [];
+
+      const targets = acceptedAnswers.length
+        ? [question.answer, ...acceptedAnswers]
+        : question.answer;
+
       const isCorrect = this.answerEvaluationService.evaluate(
         payload.answer,
-        question.answer,
+        targets,
+        1, // threshold: allow minor typos (single missing/extra/incorrect/transposed char)
       );
 
       // Save answer in Redis
