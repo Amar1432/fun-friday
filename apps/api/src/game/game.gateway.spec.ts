@@ -15,6 +15,7 @@ import { StartGameDto } from './dto/start-game.dto';
 import { NextRoundDto } from './dto/next-round.dto';
 import { EndGameDto } from './dto/end-game.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { AnswerEvaluationService } from './answer-evaluation/answer-evaluation.service';
 
 describe('GameGateway', () => {
   let gateway: GameGateway;
@@ -41,6 +42,10 @@ describe('GameGateway', () => {
     player: {
       update: jest.fn(),
     },
+  };
+
+  const answerEvaluationServiceMock = {
+    evaluate: jest.fn(),
   };
 
   const redisRoomRepositoryMock = {
@@ -81,6 +86,10 @@ describe('GameGateway', () => {
         {
           provide: RedisRoomRepository,
           useValue: redisRoomRepositoryMock,
+        },
+        {
+          provide: AnswerEvaluationService,
+          useValue: answerEvaluationServiceMock,
         },
       ],
     }).compile();
@@ -3088,6 +3097,40 @@ describe('GameGateway', () => {
       expectLastErrorCode(mockSocket.emit, 'DUPLICATE_SUBMISSION');
     });
 
+    it('should use AnswerEvaluationService to evaluate answers', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-1',
+        currentQuestionId: 'q-1',
+        currentRoundIndex: '0',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-1',
+        answer: 'Harry Potter',
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-1',
+        answer: '  harry potter  ',
+        responseTimeMs: 1200,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        '  harry potter  ',
+        'Harry Potter',
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-1',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
     it('should save incorrect answer in Redis and emit SubmitAnswerAck', async () => {
       prismaMock.room.findUnique.mockResolvedValue(mockRoom);
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
@@ -3101,6 +3144,7 @@ describe('GameGateway', () => {
         id: 'q-1',
         answer: 'Harry Potter',
       });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(false);
 
       await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
         roomId: 'room-id-123',
@@ -3140,6 +3184,7 @@ describe('GameGateway', () => {
         id: 'q-1',
         answer: 'Harry Potter',
       });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
 
       await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
         roomId: 'room-id-123',

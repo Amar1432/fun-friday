@@ -24,6 +24,7 @@ import { NextRoundDto } from './dto/next-round.dto';
 import { EndGameDto } from './dto/end-game.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
 import { KickPlayerDto } from './dto/kick-player.dto';
+import { AnswerEvaluationService } from './answer-evaluation/answer-evaluation.service';
 
 /** Grace period (ms) before an unexpectedly disconnected player is removed. */
 const DISCONNECT_CLEANUP_DELAY_MS = 30_000;
@@ -58,6 +59,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly tokenService: TokenService,
     private readonly prisma: PrismaService,
     private readonly redisRoomRepository: RedisRoomRepository,
+    private readonly answerEvaluationService: AnswerEvaluationService,
   ) {}
 
   async handleConnection(client: Socket): Promise<void> {
@@ -1261,9 +1263,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw err;
       }
 
-      const isCorrect =
-        payload.answer.trim().toLowerCase() ===
-        question.answer.trim().toLowerCase();
+      const isCorrect = this.answerEvaluationService.evaluate(
+        payload.answer,
+        question.answer,
+      );
 
       // Save answer in Redis
       const answerState = {
