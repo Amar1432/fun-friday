@@ -146,4 +146,123 @@ describe('AnswerEvaluationService', () => {
       );
     });
   });
+
+  describe('calculateDistance', () => {
+    it('should return 0 for identical strings', () => {
+      expect(service.calculateDistance('hello', 'hello')).toBe(0);
+      expect(service.calculateDistance('', '')).toBe(0);
+    });
+
+    it('should return the length of the non-empty string when the other is empty', () => {
+      expect(service.calculateDistance('', 'hello')).toBe(5);
+      expect(service.calculateDistance('world', '')).toBe(5);
+    });
+
+    it('should detect a single missing character', () => {
+      expect(service.calculateDistance('harry potter', 'harry potte')).toBe(1);
+      expect(service.calculateDistance('hary potter', 'harry potter')).toBe(1);
+    });
+
+    it('should detect a single additional character', () => {
+      expect(service.calculateDistance('harry potter', 'harry potters')).toBe(
+        1,
+      );
+      expect(service.calculateDistance('harrry potter', 'harry potter')).toBe(
+        1,
+      );
+    });
+
+    it('should detect a single adjacent transposition', () => {
+      expect(service.calculateDistance('harry potter', 'haryr potter')).toBe(2);
+      // "ahrry" vs "harry" — the 'h' and 'a' are swapped
+      expect(service.calculateDistance('ahry', 'hary')).toBe(2);
+    });
+
+    it('should detect a single incorrect character (substitution)', () => {
+      expect(service.calculateDistance('harry potter', 'harry pottur')).toBe(1);
+      expect(service.calculateDistance('harry potter', 'harry kotter')).toBe(1);
+    });
+
+    it('should return larger distances for multiple differences', () => {
+      expect(service.calculateDistance('harry potter', 'herry pottar')).toBe(2);
+      expect(service.calculateDistance('abc', 'xyz')).toBe(3);
+    });
+
+    it('should be symmetric', () => {
+      const a = 'harry potter';
+      const b = 'harry potte';
+      expect(service.calculateDistance(a, b)).toBe(
+        service.calculateDistance(b, a),
+      );
+    });
+  });
+
+  describe('evaluate with typo tolerance (threshold > 0)', () => {
+    it('should accept a single missing character within threshold 1', () => {
+      expect(service.evaluate('Harry Pottr', 'Harry Potter', 1)).toBe(true);
+    });
+
+    it('should accept a single additional character within threshold 1', () => {
+      expect(service.evaluate('Harry Potterr', 'Harry Potter', 1)).toBe(true);
+    });
+
+    it('should accept a single incorrect character within threshold 1', () => {
+      expect(service.evaluate('Harry Kotter', 'Harry Potter', 1)).toBe(true);
+    });
+
+    it('should accept a single adjacent transposition within threshold 2', () => {
+      // "Potter" → "Potetr" is a transposition requiring 2 edits
+      expect(service.evaluate('Harry Potetr', 'Harry Potter', 2)).toBe(true);
+    });
+
+    it('should reject answers with multiple unrelated mistakes', () => {
+      // "Horry Pottar" has 2 substitutions vs "Harry Potter"
+      expect(service.evaluate('Horry Pottar', 'Harry Potter', 1)).toBe(false);
+    });
+
+    it('should reject completely different words even with threshold', () => {
+      expect(service.evaluate('Voldemort', 'Harry Potter', 1)).toBe(false);
+      expect(service.evaluate('Voldemort', 'Harry Potter', 3)).toBe(false);
+    });
+
+    it('should normalize before applying typo tolerance', () => {
+      // "harry potter" vs "Harry Potter!" — after normalization, both become
+      // "harry potter" so distance is 0, matches even at threshold 1
+      expect(service.evaluate('harry potter', 'Harry Potter!', 1)).toBe(true);
+    });
+
+    it('should accept exact matches even with threshold set', () => {
+      expect(service.evaluate('Harry Potter', 'Harry Potter', 1)).toBe(true);
+      expect(service.evaluate('', '', 1)).toBe(true);
+    });
+
+    it('should reject empty vs non-empty with threshold 1 when distance > 1', () => {
+      // Empty → "Harry Potter" has distance 11
+      expect(service.evaluate('', 'Harry Potter', 1)).toBe(false);
+    });
+
+    it('should handle normalized threshold matching with punctuation', () => {
+      // "Hello!" normalizes to "hello", "hello" normalizes to "hello"
+      // Distance 0, matches
+      expect(service.evaluate('Hello!', 'hello', 1)).toBe(true);
+    });
+
+    it('should accept a typo with hyphen normalization', () => {
+      // "The Empir-Strikes Back" normalizes to "the empirestrikes back"
+      // "The Empire-Strikes Back" normalizes to "the empirestrikes back"
+      // Distance is small enough for threshold 1
+      expect(
+        service.evaluate(
+          'The Empir-Strikes Back',
+          'The Empire-Strikes Back',
+          1,
+        ),
+      ).toBe(true);
+    });
+
+    it('should reject when threshold is 0 (backward compatible)', () => {
+      expect(service.evaluate('Harry Pottr', 'Harry Potter', 0)).toBe(false);
+      expect(service.evaluate('Harry Potter', 'Harry Potter', 0)).toBe(true);
+    });
+  });
 });

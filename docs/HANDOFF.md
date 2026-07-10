@@ -36,7 +36,30 @@ To satisfy all acceptance criteria for FFH-114 — creating a dedicated, testabl
 
 ### What's Next
 
-Start `FFH-115: Implement Answer Normalization`.
+Start `FFH-116: Implement Minor Typo Tolerance`.
+
+---
+
+## 🚀 FFH-115: Answer Normalization
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-115
+
+### What Changed
+
+- **Added `normalize()` method** to `AnswerEvaluationService` (`apps/api/src/game/answer-evaluation/answer-evaluation.service.ts`): Transforms raw answers by applying (in order): lowercase, remove hyphens, remove underscores, remove punctuation, trim, collapse multiple spaces, final trim. Uses Unicode property escapes (`\p{L}\p{N}` with `u` flag) to handle accented characters like `é`.
+- **Updated `evaluate()` method**: Now calls `this.normalize()` on both `input` and `target` before comparing. This means punctuation, hyphens, underscores, and whitespace differences no longer prevent correct matching.
+- **Updated tests** (`answer-evaluation.service.spec.ts`): Added 11 new tests for `normalize()` covering all rules (lowercase, trim, space collapse, hyphens, underscores, punctuation, combined rules, empty string, punctuation-only, unicode). Updated 2 existing `evaluate` tests that now behave differently after normalization (punctuation no longer causes rejection; underscore/hyphen handling verified).
+- **Verified:** `pnpm test` — 314/314 tests ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-115 — answers are now properly normalized before evaluation, reducing false rejections from punctuation, case, whitespace, hyphens, and underscores.
+
+### What's Next
+
+Start `FFH-116: Implement Minor Typo Tolerance`.
 
 ---
 

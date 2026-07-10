@@ -2,16 +2,21 @@ import { Injectable } from '@nestjs/common';
 
 /**
  * Service responsible for evaluating player answers independently of any
- * specific game mode. Currently performs exact matching after normalizing
- * both the input and target answers.
+ * specific game mode. Performs exact matching after normalizing both the
+ * input and target answers, with optional typo-tolerant matching via a
+ * configurable Levenshtein-distance threshold.
  *
  * This service is intentionally isolated from Socket.IO handlers and the
- * game loop. Future iterations (FFH-116+) will add typo-tolerant matching
- * and support for multiple accepted answers — all without changing the
- * public interface.
+ * game loop. The public interface supports future game modes without
+ * modification.
  */
 @Injectable()
 export class AnswerEvaluationService {
+  /**
+   * Default threshold for exact (non-fuzzy) matching.
+   */
+  private readonly EXACT_MATCH_THRESHOLD = 0;
+
   /**
    * Normalizes a raw answer string by applying the following transformations
    * in order:
@@ -41,17 +46,91 @@ export class AnswerEvaluationService {
   }
 
   /**
+   * Computes the Levenshtein distance between two strings using an iterative
+   * two-row DP approach for O(n) memory efficiency.
+   *
+   * The Levenshtein distance is the minimum number of single-character edits
+   * (insertions, deletions, or substitutions) required to transform one string
+   * into the other.
+   *
+   * @param a - The first string.
+   * @param b - The second string.
+   * @returns The edit distance (0 = identical strings).
+   */
+  calculateDistance(a: string, b: string): number {
+    const aLen = a.length;
+    const bLen = b.length;
+
+    // Handle empty-string edge cases
+    if (aLen === 0) return bLen;
+    if (bLen === 0) return aLen;
+
+    // Use two rows for O(min(aLen, bLen)) memory
+    // Ensure b is the shorter dimension for less memory usage
+    if (aLen < bLen) {
+      return this.calculateDistance(b, a);
+    }
+
+    let prevRow: number[] = [];
+    let currRow: number[] = [];
+
+    // Initialize previous row (edits to transform empty string into b)
+    for (let j = 0; j <= bLen; j++) {
+      prevRow[j] = j;
+    }
+
+    for (let i = 1; i <= aLen; i++) {
+      currRow[0] = i;
+
+      for (let j = 1; j <= bLen; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+
+        currRow[j] = Math.min(
+          prevRow[j] + 1, // deletion
+          currRow[j - 1] + 1, // insertion
+          prevRow[j - 1] + cost, // substitution
+        );
+      }
+
+      // Swap rows for next iteration
+      [prevRow, currRow] = [currRow, prevRow];
+    }
+
+    return prevRow[bLen];
+  }
+
+  /**
    * Evaluates whether a player's input matches the expected target answer.
    *
-   * Both strings are normalized via {@link normalize} before comparison,
-   * ensuring that punctuation, case, whitespace, hyphens, and underscores
-   * do not affect the result.
+   * Both strings are normalized via {@link normalize} before comparison.
+   * When `threshold > 0`, the Levenshtein distance between the normalized
+   * strings is computed, and the match succeeds if the distance is within
+   * the threshold.
    *
-   * @param input  - The raw answer submitted by the player.
-   * @param target - The correct/expected answer for the current question.
+   * @param input     - The raw answer submitted by the player.
+   * @param target    - The correct/expected answer for the current question.
+   * @param threshold - Maximum allowed edit distance for a match.
+   *                    Defaults to 0 (exact match after normalization).
    * @returns `true` if the input matches the target, `false` otherwise.
    */
-  evaluate(input: string, target: string): boolean {
-    return this.normalize(input) === this.normalize(target);
+  evaluate(
+    input: string,
+    target: string,
+    threshold: number = this.EXACT_MATCH_THRESHOLD,
+  ): boolean {
+    const normalizedInput = this.normalize(input);
+    const normalizedTarget = this.normalize(target);
+
+    if (threshold <= this.EXACT_MATCH_THRESHOLD) {
+      return normalizedInput === normalizedTarget;
+    }
+
+    // Quick win: identical strings are always a match
+    if (normalizedInput === normalizedTarget) {
+      return true;
+    }
+
+    const distance = this.calculateDistance(normalizedInput, normalizedTarget);
+    return distance <= threshold;
   }
 }

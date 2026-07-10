@@ -1,18 +1,18 @@
 # Active Task
 
-**Ticket:** FFH-115
-**Title:** Implement Answer Normalization
+**Ticket:** FFH-116
+**Title:** Implement Minor Typo Tolerance
 
 ## Objective
 
-Normalize incoming answers before evaluation. The normalizer should perform: lowercase conversion, trim whitespace, collapse multiple spaces, remove punctuation, ignore hyphens and underscores.
+Add Levenshtein-distance-based typo tolerance to the answer evaluation service, allowing answers with a single character error (missing, extra, transposed, or incorrect) to still match.
 
 ## Execution Requirements
 
-1. **Normalization Logic:** Add a `normalize(input: string): string` method to the existing `AnswerEvaluationService` that transforms the input using all the specified rules.
-2. **Update evaluate():** Update the `evaluate()` method to call `normalize()` on both input and target before comparing them.
-3. **Verification:** Run backend tests (`pnpm test` in `apps/api`) to ensure all existing tests pass, and any new normalization tests (FFH-118) are green.
+1. **Typo Tolerance Logic:** Add a `calculateDistance(a: string, b: string): number` method to `AnswerEvaluationService` that computes the Levenshtein distance between two strings.
+2. **Update evaluate():** Update `evaluate()` to accept an optional `threshold` parameter (default `0` for exact match after normalization). When `threshold > 0`, answers within that edit distance are accepted.
+3. **Verification:** Run backend tests to ensure normalization still works and the new typo tolerance tests pass.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-116).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-117).
