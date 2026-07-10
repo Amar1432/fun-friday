@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { config } from '@/lib/config';
 import { SocketStatusIndicator } from '@/components/socket-status-indicator';
@@ -35,6 +36,26 @@ export default function DashboardPage() {
   const [isLoadingRooms, setIsLoadingRooms] = React.useState(true);
   const [roomsError, setRoomsError] = React.useState<string | null>(null);
   const [isLoadingTemplates, setIsLoadingTemplates] = React.useState(false);
+  const [toast, setToast] = React.useState<{
+    message: string;
+    type: 'success' | 'info' | 'error';
+  } | null>(null);
+  const router = useRouter();
+
+  // Auto-dismiss toast after 3 seconds
+  React.useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = React.useCallback(
+    (message: string, type: 'success' | 'info' | 'error' = 'info') => {
+      setToast({ message, type });
+    },
+    [],
+  );
 
   const fetchRooms = React.useCallback(async () => {
     if (!token) return;
@@ -259,8 +280,11 @@ export default function DashboardPage() {
             <p className="text-xs text-slate-400 leading-relaxed">
               Explore preset Trivia, Speed Quiz, or Emoji Puzzles tailored for virtual corporate
               teams.
-            </p>
-            <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950">
+            </p>{' '}
+            <button
+              onClick={() => showToast('Presets coming soon! Create a custom game from the lobby.')}
+              className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            >
               Browse Presets
             </button>
           </div>
@@ -422,10 +446,20 @@ export default function DashboardPage() {
                       patterns.
                     </p>
                     <div className="flex gap-2">
-                      <button className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
+                      <button
+                        onClick={() =>
+                          showToast(
+                            'Question editor coming soon! Currently using Emoji Guess question bank.',
+                          )
+                        }
+                        className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      >
                         Edit Questions
                       </button>
-                      <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
+                      <button
+                        onClick={() => router.push('/room/create')}
+                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      >
                         Host Game
                       </button>
                     </div>
@@ -446,10 +480,20 @@ export default function DashboardPage() {
                       Fun, interactive emoji association questions to break the ice with new hires.
                     </p>
                     <div className="flex gap-2">
-                      <button className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
+                      <button
+                        onClick={() =>
+                          showToast(
+                            'Question editor coming soon! Currently using Emoji Guess question bank.',
+                          )
+                        }
+                        className="flex-1 py-2 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-xs font-semibold rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      >
                         Edit Questions
                       </button>
-                      <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
+                      <button
+                        onClick={() => router.push('/room/create')}
+                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      >
                         Host Game
                       </button>
                     </div>
@@ -560,6 +604,63 @@ export default function DashboardPage() {
           © {new Date().getFullYear()} {config.appName}. Secure connection verified.
         </p>
       </footer>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className="fixed bottom-6 right-6 z-50 animate-fade-in"
+          role="status"
+          aria-live="polite"
+        >
+          <div
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-2xl backdrop-blur-xl ${
+              toast.type === 'success'
+                ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                : toast.type === 'error'
+                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                  : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
+            }`}
+          >
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {toast.type === 'success' ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              )}
+            </svg>
+            <span className="text-sm font-semibold">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-2 p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+              aria-label="Dismiss notification"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
