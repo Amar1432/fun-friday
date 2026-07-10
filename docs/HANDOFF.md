@@ -18,6 +18,33 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-118: Create Answer Evaluation Test Suite
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-118
+
+### What Changed
+
+- **Added comprehensive edge-case tests** to `answer-evaluation.service.spec.ts` covering all FFH-118 acceptance criteria:
+- **Normalize tests added:** Emoji/special symbol removal (🎉, 🌍, $, ©), tab/newline-to-space conversion (`\t`, `\n`, `\r\n`), very long string performance (10,000 chars).
+- **Evaluate tests added (exact match):** Unicode accented characters (café, Café, CAFÉ), non-Latin scripts (Cyrillic, Chinese), emoji stripping (`🎉hello` → `hello`), tab/newline normalization, leading zero preservation (`042` ≠ `42` without typo tolerance), decimal numbers, mixed number+text, very long strings, whitespace-only vs empty distinction.
+- **Evaluate tests added (typo tolerance):** Unicode typo matching (café with missing é, cafe vs café), numeric typo matching (100 vs 1000, 42 vs 43).
+- **Evaluate tests added (multiple answers):** Unicode across multiple targets, numeric across multiple targets, tab/newline normalization with multiple targets.
+- **All AC categories covered:** Exact matches ✅, Normalized matches ✅, Typo tolerance ✅, Alternate answers ✅, Invalid answers ✅, Empty answers ✅, Unicode characters ✅, Numbers ✅, Special characters ✅.
+- **Gateway integration** already verified in existing gateway tests — no additional gateway changes needed.
+- **Verified:** `pnpm test` — 364/364 tests ✅ (up from 347, +17 new tests)
+
+### Why
+
+To satisfy all acceptance criteria for FFH-118 — the answer evaluation test suite now comprehensively validates all edge cases across normalization, exact matching, typo tolerance, multiple accepted answers, unicode, numbers, and special characters.
+
+### What's Next
+
+Start `FFH-119: Create Game Mode Registry`.
+
+---
+
 ## 🚀 FFH-117: Support Multiple Accepted Answers
 
 **Date/Time:** 2026-07-10 (Local Time)

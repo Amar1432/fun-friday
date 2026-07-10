@@ -71,6 +71,28 @@ describe('AnswerEvaluationService', () => {
       expect(service.normalize('café')).toBe('café');
       expect(service.normalize('  Café  ')).toBe('café');
     });
+
+    it('should handle emoji and special symbols', () => {
+      // Emojis are not letters or numbers, so they get removed
+      expect(service.normalize('🎉 hello')).toBe('hello');
+      expect(service.normalize('Hello 🌍 World')).toBe('hello world');
+      // Currency symbols removed
+      expect(service.normalize('$100')).toBe('100');
+      // Copyright/registered symbols removed
+      expect(service.normalize('© hello')).toBe('hello');
+    });
+
+    it('should convert tabs and newlines to spaces', () => {
+      expect(service.normalize('hello\tworld')).toBe('hello world');
+      expect(service.normalize('hello\nworld')).toBe('hello world');
+      expect(service.normalize('hello\r\nworld')).toBe('hello world');
+      expect(service.normalize('  hello\n\nworld  ')).toBe('hello world');
+    });
+
+    it('should handle very long strings without error', () => {
+      const longString = 'a'.repeat(10000);
+      expect(service.normalize(longString)).toBe('a'.repeat(10000));
+    });
   });
 
   describe('evaluate', () => {
@@ -144,6 +166,78 @@ describe('AnswerEvaluationService', () => {
       expect(service.evaluate('THE GREAT GATSBY', '  the great gatsby  ')).toBe(
         true,
       );
+    });
+
+    it('should handle unicode accented characters', () => {
+      expect(service.evaluate('café', 'café')).toBe(true);
+      expect(service.evaluate('  Café  ', 'café')).toBe(true);
+      expect(service.evaluate('café', 'CAFÉ')).toBe(true);
+      expect(service.evaluate('cafe', 'café')).toBe(false); // 'e' ≠ 'é'
+    });
+
+    it('should handle non-Latin script characters', () => {
+      // Cyrillic
+      expect(service.evaluate('привет', 'привет')).toBe(true);
+      expect(service.evaluate('  Привет  ', 'привет')).toBe(true);
+      // Chinese characters (not letters in the Latin sense, but are \p{L})
+      expect(service.evaluate('你好', '你好')).toBe(true);
+      expect(service.evaluate('你好', 'Nǐ hǎo')).toBe(false);
+    });
+
+    it('should handle emoji in input by stripping them', () => {
+      // Emojis are stripped during normalization, so input '🎉hello' normalizes to 'hello'
+      expect(service.evaluate('🎉 hello', 'hello')).toBe(true);
+      expect(service.evaluate('🎉 hello', 'Hello')).toBe(true);
+      expect(service.evaluate('🎉 hello 🌍', 'hello')).toBe(true);
+    });
+
+    it('should handle tab and newline characters like spaces', () => {
+      expect(service.evaluate('hello\tworld', 'hello world')).toBe(true);
+      expect(service.evaluate('hello\nworld', 'hello world')).toBe(true);
+      expect(service.evaluate('hello\r\nworld', 'hello world')).toBe(true);
+      expect(service.evaluate('  hello\n\nworld  ', 'hello world')).toBe(true);
+    });
+
+    it('should handle leading zeros in number answers', () => {
+      // Leading zeros are preserved by normalization — '042' ≠ '42'
+      expect(service.evaluate('042', '42')).toBe(false);
+      expect(service.evaluate('42', '042')).toBe(false);
+      expect(service.evaluate('007', '7')).toBe(false);
+      // Same number without leading zero matches
+      expect(service.evaluate('100', '100')).toBe(true);
+      // Typo tolerance can bridge leading zero differences
+      expect(service.evaluate('042', '42', 1)).toBe(true);
+    });
+
+    it('should handle decimal numbers', () => {
+      expect(service.evaluate('3.14', '3.14')).toBe(true);
+      expect(service.evaluate('3.14', '3.140')).toBe(false);
+      expect(service.evaluate(' 3.14 ', '3.14')).toBe(true);
+    });
+
+    it('should handle mixed number and text answers', () => {
+      expect(service.evaluate('Room 101', 'Room 101')).toBe(true);
+      expect(service.evaluate(' room 101 ', 'ROOM 101')).toBe(true);
+      expect(service.evaluate('Room 101', 'Room 102')).toBe(false);
+    });
+
+    it('should handle very long strings', () => {
+      const longAnswer = 'The quick brown fox jumps over the lazy dog '
+        .repeat(10)
+        .trim();
+      expect(service.evaluate(longAnswer, longAnswer)).toBe(true);
+      expect(service.evaluate(longAnswer.toUpperCase(), longAnswer)).toBe(true);
+      expect(service.evaluate('  ' + longAnswer + '  ', longAnswer)).toBe(true);
+    });
+
+    it('should distinguish whitespace-only from empty for mismatched targets', () => {
+      // Both normalize to empty, so they match -- but target is non-empty
+      expect(service.evaluate('   ', 'abc')).toBe(false);
+      expect(service.evaluate('abc', '   ')).toBe(false);
+      // Both are only whitespace
+      expect(service.evaluate('   ', '   ')).toBe(true);
+      expect(service.evaluate('', '   ')).toBe(true);
+      expect(service.evaluate('   ', '')).toBe(true);
     });
   });
 
@@ -263,6 +357,27 @@ describe('AnswerEvaluationService', () => {
     it('should reject when threshold is 0 (backward compatible)', () => {
       expect(service.evaluate('Harry Pottr', 'Harry Potter', 0)).toBe(false);
       expect(service.evaluate('Harry Potter', 'Harry Potter', 0)).toBe(true);
+    });
+
+    it('should handle unicode with typo tolerance', () => {
+      // 'caf' vs 'café' — distance 1 (missing 'é')
+      expect(service.evaluate('caf', 'café', 1)).toBe(true);
+      // 'caf' vs 'café' — distance 1, but threshold 0
+      expect(service.evaluate('caf', 'café', 0)).toBe(false);
+      // 'cafe' vs 'café' — after normalization both are 'cafe' and 'café'
+      // The 'e' vs 'é' are different characters, so distance is 1
+      expect(service.evaluate('cafe', 'café', 1)).toBe(true);
+    });
+
+    it('should handle numbers with typo tolerance', () => {
+      // '100' vs '1000' — distance 1
+      expect(service.evaluate('100', '1000', 1)).toBe(true);
+      // '100' vs '2000' — distance 3 (sub 1 + ins 2)
+      expect(service.evaluate('100', '2000', 1)).toBe(false);
+      // '42' vs '43' — distance 1 (substitution)
+      expect(service.evaluate('42', '43', 1)).toBe(true);
+      // '42' vs '420' — distance 1 (insertion)
+      expect(service.evaluate('42', '420', 1)).toBe(true);
     });
   });
 
@@ -389,6 +504,37 @@ describe('AnswerEvaluationService', () => {
       // Threshold still works
       expect(service.evaluate('Harry Pottr', 'Harry Potter', 1)).toBe(true);
       expect(service.evaluate('Horry Pottar', 'Harry Potter', 1)).toBe(false);
+    });
+
+    it('should handle unicode characters across multiple targets', () => {
+      expect(service.evaluate('café', ['Café', 'Coffee', 'Java'])).toBe(true);
+      expect(service.evaluate('  café  ', ['Café', 'Coffee'])).toBe(true);
+      expect(service.evaluate('caf', ['Café', 'Coffee'], 1)).toBe(true);
+    });
+
+    it('should handle numeric answers across multiple targets', () => {
+      expect(service.evaluate('42', ['42', 'forty-two', 'forty two'])).toBe(
+        true,
+      );
+      // '042' normalizes to '042', '42' normalizes to '42' — not an exact match
+      expect(service.evaluate(' 042 ', ['24', '42'])).toBe(false);
+      // distance 1 between '042' and '42' — matches with threshold 1
+      expect(service.evaluate(' 042 ', ['24', '42'], 1)).toBe(true);
+    });
+
+    it('should handle tab/newline with multiple targets', () => {
+      expect(
+        service.evaluate('  harry\npotter  ', [
+          'Harry Potter',
+          'The Boy Who Lived',
+        ]),
+      ).toBe(true);
+      expect(
+        service.evaluate('harry\tpotter', [
+          'Harry Potter',
+          'The Boy Who Lived',
+        ]),
+      ).toBe(true);
     });
   });
 });
