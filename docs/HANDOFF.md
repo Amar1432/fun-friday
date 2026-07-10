@@ -16,27 +16,55 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 6 (Game Modes & Answer Evaluation)
 
+---
+
+## 🚀 FFH-117: Support Multiple Accepted Answers
+
 **Date/Time:** 2026-07-10 (Local Time)
 **Agent:** Freebuff (Buffy)
-**Ticket:** FFH-114
+**Ticket:** FFH-117
 
 ### What Changed
 
-- **Created `AnswerEvaluationModule`** (`apps/api/src/game/answer-evaluation/answer-evaluation.module.ts`): New standalone NestJS module that provides and exports `AnswerEvaluationService`.
-- **Created `AnswerEvaluationService`** (`apps/api/src/game/answer-evaluation/answer-evaluation.service.ts`): Injectable service with a public `evaluate(input, target): boolean` method. Currently performs case-insensitive, whitespace-trimmed comparison. Fully isolated from Socket.IO — designed to be extended with fuzzy matching, normalization, and typo tolerance in FFH-115+.
-- **Integrated into `GameGateway`**: Injected `AnswerEvaluationService` into the gateway via constructor. Replaced the hardcoded `payload.answer.trim().toLowerCase() === question.answer.trim().toLowerCase()` with `this.answerEvaluationService.evaluate(payload.answer, question.answer)`.
-- **Updated `GameModule`** (`apps/api/src/game/game.module.ts`): Added `AnswerEvaluationModule` to imports array.
-- **Tests written** (`answer-evaluation.service.spec.ts`): 13 unit tests covering exact match, case insensitivity, whitespace trimming, empty strings, numbers, special characters, mixed cases.
-- **Updated gateway spec** (`game.gateway.spec.ts`): Added mock for `AnswerEvaluationService`, registered in test module, added test verifying `evaluate` is called with correct args, fixed two existing submission tests to set mock return values.
-- **Verified:** `pnpm test` — 303/303 tests ✅
+- **Updated `evaluate()` method** (`apps/api/src/game/answer-evaluation/answer-evaluation.service.ts`): The `target` parameter now accepts `string | string[]`. When a single string is passed, behavior is identical to previous versions (backward compatible). When an array of strings is passed, the input is compared against **each** target independently, and the method returns `true` if **any** target matches.
+- **Normalization per target**: Each accepted answer is independently normalized before comparison, so punctuation, case, hyphens, and whitespace differences are handled correctly per target.
+- **Typo tolerance per target**: The existing Levenshtein-distance threshold-based fuzzy matching applies independently to each accepted answer.
+- **Added multiple-answer tests**: 12 new unit tests covering primary answer, alternate spellings, common abbreviations, aliases/synonyms, rejection, normalization-per-target, typo-per-target, single-element array, hyphens across targets, case/whitespace across targets, and backward compatibility with single-string calls.
+- **Backward compatible**: Existing calls like `evaluate(input, target)` (string overload) and `evaluate(input, target, threshold)` continue to work identically.
+- **No gateway changes required**: The gateway still passes `question.answer` as a single string. Future question seeding can pass arrays when needed.
+- **Verified:** `pnpm test` — 347/347 tests ✅
 
 ### Why
 
-To satisfy all acceptance criteria for FFH-114 — creating a dedicated, testable answer evaluation module that is isolated from game logic and socket handlers, setting the foundation for future fuzzy matching.
+To satisfy all acceptance criteria for FFH-117 — the answer evaluation engine now supports multiple valid answers per question (alternate spellings, abbreviations, aliases, synonyms), enabling game modes to define flexible answer sets that any single correct response matches.
 
 ### What's Next
 
-Start `FFH-116: Implement Minor Typo Tolerance`.
+Start `FFH-118: Create Answer Evaluation Test Suite`.
+
+---
+
+## 🚀 FFH-116: Minor Typo Tolerance
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-116
+
+### What Changed
+
+- **Added `calculateDistance()` method** (`apps/api/src/game/answer-evaluation/answer-evaluation.service.ts`): Computes Levenshtein distance between two strings using an iterative two-row DP approach for O(n) memory efficiency. Handles empty-string edge cases and is symmetric.
+- **Updated `evaluate()` method**: Now accepts an optional third parameter `threshold` (default `0`). When `threshold > 0`, the normalized strings are compared via Levenshtein distance. When the distance is within the threshold, the answer is accepted. Exact matches bypass the distance computation entirely (optimization).
+- **Added typo tolerance tests**: 12 new tests for `calculateDistance` (identical strings, empty strings, missing char, extra char, transposition, substitution, multiple differences, symmetry) and 11 new tests for `evaluate` with threshold (all AC cases: missing char, extra char, incorrect char, transposition, multiple mistakes, completely different words, normalization priority, exact match with threshold, empty-vs-non-empty, hyphen+typo combo, backward compatibility).
+- **Backward compatible**: Existing 2-arg `evaluate(input, target)` calls continue to work identically — threshold defaults to `0` for exact matching.
+- **Verified:** `pnpm test` — 334/334 tests ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-116 — allowing answers with a single minor typo (missing char, extra char, incorrect char, or adjacent transposition) while rejecting completely different words and multiple mistakes. The configurable threshold allows game modes to adjust strictness.
+
+### What's Next
+
+Start `FFH-117: Support Multiple Accepted Answers`.
 
 ---
 
@@ -60,6 +88,30 @@ To satisfy all acceptance criteria for FFH-115 — answers are now properly norm
 ### What's Next
 
 Start `FFH-116: Implement Minor Typo Tolerance`.
+
+---
+
+**Date/Time:** 2026-07-10 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-114
+
+### What Changed
+
+- **Created `AnswerEvaluationModule`** (`apps/api/src/game/answer-evaluation/answer-evaluation.module.ts`): New standalone NestJS module that provides and exports `AnswerEvaluationService`.
+- **Created `AnswerEvaluationService`** (`apps/api/src/game/answer-evaluation/answer-evaluation.service.ts`): Injectable service with a public `evaluate(input, target): boolean` method. Currently performs case-insensitive, whitespace-trimmed comparison. Fully isolated from Socket.IO — designed to be extended with fuzzy matching, normalization, and typo tolerance in FFH-115+.
+- **Integrated into `GameGateway`**: Injected `AnswerEvaluationService` into the gateway via constructor. Replaced the hardcoded `payload.answer.trim().toLowerCase() === question.answer.trim().toLowerCase()` with `this.answerEvaluationService.evaluate(payload.answer, question.answer)`.
+- **Updated `GameModule`** (`apps/api/src/game/game.module.ts`): Added `AnswerEvaluationModule` to imports array.
+- **Tests written** (`answer-evaluation.service.spec.ts`): 13 unit tests covering exact match, case insensitivity, whitespace trimming, empty strings, numbers, special characters, mixed cases.
+- **Updated gateway spec** (`game.gateway.spec.ts`): Added mock for `AnswerEvaluationService`, registered in test module, added test verifying `evaluate` is called with correct args, fixed two existing submission tests to set mock return values.
+- **Verified:** `pnpm test` — 303/303 tests ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-114 — creating a dedicated, testable answer evaluation module that is isolated from game logic and socket handlers, setting the foundation for future fuzzy matching.
+
+### What's Next
+
+Start `FFH-117: Support Multiple Accepted Answers`.
 
 ---
 

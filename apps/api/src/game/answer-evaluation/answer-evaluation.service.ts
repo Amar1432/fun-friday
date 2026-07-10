@@ -100,37 +100,60 @@ export class AnswerEvaluationService {
   }
 
   /**
-   * Evaluates whether a player's input matches the expected target answer.
+   * Evaluates whether a player's input matches one or more expected target
+   * answers.
    *
-   * Both strings are normalized via {@link normalize} before comparison.
-   * When `threshold > 0`, the Levenshtein distance between the normalized
-   * strings is computed, and the match succeeds if the distance is within
-   * the threshold.
+   * When `target` is a single string, behavior is identical to previous
+   * versions (backward compatible). When `target` is an array of strings,
+   * the input is compared against **each** target independently, and the
+   * method returns `true` if **any** target matches.
+   *
+   * Both input and each target are normalized via {@link normalize} before
+   * comparison. When `threshold > 0`, the Levenshtein distance between the
+   * normalized strings is computed, and the match succeeds if the distance
+   * is within the threshold for that particular target.
    *
    * @param input     - The raw answer submitted by the player.
-   * @param target    - The correct/expected answer for the current question.
+   * @param targets   - The correct/expected answer(s) for the current
+   *                    question. Accepts a single string or an array of
+   *                    strings.
    * @param threshold - Maximum allowed edit distance for a match.
    *                    Defaults to 0 (exact match after normalization).
-   * @returns `true` if the input matches the target, `false` otherwise.
+   * @returns `true` if the input matches any of the targets, `false`
+   *          otherwise.
    */
   evaluate(
     input: string,
-    target: string,
+    targets: string | string[],
     threshold: number = this.EXACT_MATCH_THRESHOLD,
   ): boolean {
     const normalizedInput = this.normalize(input);
-    const normalizedTarget = this.normalize(target);
+    const targetList = Array.isArray(targets) ? targets : [targets];
 
-    if (threshold <= this.EXACT_MATCH_THRESHOLD) {
-      return normalizedInput === normalizedTarget;
+    for (const target of targetList) {
+      const normalizedTarget = this.normalize(target);
+
+      if (threshold <= this.EXACT_MATCH_THRESHOLD) {
+        if (normalizedInput === normalizedTarget) {
+          return true;
+        }
+        continue;
+      }
+
+      // Quick win: identical strings are always a match
+      if (normalizedInput === normalizedTarget) {
+        return true;
+      }
+
+      const distance = this.calculateDistance(
+        normalizedInput,
+        normalizedTarget,
+      );
+      if (distance <= threshold) {
+        return true;
+      }
     }
 
-    // Quick win: identical strings are always a match
-    if (normalizedInput === normalizedTarget) {
-      return true;
-    }
-
-    const distance = this.calculateDistance(normalizedInput, normalizedTarget);
-    return distance <= threshold;
+    return false;
   }
 }

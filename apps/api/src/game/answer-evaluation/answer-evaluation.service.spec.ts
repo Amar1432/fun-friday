@@ -265,4 +265,130 @@ describe('AnswerEvaluationService', () => {
       expect(service.evaluate('Harry Potter', 'Harry Potter', 0)).toBe(true);
     });
   });
+
+  describe('evaluate with multiple accepted answers', () => {
+    it('should accept the primary answer', () => {
+      expect(
+        service.evaluate('Harry Potter', ['Harry Potter', 'The Boy Who Lived']),
+      ).toBe(true);
+    });
+
+    it('should accept an alternate spelling', () => {
+      expect(
+        service.evaluate('Spider-Man', ['Spiderman', 'Peter Parker']),
+      ).toBe(true);
+    });
+
+    it('should accept a common abbreviation', () => {
+      expect(
+        service.evaluate('LOTR', [
+          'The Lord of the Rings',
+          'Lord of the Rings',
+          'LOTR',
+        ]),
+      ).toBe(true);
+    });
+
+    it('should accept an alias or synonym', () => {
+      expect(
+        service.evaluate('The Dark Knight', ['Batman', 'The Dark Knight']),
+      ).toBe(true);
+    });
+
+    it('should reject when input does not match any target', () => {
+      expect(
+        service.evaluate('Voldemort', ['Harry Potter', 'The Boy Who Lived']),
+      ).toBe(false);
+    });
+
+    it('should reject when input does not match any of many targets', () => {
+      expect(
+        service.evaluate('Sauron', [
+          'Harry Potter',
+          'The Boy Who Lived',
+          'Spider-Man',
+          'Peter Parker',
+        ]),
+      ).toBe(false);
+    });
+
+    it('should normalize each accepted answer before comparison', () => {
+      expect(
+        service.evaluate('  harry potter  ', [
+          'Harry Potter',
+          'The Boy Who Lived!',
+        ]),
+      ).toBe(true);
+      // Second target has punctuation, first is exact after normalization
+      expect(
+        service.evaluate('the boy who lived', [
+          'Harry Potter',
+          'The Boy Who Lived!',
+        ]),
+      ).toBe(true);
+    });
+
+    it('should apply typo tolerance independently to each target', () => {
+      // Input has a typo but matches the first target with threshold 1
+      expect(
+        service.evaluate(
+          'Harry Pottr',
+          ['Harry Potter', 'The Boy Who Lived'],
+          1,
+        ),
+      ).toBe(true);
+      // Input is far from the first target but matches the second with threshold 2
+      expect(
+        service.evaluate(
+          'The Boy Who Lives',
+          ['Harry Potter', 'The Boy Who Lived'],
+          1,
+        ),
+      ).toBe(true);
+    });
+
+    it('should reject when input is within threshold of some targets but not the specified threshold', () => {
+      // "Harry Pottr" is at distance 1 from "Harry Potter" but threshold is 0
+      expect(
+        service.evaluate(
+          'Harry Pottr',
+          ['Harry Potter', 'The Boy Who Lived'],
+          0,
+        ),
+      ).toBe(false);
+    });
+
+    it('should work with a single-element array the same as a string', () => {
+      expect(service.evaluate('Harry Potter', ['Harry Potter'])).toBe(true);
+      expect(service.evaluate('Voldemort', ['Harry Potter'])).toBe(false);
+    });
+
+    it('should handle normalization with hyphens across multiple targets', () => {
+      // Input normalizes to "spiderman", first target normalizes to "spiderman"
+      expect(
+        service.evaluate('spider-man', ['Spiderman', 'Peter Parker']),
+      ).toBe(true);
+    });
+
+    it('should handle case and whitespace differences with multiple targets', () => {
+      expect(
+        service.evaluate('  the LORD of the RINGS  ', [
+          'The Lord of the Rings',
+          'LOTR',
+        ]),
+      ).toBe(true);
+    });
+
+    it('should pass through to the old behavior when given a single string (backward compatible)', () => {
+      // These tests mirror the original evaluate() tests but use the new signature
+      expect(service.evaluate('Harry Potter', 'Harry Potter')).toBe(true);
+      expect(service.evaluate('harry potter', 'HARRY POTTER')).toBe(true);
+      expect(service.evaluate('Voldemort', 'Harry Potter')).toBe(false);
+      expect(service.evaluate('', 'Harry Potter')).toBe(false);
+      expect(service.evaluate('42', '42')).toBe(true);
+      // Threshold still works
+      expect(service.evaluate('Harry Pottr', 'Harry Potter', 1)).toBe(true);
+      expect(service.evaluate('Horry Pottar', 'Harry Potter', 1)).toBe(false);
+    });
+  });
 });
