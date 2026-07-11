@@ -18,6 +18,34 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-124: Seed Bad Movie Description Questions
+
+**Date/Time:** 2026-07-11 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-124
+
+### What Changed
+
+- **Seed script** (`scripts/seed-games.ts`): Added a new `Bad Movie Description` game (`Game ID: 2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708`) with **39 questions** across three difficulty levels:
+  - **EASY (13 questions):** 9 movies + 4 TV shows — familiar blockbusters like Spider-Man, Frozen, Harry Potter, Friends, SpongeBob.
+  - **MEDIUM (15 questions):** 9 movies + 6 TV shows — deeper cuts like The Phantom of the Opera, The Matrix, Grey's Anatomy, Stranger Things.
+  - **HARD (11 questions):** 10 movies + 1 TV show — tougher titles like 2001: A Space Odyssey, The Shawshank Redemption, House M.D.
+- **Categories:** Split between 'Movies' and 'TV Shows' for balanced variety.
+- **Metadata:** Every question includes a hint; many include `acceptedAnswers` arrays for alternate spellings (e.g., `Spider-Man` → `Spiderman`, `E.T.` → `ET`, `Grey's Anatomy` → `Greys Anatomy`, `L.A. Confidential` → `LA Confidential`).
+- **Seed logging:** Updated the console output to show separate question counts for both games (Emoji Guess and Bad Movie Description).
+- **Verified:** `pnpm typecheck` ✅, `pnpm test` — 382/382 API tests ✅, 170/170 web tests ✅
+- **Commit:** `3849f61 feat(seed): [FFH-124] Seed Bad Movie Description Questions`
+
+### Why
+
+To satisfy all acceptance criteria for FFH-124 — the database now contains a comprehensive Bad Movie Description question bank with proper difficulty levels, categories, hints, and alternate answer support.
+
+### What's Next
+
+Start `FFH-125: Build Bad Movie Description UI`.
+
+---
+
 ## 🚀 FFH-123: Validate Emoji Guess Answers
 
 **Date/Time:** 2026-07-11 (Local Time)

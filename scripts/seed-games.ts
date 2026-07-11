@@ -796,7 +796,7 @@ async function main() {
           },
           {
             prompt:
-              'A rude doctor in a limp solves rare cases while addicted to painkillers and lies.',
+              'A rude doctor with a limp solves rare cases while addicted to painkillers and lies.',
             answer: 'House M.D.',
             difficulty: QuestionDifficulty.HARD,
             category: 'TV Shows',

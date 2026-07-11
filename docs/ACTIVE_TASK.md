@@ -1,22 +1,21 @@
 # Active Task
 
-**Ticket:** FFH-124
-**Title:** Seed Bad Movie Description Questions
+**Ticket:** FFH-125
+**Title:** Build Bad Movie Description UI
 
 ## Objective
 
-Populate the database with Bad Movie Description questions for gameplay.
+Render movie descriptions during gameplay.
 
 ## Execution Requirements
 
-1. Each question contains:
-   - Description.
-   - Correct answer.
-   - Difficulty.
-   - Category.
-   - Metadata.
-2. Seeds execute successfully.
+1. UI displays:
+   - Description text.
+   - Round number.
+   - Countdown timer.
+   - Answer input.
+2. Layout remains consistent with shared gameplay screen.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-125).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-126).
