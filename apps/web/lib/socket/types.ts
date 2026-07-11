@@ -31,6 +31,7 @@ export interface ServerToClientEvents {
     hostId: string;
     hostName?: string | null;
     playerCount: number;
+    selectedGameId?: string | null;
   }) => void;
   GameStarted: (data: { gameId: string; totalRounds: number }) => void;
   QuestionStarted: (data: {
@@ -48,6 +49,7 @@ export interface ServerToClientEvents {
       id: string;
       code: string;
       status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+      selectedGameId?: string | null;
     };
     playerId: string;
     players: Player[];
@@ -86,6 +88,7 @@ export interface ClientToServerEvents {
   JoinRoom: (payload: { roomCode: string; displayName: string; guestToken: string }) => void;
   LeaveRoom: (payload: { roomId: string; playerId: string }) => void;
   PlayerReady: (payload: { roomId: string; playerId: string }) => void;
+  SelectGame: (payload: { roomId: string; gameId: string }) => void;
   StartGame: (payload: { roomId: string; gameId: string }) => void;
   NextRound: (payload: { roomId: string }) => void;
   EndGame: (payload: { roomId: string }) => void;

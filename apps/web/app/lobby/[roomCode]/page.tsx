@@ -38,6 +38,8 @@ export default function LobbyPage() {
   const leaderboard = useGameStore((state) => state.leaderboard);
   const renderingStrategy = useGameStore((state) => state.game.renderingStrategy);
   const setSubmittedAnswer = useGameStore((state) => state.setSubmittedAnswer);
+  const persistedSelectedGameId = room.selectedGameId;
+  const activeSelectedGameId = persistedSelectedGameId || selectedGameId;
 
   const isHost = user?.id === room.hostId;
 
@@ -149,6 +151,28 @@ export default function LobbyPage() {
     }
   }, [socketStatus, roomCode, user, token, dispatcher, room.status]);
 
+  React.useEffect(() => {
+    const activeRoomId = room.id || roomIdParam;
+    if (
+      socketStatus === 'connected' &&
+      activeRoomId &&
+      isHost &&
+      room.status === 'LOBBY' &&
+      room.selectedGameId !== selectedGameId
+    ) {
+      dispatcher.selectGame({ roomId: activeRoomId, gameId: selectedGameId });
+    }
+  }, [
+    socketStatus,
+    room.id,
+    roomIdParam,
+    room.status,
+    room.selectedGameId,
+    selectedGameId,
+    isHost,
+    dispatcher,
+  ]);
+
   // Socket event listener for game start success
   useSocketEvent(
     'GameStarted',
@@ -190,8 +214,8 @@ export default function LobbyPage() {
     setIsStarting(true);
     setStartError(null);
 
-    dispatcher.startGame({ roomId: activeRoomId, gameId: selectedGameId });
-  }, [socketStatus, room.id, roomIdParam, selectedGameId, dispatcher]);
+    dispatcher.startGame({ roomId: activeRoomId, gameId: activeSelectedGameId });
+  }, [socketStatus, room.id, roomIdParam, activeSelectedGameId, dispatcher]);
 
   const handleNextRound = React.useCallback(() => {
     const activeRoomId = room.id || roomIdParam;

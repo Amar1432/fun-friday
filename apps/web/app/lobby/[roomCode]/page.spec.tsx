@@ -22,6 +22,7 @@ const mockRoomState = {
   code: 'ABCDEF',
   status: 'LOBBY',
   hostId: 'host-123',
+  selectedGameId: null as string | null,
 };
 const mockGameState: any = {
   gameId: null,
@@ -65,6 +66,7 @@ const mockDispatcher = {
   joinRoom: jest.fn(),
   leaveRoom: jest.fn(),
   playerReady: jest.fn(),
+  selectGame: jest.fn(),
   startGame: jest.fn(),
   nextRound: jest.fn(),
   endGame: jest.fn(),
@@ -117,6 +119,7 @@ describe('LobbyPage Component', () => {
     mockStoreLeaderboard = [];
     mockRoomState.status = 'LOBBY';
     mockRoomState.id = 'room-123';
+    mockRoomState.selectedGameId = null;
     mockGameState.currentQuestion = null;
     mockGameState.correctAnswer = null;
     mockGameState.submittedAnswer = null;
@@ -230,11 +233,32 @@ describe('LobbyPage Component', () => {
 
     render(<LobbyPage />);
 
+    expect(mockDispatcher.selectGame).toHaveBeenCalledWith({
+      roomId: 'room-123',
+      gameId: '3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709',
+    });
+
     fireEvent.click(screen.getByTestId('start-game-button'));
 
     expect(mockDispatcher.startGame).toHaveBeenCalledWith({
       roomId: 'room-123',
       gameId: '3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709',
+    });
+  });
+
+  it('starts the persisted selected game after reconnect when room state has one', async () => {
+    mockStorePlayers = [
+      { id: 'p-1', displayName: 'Player 1', score: 0, isReady: true, isConnected: true },
+    ];
+    mockRoomState.selectedGameId = '2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708';
+
+    render(<LobbyPage />);
+
+    fireEvent.click(screen.getByTestId('start-game-button'));
+
+    expect(mockDispatcher.startGame).toHaveBeenCalledWith({
+      roomId: 'room-123',
+      gameId: '2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708',
     });
   });
 

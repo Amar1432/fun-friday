@@ -8,6 +8,7 @@ export interface RoomState {
   status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED' | null;
   hostId: string | null;
   hostName: string | null;
+  selectedGameId: string | null;
 }
 
 export interface GameState {
@@ -76,6 +77,7 @@ export interface GameStore {
       id: string;
       code: string;
       status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
+      selectedGameId?: string | null;
     };
     players: Player[];
     leaderboard?: LeaderboardEntry[];
@@ -103,6 +105,7 @@ const initialRoomState: RoomState = {
   status: null,
   hostId: null,
   hostName: null,
+  selectedGameId: null,
 };
 
 const initialGameState: GameState = {
@@ -257,6 +260,10 @@ export const useGameStore = create<GameStore>((set) => ({
         id: syncData.room?.id || state.room.id,
         code: syncData.room?.code || state.room.code,
         status: syncData.room?.status || state.room.status,
+        selectedGameId:
+          syncData.room?.selectedGameId === undefined
+            ? state.room.selectedGameId
+            : syncData.room.selectedGameId,
       },
       players: sortPlayers(syncData.players),
       leaderboard: syncData.leaderboard

@@ -136,6 +136,31 @@ describe('SocketDispatcher', () => {
     });
   });
 
+  describe('selectGame', () => {
+    it('should emit SelectGame event when socket is connected', () => {
+      const payload = {
+        roomId: 'room123',
+        gameId: 'game123',
+      };
+
+      dispatcher.selectGame(payload);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith('SelectGame', payload);
+    });
+
+    it('should not emit SelectGame event when socket is not connected', () => {
+      mockSocket.connected = false;
+      const payload = {
+        roomId: 'room123',
+        gameId: 'game123',
+      };
+
+      dispatcher.selectGame(payload);
+
+      expect(mockSocket.emit).not.toHaveBeenCalled();
+    });
+  });
+
   describe('nextRound', () => {
     it('should emit NextRound event when socket is connected', () => {
       const payload = {

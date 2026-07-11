@@ -19,6 +19,7 @@ import { JoinRoomDto } from './dto/join-room.dto';
 import { LeaveRoomDto } from './dto/leave-room.dto';
 import { PlayerReadyDto } from './dto/player-ready.dto';
 import { ReconnectRequestDto } from './dto/reconnect-request.dto';
+import { SelectGameDto } from './dto/select-game.dto';
 import { StartGameDto } from './dto/start-game.dto';
 import { NextRoundDto } from './dto/next-round.dto';
 import { EndGameDto } from './dto/end-game.dto';
@@ -226,11 +227,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       const roomCode = room.code.toUpperCase();
+      const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+      const selectedGameId = roomMeta?.selectedGameId || payload.gameId;
 
       // Run all precondition checks
       const validation = await this.validateGameStart(
         roomCode,
-        payload.gameId,
+        selectedGameId,
         user.sub,
       );
 
@@ -245,7 +248,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Fetch the game with its question count for totalRounds
       const game = await this.prisma.game.findUnique({
-        where: { id: payload.gameId },
+        where: { id: selectedGameId },
         include: { _count: { select: { questions: true } } },
       });
 
@@ -254,7 +257,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Fetch questions from PostgreSQL ordered by ID ascending
       const questions = await this.prisma.question.findMany({
-        where: { gameId: payload.gameId },
+        where: { gameId: selectedGameId },
         orderBy: { id: 'asc' },
       });
 
@@ -270,14 +273,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Write initial game state to Redis metadata
       await this.redisRoomRepository.updateRoomMetadata(roomCode, {
         status: 'IN_PROGRESS',
-        gameId: payload.gameId,
+        selectedGameId,
+        gameId: selectedGameId,
         totalRounds: totalRounds.toString(),
         currentRoundIndex: '0',
       });
 
       // Emit GameStarted to all clients in the room
       this.server.to(roomCode).emit('GameStarted', {
-        gameId: payload.gameId,
+        gameId: selectedGameId,
         totalRounds,
       });
 
@@ -285,13 +289,121 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.startRound(roomCode, 0);
 
       this.logger.log(
-        `Game started in room ${roomCode} by host ${user.sub}. gameId=${payload.gameId}, totalRounds=${totalRounds}`,
+        `Game started in room ${roomCode} by host ${user.sub}. gameId=${selectedGameId}, totalRounds=${totalRounds}`,
       );
     } catch (error) {
       if (error instanceof WsException) throw error;
 
       const message =
         error instanceof Error ? error.message : 'Failed to start game';
+      const err = new WsException(message);
+      client.emit('error', {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: err.message },
+      });
+      throw err;
+    }
+  }
+
+  @SubscribeMessage('SelectGame')
+  @UsePipes(new WsValidationPipe())
+  async handleSelectGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SelectGameDto,
+  ): Promise<void> {
+    const clientData = client.data as {
+      user?: TokenPayload;
+      roomCode?: string;
+    };
+    const user = clientData.user;
+
+    if (!user || user.role !== 'host') {
+      const err = new WsException('Only the host can select the game');
+      client.emit('error', {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: err.message },
+      });
+      throw err;
+    }
+
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: { id: payload.roomId },
+      });
+
+      if (!room) {
+        const err = new WsException('Room does not exist');
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      if (room.hostId !== user.sub) {
+        const err = new WsException('You are not the host of this room');
+        client.emit('error', {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: err.message },
+        });
+        throw err;
+      }
+
+      const roomCode = room.code.toUpperCase();
+      const roomMeta = await this.redisRoomRepository.getRoomMetadata(roomCode);
+      const status = roomMeta?.status || room.status;
+
+      if (status !== 'LOBBY') {
+        const err = new WsException(
+          'Game selection is locked after gameplay starts',
+        );
+        client.emit('error', {
+          success: false,
+          error: { code: 'ROOM_NOT_IN_LOBBY', message: err.message },
+        });
+        throw err;
+      }
+
+      const game = await this.prisma.game.findUnique({
+        where: { id: payload.gameId },
+        include: { _count: { select: { questions: true } } },
+      });
+
+      if (!game) {
+        const err = new WsException(`Game ${payload.gameId} does not exist`);
+        client.emit('error', {
+          success: false,
+          error: { code: 'GAME_NOT_FOUND', message: err.message },
+        });
+        throw err;
+      }
+
+      if (!roomMeta) {
+        await this.redisRoomRepository.createRoomState(roomCode, {
+          id: room.id,
+          hostId: room.hostId,
+          status: room.status,
+        });
+      }
+
+      await this.redisRoomRepository.updateRoomMetadata(roomCode, {
+        selectedGameId: payload.gameId,
+      });
+
+      const roomStatePayload = await this.buildRoomStatePayload(
+        roomCode,
+        status,
+      );
+      this.server.to(roomCode).emit('RoomStateUpdated', roomStatePayload);
+
+      this.logger.log(
+        `Host ${user.sub} selected game ${payload.gameId} for room ${roomCode}`,
+      );
+    } catch (error) {
+      if (error instanceof WsException) throw error;
+
+      const message =
+        error instanceof Error ? error.message : 'Failed to select game';
       const err = new WsException(message);
       client.emit('error', {
         success: false,
@@ -1450,6 +1562,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     hostId: string | null;
     hostName: string | null;
     playerCount: number;
+    selectedGameId: string | null;
   }> {
     const [playersMap, roomMeta] = await Promise.all([
       this.redisRoomRepository.getPlayers(roomCode),
@@ -1481,6 +1594,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       hostId: roomMeta?.hostId ?? null,
       hostName: roomMeta?.hostName ?? null,
       playerCount: players.length,
+      selectedGameId: roomMeta?.selectedGameId ?? roomMeta?.gameId ?? null,
     };
   }
 
@@ -2107,6 +2221,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
           id: room.id,
           code: roomCode,
           status: roomMeta?.status || room.status,
+          selectedGameId: roomMeta?.selectedGameId || roomMeta?.gameId || null,
         },
         playerId: payload.playerId,
         players,

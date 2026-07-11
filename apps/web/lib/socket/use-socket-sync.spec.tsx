@@ -116,6 +116,7 @@ describe('useSocketSync Hook', () => {
       status: 'LOBBY',
       hostId: 'host-1',
       hostName: null,
+      selectedGameId: null,
     });
     expect(mockActions.setPlayers).toHaveBeenCalledWith([mockPlayer]);
 

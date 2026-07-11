@@ -54,6 +54,17 @@ export class SocketDispatcher {
   }
 
   /**
+   * Emit SelectGame event
+   */
+  selectGame(payload: { roomId: string; gameId: string }): void {
+    if (!this.socket?.connected) {
+      console.warn('[SocketDispatcher] Cannot emit SelectGame: socket not connected');
+      return;
+    }
+    this.socket.emit('SelectGame', payload);
+  }
+
+  /**
    * Emit StartGame event
    */
   startGame(payload: { roomId: string; gameId: string }): void {

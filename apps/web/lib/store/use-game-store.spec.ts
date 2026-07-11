@@ -18,6 +18,7 @@ describe('useGameStore', () => {
       status: null,
       hostId: null,
       hostName: null,
+      selectedGameId: null,
     });
     expect(state.game).toEqual({
       gameId: null,
@@ -47,13 +48,20 @@ describe('useGameStore', () => {
   it('should update room fields and support resetting', () => {
     const store = useGameStore.getState();
 
-    store.setRoom({ id: 'room-1', code: 'ABCDEF', status: 'LOBBY', hostId: 'host-1' });
+    store.setRoom({
+      id: 'room-1',
+      code: 'ABCDEF',
+      status: 'LOBBY',
+      hostId: 'host-1',
+      selectedGameId: 'game-1',
+    });
     expect(useGameStore.getState().room).toEqual({
       id: 'room-1',
       code: 'ABCDEF',
       status: 'LOBBY',
       hostId: 'host-1',
       hostName: null,
+      selectedGameId: 'game-1',
     });
 
     store.resetRoom();
@@ -198,7 +206,12 @@ describe('useGameStore', () => {
     ];
 
     store.syncState({
-      room: { id: 'room-1', code: 'ABCDEF', status: 'IN_PROGRESS' },
+      room: {
+        id: 'room-1',
+        code: 'ABCDEF',
+        status: 'IN_PROGRESS',
+        selectedGameId: 'game-1',
+      },
       players,
       leaderboard,
     });
@@ -207,6 +220,7 @@ describe('useGameStore', () => {
     expect(state.room.id).toBe('room-1');
     expect(state.room.code).toBe('ABCDEF');
     expect(state.room.status).toBe('IN_PROGRESS');
+    expect(state.room.selectedGameId).toBe('game-1');
     expect(state.players).toEqual(players);
     expect(state.leaderboard).toEqual(leaderboard);
   });

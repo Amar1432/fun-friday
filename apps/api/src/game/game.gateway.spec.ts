@@ -11,6 +11,7 @@ import { JoinRoomDto } from './dto/join-room.dto';
 import { LeaveRoomDto } from './dto/leave-room.dto';
 import { PlayerReadyDto } from './dto/player-ready.dto';
 import { ReconnectRequestDto } from './dto/reconnect-request.dto';
+import { SelectGameDto } from './dto/select-game.dto';
 import { StartGameDto } from './dto/start-game.dto';
 import { NextRoundDto } from './dto/next-round.dto';
 import { EndGameDto } from './dto/end-game.dto';
@@ -2209,14 +2210,20 @@ describe('GameGateway', () => {
       });
       redisRoomRepositoryMock.loadQuestions.mockResolvedValue(true);
 
-      // Mock for startRound inside handleStartGame
-      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
-        id: 'room-id-123',
-        status: 'IN_PROGRESS',
-        gameId: 'game-id-123',
-        totalRounds: '10',
-        currentRoundIndex: '0',
-      });
+      redisRoomRepositoryMock.getRoomMetadata
+        .mockResolvedValueOnce({
+          id: 'room-id-123',
+          status: 'LOBBY',
+          selectedGameId: 'game-id-123',
+        })
+        .mockResolvedValue({
+          id: 'room-id-123',
+          status: 'IN_PROGRESS',
+          gameId: 'game-id-123',
+          selectedGameId: 'game-id-123',
+          totalRounds: '10',
+          currentRoundIndex: '0',
+        });
       redisRoomRepositoryMock.getQuestion.mockResolvedValue(mockQuestions[0]);
       prismaMock.round.create.mockResolvedValue({
         id: 'round-id-abc',
@@ -2254,6 +2261,7 @@ describe('GameGateway', () => {
         'ROOM12',
         {
           status: 'IN_PROGRESS',
+          selectedGameId: 'game-id-123',
           gameId: 'game-id-123',
           totalRounds: '10',
           currentRoundIndex: '0',
@@ -2294,6 +2302,95 @@ describe('GameGateway', () => {
       );
     });
 
+    it('should use the persisted selected game when it differs from the StartGame payload', async () => {
+      const toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+        in: jest.fn().mockReturnValue({
+          fetchSockets: jest.fn().mockResolvedValue([
+            {
+              id: 'socket-host-123',
+              data: { user: { sub: 'host-123', role: 'host' } },
+            },
+          ]),
+        }),
+      } as unknown as Server;
+
+      const selectedQuestions = [
+        {
+          id: 'q-selected',
+          prompt: 'Selected prompt',
+          answer: 'Selected answer',
+          difficulty: 'MEDIUM',
+          category: 'C1',
+          metadata: null,
+        },
+      ];
+
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      prismaMock.room.update.mockResolvedValue({
+        ...mockRoom,
+        status: 'IN_PROGRESS',
+      });
+      prismaMock.game.findUnique.mockResolvedValue({
+        ...mockGame,
+        id: 'persisted-game-id',
+        _count: { questions: 1 },
+      });
+      prismaMock.question.findMany.mockResolvedValue(selectedQuestions);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': JSON.stringify({
+          id: 'player-1',
+          displayName: 'P1',
+          score: 0,
+          isReady: true,
+        }),
+      });
+      redisRoomRepositoryMock.loadQuestions.mockResolvedValue(true);
+      redisRoomRepositoryMock.getRoomMetadata
+        .mockResolvedValueOnce({
+          id: 'room-id-123',
+          status: 'LOBBY',
+          selectedGameId: 'persisted-game-id',
+        })
+        .mockResolvedValue({
+          id: 'room-id-123',
+          status: 'IN_PROGRESS',
+          selectedGameId: 'persisted-game-id',
+          gameId: 'persisted-game-id',
+          totalRounds: '1',
+          currentRoundIndex: '0',
+        });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue(
+        selectedQuestions[0],
+      );
+      prismaMock.round.create.mockResolvedValue({
+        id: 'round-id-selected',
+        roomId: 'room-id-123',
+        questionId: 'q-selected',
+        startedAt: new Date(),
+        endedAt: null,
+      });
+
+      await gateway.handleStartGame(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        gameId: 'payload-game-id',
+      });
+
+      expect(prismaMock.question.findMany).toHaveBeenCalledWith({
+        where: { gameId: 'persisted-game-id' },
+        orderBy: { id: 'asc' },
+      });
+      expect(redisRoomRepositoryMock.loadQuestions).toHaveBeenCalledWith(
+        'ROOM12',
+        selectedQuestions,
+      );
+      expect(toEmitMock).toHaveBeenCalledWith('GameStarted', {
+        gameId: 'persisted-game-id',
+        totalRounds: 1,
+      });
+    });
+
     it('should proceed successfully even if questions are already loaded in Redis', async () => {
       const toEmitMock = jest.fn();
       gateway.server = {
@@ -2326,13 +2423,20 @@ describe('GameGateway', () => {
       redisRoomRepositoryMock.loadQuestions.mockResolvedValue(false); // Duplicate question loading prevented (already loaded)
 
       // Mock for startRound inside handleStartGame
-      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
-        id: 'room-id-123',
-        status: 'IN_PROGRESS',
-        gameId: 'game-id-123',
-        totalRounds: '10',
-        currentRoundIndex: '0',
-      });
+      redisRoomRepositoryMock.getRoomMetadata
+        .mockResolvedValueOnce({
+          id: 'room-id-123',
+          status: 'LOBBY',
+          selectedGameId: 'game-id-123',
+        })
+        .mockResolvedValue({
+          id: 'room-id-123',
+          status: 'IN_PROGRESS',
+          gameId: 'game-id-123',
+          selectedGameId: 'game-id-123',
+          totalRounds: '10',
+          currentRoundIndex: '0',
+        });
       redisRoomRepositoryMock.getQuestion.mockResolvedValue({
         id: 'q-1',
         prompt: 'P1',
@@ -2368,6 +2472,122 @@ describe('GameGateway', () => {
         timeLimitSeconds: 20,
         difficulty: 'EASY',
       });
+    });
+  });
+
+  describe('handleSelectGame', () => {
+    interface SelectMockSocket {
+      data: {
+        user?: { sub: string; name: string; role: string };
+      };
+      emit: jest.Mock;
+    }
+
+    let mockSocket: SelectMockSocket;
+    let toEmitMock: jest.Mock;
+    const expectLastSelectErrorCode = (
+      emitMock: jest.Mock,
+      expectedCode: string,
+    ): void => {
+      const calls = emitMock.mock.calls as Array<
+        [string, { error?: { code?: string } }]
+      >;
+      const lastPayload = calls[calls.length - 1]?.[1];
+      expect(lastPayload?.error?.code).toBe(expectedCode);
+    };
+
+    beforeEach(() => {
+      mockSocket = {
+        data: {
+          user: { sub: 'host-123', name: 'Host', role: 'host' },
+        },
+        emit: jest.fn(),
+      };
+      toEmitMock = jest.fn();
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+      } as unknown as Server;
+    });
+
+    it('should persist the selected game in room metadata and broadcast room state', async () => {
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id-123',
+        code: 'ROOM12',
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      prismaMock.game.findUnique.mockResolvedValue({
+        id: 'game-id-123',
+        name: 'Test Game',
+        _count: { questions: 10 },
+      });
+      redisRoomRepositoryMock.getRoomMetadata
+        .mockResolvedValueOnce({
+          id: 'room-id-123',
+          status: 'LOBBY',
+          hostId: 'host-123',
+          selectedGameId: 'old-game-id',
+        })
+        .mockResolvedValue({
+          id: 'room-id-123',
+          status: 'LOBBY',
+          hostId: 'host-123',
+          selectedGameId: 'game-id-123',
+        });
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
+
+      await gateway.handleSelectGame(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        gameId: 'game-id-123',
+      });
+
+      expect(redisRoomRepositoryMock.updateRoomMetadata).toHaveBeenCalledWith(
+        'ROOM12',
+        { selectedGameId: 'game-id-123' },
+      );
+      expect(toEmitMock).toHaveBeenCalledWith(
+        'RoomStateUpdated',
+        expect.objectContaining({
+          status: 'LOBBY',
+          selectedGameId: 'game-id-123',
+        }),
+      );
+    });
+
+    it('should reject non-host callers', async () => {
+      mockSocket.data.user = { sub: 'guest-1', name: 'Guest', role: 'guest' };
+
+      await expect(
+        gateway.handleSelectGame(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          gameId: 'game-id-123',
+        }),
+      ).rejects.toThrow(WsException);
+
+      expectLastSelectErrorCode(mockSocket.emit, 'UNAUTHORIZED');
+    });
+
+    it('should reject changing game selection after gameplay starts', async () => {
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: 'room-id-123',
+        code: 'ROOM12',
+        status: 'LOBBY',
+        hostId: 'host-123',
+      });
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        status: 'IN_PROGRESS',
+        selectedGameId: 'old-game-id',
+      });
+
+      await expect(
+        gateway.handleSelectGame(mockSocket as unknown as Socket, {
+          roomId: 'room-id-123',
+          gameId: 'game-id-123',
+        }),
+      ).rejects.toThrow(WsException);
+
+      expectLastSelectErrorCode(mockSocket.emit, 'ROOM_NOT_IN_LOBBY');
     });
   });
 
@@ -4204,6 +4424,24 @@ describe('GameGateway', () => {
       it('should reject when both fields are missing', async () => {
         await expect(
           pipe.transform({}, meta(StartGameDto)),
+        ).rejects.toBeInstanceOf(WsException);
+      });
+    });
+
+    // ── SelectGameDto ────────────────────────────────────────────────────────
+
+    describe('SelectGameDto', () => {
+      it('should pass with valid roomId and gameId', async () => {
+        const result = await pipe.transform(
+          { roomId: 'room-1', gameId: 'game-1' },
+          meta(SelectGameDto),
+        );
+        expect(result).toBeInstanceOf(SelectGameDto);
+      });
+
+      it('should reject when gameId is missing', async () => {
+        await expect(
+          pipe.transform({ roomId: 'room-1' }, meta(SelectGameDto)),
         ).rejects.toBeInstanceOf(WsException);
       });
     });

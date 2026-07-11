@@ -18,6 +18,87 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-133: Load Selected Question Bank
+
+**Date/Time:** 2026-07-11 14:04 IST
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-133
+
+### What Changed
+
+**No code changes required.** FFH-133 was fully implemented as part of FFH-132 (Persist Selected Game) by Codex. The question loading functionality is inherent in the `handleStartGame` flow in `apps/api/src/game/game.gateway.ts`:
+
+1. **Uses selected game identifier** — `handleStartGame` reads `selectedGameId` from Redis room metadata (line 231), preferring the persisted selection over the incoming payload value.
+2. **Retrieves only matching questions** — Questions are fetched from Postgres filtered by `gameId: selectedGameId` (line 260), ensuring only questions for the chosen game mode are loaded.
+3. **Honors existing filtering rules** — The Prisma query uses the standard `where` + `orderBy` clauses, with questions sorted by `id: 'asc'`.
+4. **Loads questions into Redis** — `redisRoomRepository.loadQuestions()` stores all matching questions in a Redis hash keyed by 0-based index (line 265), with duplicate-prevention logic.
+5. **No questions from other game modes** — The `gameId` filter in the `findMany` query guarantees exclusive question loading per game mode.
+
+### Verified
+
+- `pnpm --filter api test -- game.gateway` ✅ (171/171 gateway tests)
+- `pnpm --filter api test` ✅ (404/404 API tests)
+- `pnpm --filter web test -- app/lobby` ✅ (18/18 lobby tests)
+- `pnpm --filter web test -- lib/store` ✅ (13/13 store tests)
+- `pnpm --filter api typecheck` ✅
+- `pnpm --filter web typecheck` ✅
+
+### What's Next
+
+Start `FFH-134: Validate Complete Game Mode Flow`.
+
+---
+
+## 🚀 FFH-132: Persist Selected Game
+
+**Date/Time:** 2026-07-11 13:46 IST
+**Agent:** Codex
+**Ticket:** FFH-132
+
+### What Changed
+
+**1. Persisted Lobby Game Selection** (`apps/api/src/game/game.gateway.ts`)
+
+- Added a host-only `SelectGame` socket event that validates room ownership and game existence.
+- Stores `selectedGameId` in Redis room metadata while the room is still in `LOBBY`.
+- Broadcasts updated room state after selection so connected clients receive the selected game.
+- Locks selection changes after gameplay starts.
+
+**2. StartGame Uses Saved Selection** (`apps/api/src/game/game.gateway.ts`)
+
+- `StartGame` now prefers the persisted `selectedGameId` over the incoming payload value.
+- Question loading, `GameStarted`, Redis `gameId`, and `totalRounds` all use the saved selected game.
+- Keeps the selected game in room metadata alongside active gameplay state for reconnect recovery.
+
+**3. Frontend Socket Sync** (`apps/web`)
+
+- Added `SelectGame` to socket types and `SocketDispatcher`.
+- Lobby emits `SelectGame` for the host when opened with a supported `gameId`.
+- Store room state now tracks `selectedGameId`, including `RoomStateUpdated` and `StateSync`.
+- Start Game uses the persisted selected game after reconnect.
+
+**4. Test Coverage**
+
+- Added API coverage for selecting/replacing games, rejecting non-hosts, rejecting post-start selection changes, and using persisted selection for question loading.
+- Added web coverage for dispatcher emission, lobby selection persistence, reconnect start behavior, and store/socket sync updates.
+
+### Verified
+
+- `pnpm --filter api test -- game.gateway.spec.ts` ✅
+- `pnpm --filter web test -- lib/socket/socket-dispatcher.spec.ts lib/store/use-game-store.spec.ts` ✅
+- `pnpm exec jest --runTestsByPath 'app/lobby/[roomCode]/page.spec.tsx'` ✅
+- `pnpm --filter api typecheck` ✅
+- `pnpm --filter web typecheck` ✅
+- `pnpm lint` ✅ (existing HeroUI mock warnings only)
+- `pnpm test` ✅ (API 404/404, web 191/191)
+- `pnpm build` ✅
+
+### What's Next
+
+Start `FFH-133: Load Selected Question Bank`.
+
+---
+
 ## 🚀 FFH-131: Build Game Selection Cards
 
 **Date/Time:** 2026-07-11 13:38 IST
