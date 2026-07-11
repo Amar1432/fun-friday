@@ -16,6 +16,51 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 6 (Game Modes & Answer Evaluation)
 
+---
+
+## 🚀 FFH-127: Seed Gibberish Questions
+
+**Date/Time:** 2026-07-11 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-127
+
+### What Changed
+
+**1. Gibberish Game & Questions** (`scripts/seed-games.ts`)
+
+- Added a new `Gibberish` game (`Game ID: 3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709`) with **40 questions** across three difficulty levels:
+  - **EASY (13 questions):** 9 movies + 4 TV shows — recognizable titles like Star Wars, Harry Potter, Fight Club, Jurassic Park, Friends, Breaking Bad.
+  - **MEDIUM (15 questions):** 9 movies + 6 TV shows — deeper cuts like Gone with the Wind, The Da Vinci Code, The Hunger Games, Grey's Anatomy, House of the Dragon.
+  - **HARD (12 questions):** 8 movies + 4 TV shows — tougher titles like Pulp Fiction, Schindler's List, Casablanca, The X-Files, Twin Peaks.
+- **Categories:** Split between 'Movies' and 'TV Shows' for balanced variety.
+- **Metadata:** Every question includes a hint; many include `acceptedAnswers` arrays for alternate spellings (e.g., `Shawshank Redemption`, `SpongeBob`, `Greys Anatomy`, `Da Vinci Code`).
+- **Gibberish format:** Each prompt is a playful mispronunciation of the real title that players must decode (e.g., `Shtar Vars` → Star Wars, `Pulp Fic-shun` → Pulp Fiction).
+
+**2. Frontend Game ID Mapping** (`apps/web/lib/game-modes.ts`)
+
+- Added `'3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709': 'gibberish-text'` to `GAME_ID_TO_STRATEGY`
+- When the Gibberish game starts, the frontend now correctly renders the `gibberish-text` strategy instead of falling back to `emoji-prompt`
+
+**3. Test Update** (`apps/web/components/game-mode-renderer.spec.tsx`)
+
+- Added test verifying `getStrategyForGameId` returns `gibberish-text` for the Gibberish game ID
+
+### Why
+
+To satisfy all acceptance criteria for FFH-127 — the database now contains a comprehensive Gibberish question bank with proper difficulty levels, categories, hints, and alternate answer support, and the frontend correctly maps the game ID to the `gibberish-text` rendering strategy.
+
+### Verified
+
+- `pnpm typecheck` — web ✅, api ✅
+- `pnpm test` — 179/179 web tests ✅ (up from 178, +1 new test), 388/388 API tests ✅
+- Pre-commit hooks (typecheck, lint, format) passed ✅
+
+### What's Next
+
+Start `FFH-128: Build Gibberish Gameplay UI`.
+
+---
+
 ## 🚀 FFH-126: Validate Bad Movie Description Answers
 
 **Date/Time:** 2026-07-11 (Local Time)

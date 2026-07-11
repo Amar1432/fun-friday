@@ -1,22 +1,23 @@
 # Active Task
 
-**Ticket:** FFH-127
-**Title:** Seed Gibberish Questions
+**Ticket:** FFH-128
+**Title:** Build Gibberish Gameplay UI
 
 ## Objective
 
-Populate the database with Gibberish questions.
+Render Gibberish prompts during gameplay.
 
-## Execution Requirements
+## Acceptance Criteria
 
-1. Each record contains:
-   - Gibberish phrase.
-   - Correct answer.
-   - Difficulty.
-   - Category.
-   - Metadata.
-2. Seeds execute without duplication.
+UI displays:
+
+- Gibberish text.
+- Round information.
+- Timer.
+- Answer input.
+
+Presentation matches application design system.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-128).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-129).
