@@ -92,18 +92,39 @@ describe('GameModeRenderer', () => {
 
   describe('DescriptionTextRenderer', () => {
     it('renders description with movie label', () => {
-      const { container } = render(
-        <DescriptionTextRenderer prompt="A movie about a sinking ship" />,
-      );
-      expect(container.textContent).toContain('What Movie Is This?');
-      expect(container.textContent).toContain('A movie about a sinking ship');
+      render(<DescriptionTextRenderer prompt="A movie about a sinking ship" />);
+      expect(screen.getByText('Name That Movie')).toBeInTheDocument();
+      expect(screen.getByText(/A movie about a sinking ship/)).toBeInTheDocument();
     });
 
     it('renders hint text', () => {
       const { container } = render(<DescriptionTextRenderer prompt="Test desc" />);
       expect(container.textContent).toContain(
-        'Name the movie from this hilariously bad description.',
+        'Can you name the movie from this hilariously bad description?',
       );
+    });
+
+    it('wraps description in italic and quotes', () => {
+      const { container } = render(<DescriptionTextRenderer prompt="A bad description" />);
+      const italicEl = container.querySelector('.italic');
+      expect(italicEl).toBeInTheDocument();
+      expect(italicEl?.textContent).toContain('A bad description');
+      // Assert the quoted style (left/right double quotes)
+      expect(italicEl?.textContent).toMatch(/[\u201C\u201D]/);
+    });
+
+    it('shows decorative film-reel dots', () => {
+      const { container } = render(<DescriptionTextRenderer prompt="Test" />);
+      // The film-reel decorative element uses amber-400 rounded-full divs
+      const filmReelDots = container.querySelectorAll('.rounded-full.bg-amber-400');
+      expect(filmReelDots.length).toBeGreaterThanOrEqual(5);
+    });
+
+    it('has decorative background glow', () => {
+      const { container } = render(<DescriptionTextRenderer prompt="Test" />);
+      const glow = container.querySelector('.animate-pulse');
+      expect(glow).toBeInTheDocument();
+      expect(glow?.className).toContain('from-amber-500');
     });
   });
 
@@ -165,7 +186,7 @@ describe('GameModeRenderer', () => {
           totalRounds={1}
         />,
       );
-      expect(container.textContent).toContain('What Movie Is This?');
+      expect(container.textContent).toContain('Name That Movie');
       expect(container.textContent).toContain('A bad movie description');
     });
 
@@ -248,6 +269,10 @@ describe('Game Modes Registry (lib/game-modes)', () => {
 describe('getStrategyForGameId', () => {
   it('returns emoji-prompt for known Emoji Guess game ID', () => {
     expect(getStrategyForGameId('1cd83808-737f-4c29-ab51-adff5c6a1ef5')).toBe('emoji-prompt');
+  });
+
+  it('returns description-text for known Bad Movie Description game ID', () => {
+    expect(getStrategyForGameId('2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708')).toBe('description-text');
   });
 
   it('falls back to emoji-prompt for unknown game ID', () => {

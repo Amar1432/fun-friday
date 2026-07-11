@@ -72,18 +72,34 @@ const EmojiPromptRenderer: React.FC<PromptRendererProps> = ({ prompt }) => (
 
 /**
  * Description Text Renderer
- * Displays a text description (e.g. bad movie description) in a readable format.
+ * Displays a text description (e.g. bad movie description) in a cinematic,
+ * visually polished format with a film-reel aesthetic.
  */
 const DescriptionTextRenderer: React.FC<PromptRendererProps> = ({ prompt }) => (
-  <div className="space-y-3">
-    <span className="text-xs text-amber-400 font-bold uppercase tracking-wider">
-      🎬 What Movie Is This?
-    </span>
-    <div className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-wide py-4 select-none break-words leading-relaxed text-slate-200 italic">
-      &ldquo;{prompt}&rdquo;
+  <div className="space-y-4">
+    <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full">
+      <span className="text-lg" role="img" aria-hidden="true">
+        🎬
+      </span>
+      <span className="text-xs text-amber-400 font-bold uppercase tracking-wider">
+        Name That Movie
+      </span>
     </div>
-    <p className="text-xs text-slate-500 mt-2">
-      Name the movie from this hilariously bad description.
+    <div className="relative">
+      {/* Decorative background glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-orange-500/10 rounded-3xl blur-xl animate-pulse" />
+      {/* Film-reel decorative top accent */}
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 opacity-30">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+        ))}
+      </div>
+      <div className="relative text-xl sm:text-2xl md:text-3xl font-semibold tracking-wide py-8 px-6 select-none break-words leading-relaxed text-amber-50 italic">
+        &ldquo;{prompt}&rdquo;
+      </div>
+    </div>
+    <p className="text-xs sm:text-sm text-amber-400/70 mt-2 font-medium">
+      Can you name the movie from this hilariously bad description?
     </p>
   </div>
 );

@@ -16,6 +16,91 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 6 (Game Modes & Answer Evaluation)
 
+## 🚀 FFH-125: Build Bad Movie Description UI
+
+**Date/Time:** 2026-07-11 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-125
+
+### What Changed
+
+**1. Bad Movie Description Game ID Mapped** (`apps/web/lib/game-modes.ts`)
+
+- Added `'2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708': 'description-text'` to `GAME_ID_TO_STRATEGY`
+- When the Bad Movie Description game starts, the frontend now correctly renders the `description-text` strategy instead of falling back to `emoji-prompt`
+- **Test:** Updated `getStrategyForGameId` test to assert Bad Movie Description resolves to `description-text`
+
+**2. Enhanced DescriptionTextRenderer** (`apps/web/components/game-mode-renderer.tsx`)
+
+- **Pill badge**: 🎬 icon + "Name That Movie" label with amber-500 theme (full border-pill badge)
+- **Decorative background glow**: Animated amber/yellow/orange gradient glow behind description text using `animate-pulse`
+- **Film-reel decorative dots**: 5 amber dots above the description text for a cinematic touch
+- **Typographic polish**: Italic amber-50 text with `&ldquo;&rdquo;` quote wrapping, increased padding (py-8), refined spacing
+- **Enhanced hint text**: "Can you name the movie from this hilariously bad description?"
+- **Tests:** 32/32 game-mode-renderer tests (updated DescriptionTextRenderer assertions, added new tests for italic quoting, film-reel dots, decorative glow)
+
+### Why
+
+To satisfy all acceptance criteria for FFH-125 — the Bad Movie Description mode now renders description text with a polished cinematic presentation, proper strategy mapping, round number, countdown timer, and answer input, maintaining consistency with the shared gameplay screen.
+
+### Verified
+
+- `pnpm typecheck` — web ✅, api ✅
+- `pnpm test` — 178/178 web tests ✅ (up from 170, +8 updated/enhanced tests)
+
+### What's Next
+
+Start `FFH-126: Validate Bad Movie Description Answers`.
+
+---
+
+## 🚀 UI/UX Fixes: Lobby, Player List, Host Name & Name Deconfliction
+
+**Date/Time:** 2026-07-11 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Context:** Bug fixes and UI polish across multiple tickets (FFH-111, FFH-106, general polish)
+
+### What Changed
+
+**1. Host-Only Start Game Button** (`apps/web/components/lobby-controls.tsx`)
+
+- Added `isHost` prop to `LobbyControls` — Start Game button now only renders when `isHost={true}`
+- Non-hosts see a "Waiting for host to start..." placeholder instead
+- Status message differentiates: "All players ready!" for host vs "All players ready — waiting for host" for others
+- **Tests:** 9/9 lobby-controls tests (new non-host view cases)
+
+**2. Duplicate Guest Name Resolution** (`apps/api/src/auth/auth.service.ts`)
+
+- Replaced `ConflictException` throw with `resolveDisplayName()` helper that appends `(1)`, `(2)` suffixes
+- Queries all existing players in the room via `findMany`, finds the next available suffix
+- Works alongside the existing gateway-level Redis resolution (double coverage, no double-suffix issue)
+- **Tests:** 13/13 auth service tests (3 new: (1) suffix, (2) suffix, unique name unchanged) — 384 API tests ✅
+
+**3. Player Card Redesign** (`apps/web/components/player-list.tsx`)
+
+- Unified actions group: ready status badge + divider + kick button at the far right
+- Three cases: (A) guest's own card → interactive ready toggle, (B) host viewing other player → ready badge + separator + kick, (C) everything else → compact dot-pill badge
+- Kick button uses trash icon, always visible with subtle default opacity, fully revealed on hover (`text-slate-600 → text-rose-400`)
+- Larger avatars (h-8 w-8), refined shadow and spacing
+- **Tests:** 3/3 player-list tests ✅
+
+**4. Host Name Consistency** (`apps/web/components/room-information-panel.tsx`, backend)
+
+- **Bug:** Guests saw their own name as "Host" — now fixed
+- Backend stores `hostName` in Redis metadata when host's WebSocket joins
+- `buildRoomStatePayload` includes `hostName` in `RoomStateUpdated` payloads
+- Frontend: `hostDisplayName` derived from `room.hostName ?? (user?.id === room.hostId ? user.name : null)`
+- Host sees their name immediately via local fallback; all users see the consistent Redis-synced name
+- **Tests:** 5/5 room-information-panel, 21/21 across store + sync tests ✅
+
+### Why
+
+To fix three UX bugs: guests seeing the Start Game button (and getting errors), guests getting rejected on duplicate names, guests seeing their own name as "Host", awkward kick button placement, and missing host name display.
+
+### What's Next
+
+Continue with `FFH-125: Build Bad Movie Description UI`.
+
 ---
 
 ## 🚀 FFH-124: Seed Bad Movie Description Questions
@@ -295,6 +380,8 @@ Start `FFH-116: Implement Minor Typo Tolerance`.
 
 ---
 
+## 🚀 FFH-114: Create Answer Evaluation Module
+
 **Date/Time:** 2026-07-10 (Local Time)
 **Agent:** Freebuff (Buffy)
 **Ticket:** FFH-114
@@ -344,6 +431,8 @@ Sprint 5 is complete. Next logical step: Sprint 6 planning — consider producti
 
 ---
 
+## 🚀 Earlier: Sprint 4 (Frictionless Entry & UI/UX Revamp)
+
 **Date/Time:** 2026-07-09 (Local Time)
 **Agent:** Freebuff (Buffy)
 **Ticket:** FFH-108
@@ -379,6 +468,8 @@ Sprint 4 is complete. Next logical step: Sprint 5 planning — consider producti
 
 ---
 
+## 🚀 Earlier: Sprint 4 (Frictionless Entry & UI/UX Revamp)
+
 **Date/Time:** 2026-07-09 (Local Time)
 **Agent:** Freebuff (Buffy)
 **Ticket:** FFH-107
@@ -412,6 +503,8 @@ To satisfy all acceptance criteria for FFH-107, overhauling the lobby into a com
 Start `FFH-108: Micro-Animations & Sound Engine`.
 
 ---
+
+## 🚀 Earlier: Sprint 4 (Frictionless Entry & UI/UX Revamp)
 
 **Date/Time:** 2026-07-09 (Local Time)
 **Agent:** Freebuff (Buffy)

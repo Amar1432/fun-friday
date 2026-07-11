@@ -1,21 +1,21 @@
 # Active Task
 
-**Ticket:** FFH-125
-**Title:** Build Bad Movie Description UI
+**Ticket:** FFH-126
+**Title:** Validate Bad Movie Description Answers
 
 ## Objective
 
-Render movie descriptions during gameplay.
+Integrate answer evaluation with Bad Movie Description.
 
 ## Execution Requirements
 
-1. UI displays:
-   - Description text.
-   - Round number.
-   - Countdown timer.
-   - Answer input.
-2. Layout remains consistent with shared gameplay screen.
+1. Evaluation supports:
+   - Exact match.
+   - Normalized match.
+   - Alternate movie titles.
+   - Minor spelling mistakes.
+2. Scoring integrates with existing engine.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-126).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-127).

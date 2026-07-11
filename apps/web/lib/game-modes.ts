@@ -91,6 +91,7 @@ export function getAllGameModes(): GameModeDefinition[] {
  */
 export const GAME_ID_TO_STRATEGY: Record<string, string> = {
   '1cd83808-737f-4c29-ab51-adff5c6a1ef5': 'emoji-prompt',
+  '2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708': 'description-text',
 };
 
 /**
