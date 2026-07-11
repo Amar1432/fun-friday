@@ -29,6 +29,7 @@ export interface ServerToClientEvents {
     players: Player[];
     status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED';
     hostId: string;
+    hostName?: string | null;
     playerCount: number;
   }) => void;
   GameStarted: (data: { gameId: string; totalRounds: number }) => void;

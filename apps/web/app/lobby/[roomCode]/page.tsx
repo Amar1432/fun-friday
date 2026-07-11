@@ -101,7 +101,7 @@ export default function LobbyPage() {
     // Cleanup room state when component unmounts
     return () => {
       isMounted.current = false;
-      setRoom({ code: null, id: null, status: null, hostId: null });
+      setRoom({ code: null, id: null, status: null, hostId: null, hostName: null });
     };
   }, [roomCode, roomIdParam, setRoom, room.id]);
 
@@ -887,6 +887,7 @@ export default function LobbyPage() {
               onStartGame={handleStartGame}
               isStarting={isStarting}
               error={startError}
+              isHost={isHost}
             />
 
             <button

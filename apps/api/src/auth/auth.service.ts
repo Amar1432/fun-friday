@@ -1,8 +1,8 @@
 import {
   Injectable,
+  Logger,
   UnauthorizedException,
   NotFoundException,
-  ConflictException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
@@ -16,6 +16,7 @@ import {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly providers: Record<string, SsoProvider>;
 
   constructor(
@@ -95,22 +96,13 @@ export class AuthService {
       );
     }
 
-    // Check duplicate name
-    const existingPlayer = await this.prisma.player.findFirst({
-      where: {
-        roomId: room.id,
-        displayName,
-      },
-    });
-
-    if (existingPlayer) {
-      throw new ConflictException('Display name already exists');
-    }
+    // Resolve duplicate display names by appending a numbered suffix
+    const resolvedName = await this.resolveDisplayName(room.id, displayName);
 
     const player = await this.prisma.player.create({
       data: {
         roomId: room.id,
-        displayName,
+        displayName: resolvedName,
       },
     });
 
@@ -168,6 +160,48 @@ export class AuthService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Resolves a display name to a unique variant by appending a numbered suffix
+   * if another player in the same room already has the same name.
+   *
+   * Examples:
+   *   - "Alex" (unique)       → "Alex"
+   *   - "Alex" (taken)        → "Alex (1)"
+   *   - "Alex" (1 & 2 taken) → "Alex (3)"
+   */
+  private async resolveDisplayName(
+    roomId: string,
+    displayName: string,
+  ): Promise<string> {
+    // Fetch all players in this room to check existing display names
+    const existingPlayers = await this.prisma.player.findMany({
+      where: { roomId },
+      select: { displayName: true },
+    });
+
+    const existingNames = new Set(
+      existingPlayers.map((p) => p.displayName.toLowerCase()),
+    );
+
+    // If the name is unique, use it as-is
+    if (!existingNames.has(displayName.toLowerCase())) {
+      return displayName;
+    }
+
+    // Otherwise, find the next available suffix
+    let suffix = 1;
+    let resolvedName = `${displayName} (${suffix})`;
+    while (existingNames.has(resolvedName.toLowerCase())) {
+      suffix++;
+      resolvedName = `${displayName} (${suffix})`;
+    }
+
+    this.logger.log(
+      `Duplicate displayName resolved: "${displayName}" → "${resolvedName}"`,
+    );
+    return resolvedName;
   }
 
   private parseExpiresIn(value: string): number {

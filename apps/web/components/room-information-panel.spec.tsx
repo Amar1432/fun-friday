@@ -9,6 +9,7 @@ let mockState = {
     code: null as string | null,
     status: null as 'LOBBY' | 'IN_PROGRESS' | 'FINISHED' | null,
     hostId: null as string | null,
+    hostName: null as string | null,
   },
   players: [] as any[],
   game: {
@@ -37,6 +38,7 @@ describe('RoomInformationPanel Component', () => {
         code: null,
         status: null,
         hostId: null,
+        hostName: null,
       },
       players: [],
       game: {
@@ -59,17 +61,13 @@ describe('RoomInformationPanel Component', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders room code, status (LOBBY), host info, and empty player list when room code is present', () => {
+  it('renders room code, status (LOBBY), host info via hostName, and empty player list when room code is present', () => {
     mockState.room = {
       id: 'room-123',
       code: 'ABCDEF',
       status: 'LOBBY',
       hostId: 'host-123',
-    };
-    mockState.user = {
-      id: 'host-123',
-      name: 'Host User',
-      email: 'host@example.com',
+      hostName: 'Host User',
     };
 
     render(<RoomInformationPanel />);
@@ -88,6 +86,7 @@ describe('RoomInformationPanel Component', () => {
       code: 'ABCDEF',
       status: 'IN_PROGRESS',
       hostId: 'host-123',
+      hostName: null,
     };
 
     render(<RoomInformationPanel />);
@@ -101,6 +100,7 @@ describe('RoomInformationPanel Component', () => {
       code: 'ABCDEF',
       status: 'FINISHED',
       hostId: 'host-123',
+      hostName: null,
     };
 
     render(<RoomInformationPanel />);
@@ -114,6 +114,7 @@ describe('RoomInformationPanel Component', () => {
       code: 'ABCDEF',
       status: 'IN_PROGRESS',
       hostId: 'host-123',
+      hostName: null,
     };
     mockState.game = {
       gameId: 'game-123',

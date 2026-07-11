@@ -80,7 +80,7 @@ export function useSocketSync() {
     'RoomStateUpdated',
     React.useCallback(
       (data) => {
-        setRoom({ status: data.status, hostId: data.hostId });
+        setRoom({ status: data.status, hostId: data.hostId, hostName: data.hostName ?? null });
         setPlayers(data.players);
       },
       [setRoom, setPlayers],

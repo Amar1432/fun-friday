@@ -8,6 +8,11 @@ export function RoomInformationPanel() {
   const game = useGameStore((state) => state.game);
   const user = useGameStore((state) => state.user);
 
+  // Derive host display name: prefer server-synced hostName, fall back to
+  // current user's name if they are the host (for immediate display before
+  // Redis syncs the host name to all clients).
+  const hostDisplayName = room.hostName ?? (user?.id === room.hostId ? user.name : null);
+
   const statusConfig = React.useMemo(() => {
     switch (room.status) {
       case 'LOBBY':
@@ -134,13 +139,13 @@ export function RoomInformationPanel() {
       </div>
 
       {/* Host Information — compact chip */}
-      {user && (
+      {hostDisplayName && (
         <div className="flex items-center gap-2 p-2 bg-slate-950/50 rounded-lg border border-slate-800">
           <div className="h-7 w-7 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center font-bold text-[10px] text-indigo-300 shrink-0">
-            {user.name.charAt(0).toUpperCase()}
+            {hostDisplayName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-white truncate">{user.name}</p>
+            <p className="text-xs font-medium text-white truncate">{hostDisplayName}</p>
             <p className="text-[10px] text-slate-500">Host</p>
           </div>
         </div>

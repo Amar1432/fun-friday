@@ -1448,6 +1448,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     players: Record<string, unknown>[];
     status: string;
     hostId: string | null;
+    hostName: string | null;
     playerCount: number;
   }> {
     const [playersMap, roomMeta] = await Promise.all([
@@ -1478,6 +1479,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       players,
       status: roomMeta?.status ?? fallbackStatus,
       hostId: roomMeta?.hostId ?? null,
+      hostName: roomMeta?.hostName ?? null,
       playerCount: players.length,
     };
   }
@@ -1601,6 +1603,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (user.role === 'host') {
         await client.join(roomCode);
         clientData.roomCode = roomCode;
+
+        // Store host display name in Redis metadata so guests can see who the host is
+        const hostName = user.name || 'Host';
+        await this.redisRoomRepository.updateRoomMetadata(roomCode, {
+          hostName,
+        });
+
         this.logger.log(`Host joined Socket.IO room: ${roomCode}`);
         const roomStatePayload = await this.buildRoomStatePayload(
           roomCode,

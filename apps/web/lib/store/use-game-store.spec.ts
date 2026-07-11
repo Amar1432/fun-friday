@@ -17,6 +17,7 @@ describe('useGameStore', () => {
       code: null,
       status: null,
       hostId: null,
+      hostName: null,
     });
     expect(state.game).toEqual({
       gameId: null,
@@ -52,6 +53,7 @@ describe('useGameStore', () => {
       code: 'ABCDEF',
       status: 'LOBBY',
       hostId: 'host-1',
+      hostName: null,
     });
 
     store.resetRoom();

@@ -7,6 +7,7 @@ export interface RoomState {
   code: string | null;
   status: 'LOBBY' | 'IN_PROGRESS' | 'FINISHED' | null;
   hostId: string | null;
+  hostName: string | null;
 }
 
 export interface GameState {
@@ -101,6 +102,7 @@ const initialRoomState: RoomState = {
   code: null,
   status: null,
   hostId: null,
+  hostName: null,
 };
 
 const initialGameState: GameState = {

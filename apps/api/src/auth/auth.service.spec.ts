@@ -7,7 +7,6 @@ import { MicrosoftSsoProvider } from './providers/microsoft-sso.provider';
 import {
   UnauthorizedException,
   NotFoundException,
-  ConflictException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
@@ -20,7 +19,7 @@ describe('AuthService', () => {
   const verifyMicrosoftIdTokenMock = jest.fn();
 
   const roomFindUniqueMock = jest.fn();
-  const playerFindFirstMock = jest.fn();
+  const playerFindManyMock = jest.fn();
   const playerCreateMock = jest.fn();
 
   beforeEach(async () => {
@@ -40,7 +39,7 @@ describe('AuthService', () => {
               findUnique: roomFindUniqueMock,
             },
             player: {
-              findFirst: playerFindFirstMock,
+              findMany: playerFindManyMock,
               create: playerCreateMock,
             },
           },
@@ -196,7 +195,7 @@ describe('AuthService', () => {
         code: 'AB12CD',
         status: 'LOBBY',
       });
-      playerFindFirstMock.mockResolvedValue(null);
+      playerFindManyMock.mockResolvedValue([]);
       playerCreateMock.mockResolvedValue({
         id: 'player-123',
         displayName: 'Alex',
@@ -208,8 +207,9 @@ describe('AuthService', () => {
       expect(roomFindUniqueMock).toHaveBeenCalledWith({
         where: { code: 'AB12CD' },
       });
-      expect(playerFindFirstMock).toHaveBeenCalledWith({
-        where: { roomId: 'room-123', displayName: 'Alex' },
+      expect(playerFindManyMock).toHaveBeenCalledWith({
+        where: { roomId: 'room-123' },
+        select: { displayName: true },
       });
       expect(playerCreateMock).toHaveBeenCalledWith({
         data: { roomId: 'room-123', displayName: 'Alex' },
@@ -248,20 +248,74 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw ConflictException if player display name already exists in room', async () => {
+    it('should resolve duplicate display name by appending (1) suffix', async () => {
       roomFindUniqueMock.mockResolvedValue({
         id: 'room-123',
         code: 'AB12CD',
         status: 'LOBBY',
       });
-      playerFindFirstMock.mockResolvedValue({
-        id: 'existing-player',
-        displayName: 'Alex',
+      playerFindManyMock.mockResolvedValue([{ displayName: 'Alex' }]);
+      playerCreateMock.mockResolvedValue({
+        id: 'player-123',
+        displayName: 'Alex (1)',
       });
+      signTokenMock.mockResolvedValue('guest-jwt-token');
 
-      await expect(service.registerGuest('AB12CD', 'Alex')).rejects.toThrow(
-        ConflictException,
-      );
+      const result = await service.registerGuest('AB12CD', 'Alex');
+
+      expect(playerFindManyMock).toHaveBeenCalledWith({
+        where: { roomId: 'room-123' },
+        select: { displayName: true },
+      });
+      expect(playerCreateMock).toHaveBeenCalledWith({
+        data: { roomId: 'room-123', displayName: 'Alex (1)' },
+      });
+      expect(result.player.displayName).toBe('Alex (1)');
+    });
+
+    it('should resolve to (2) when (1) is also taken', async () => {
+      roomFindUniqueMock.mockResolvedValue({
+        id: 'room-123',
+        code: 'AB12CD',
+        status: 'LOBBY',
+      });
+      playerFindManyMock.mockResolvedValue([
+        { displayName: 'Alex' },
+        { displayName: 'Alex (1)' },
+      ]);
+      playerCreateMock.mockResolvedValue({
+        id: 'player-456',
+        displayName: 'Alex (2)',
+      });
+      signTokenMock.mockResolvedValue('guest-jwt-token');
+
+      const result = await service.registerGuest('AB12CD', 'Alex');
+
+      expect(playerCreateMock).toHaveBeenCalledWith({
+        data: { roomId: 'room-123', displayName: 'Alex (2)' },
+      });
+      expect(result.player.displayName).toBe('Alex (2)');
+    });
+
+    it('should keep unique names unchanged', async () => {
+      roomFindUniqueMock.mockResolvedValue({
+        id: 'room-123',
+        code: 'AB12CD',
+        status: 'LOBBY',
+      });
+      playerFindManyMock.mockResolvedValue([]);
+      playerCreateMock.mockResolvedValue({
+        id: 'player-789',
+        displayName: 'Bob',
+      });
+      signTokenMock.mockResolvedValue('guest-jwt-token');
+
+      const result = await service.registerGuest('AB12CD', 'Bob');
+
+      expect(playerCreateMock).toHaveBeenCalledWith({
+        data: { roomId: 'room-123', displayName: 'Bob' },
+      });
+      expect(result.player.displayName).toBe('Bob');
     });
   });
 });

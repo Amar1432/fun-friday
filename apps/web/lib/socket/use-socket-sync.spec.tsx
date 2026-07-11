@@ -26,7 +26,7 @@ jest.mock('@/lib/store/use-game-store', () => ({
   useGameStore: (selector: any) =>
     selector({
       ...mockActions,
-      room: { id: 'r-123', code: 'ABCDEF', status: 'IN_PROGRESS', hostId: 'h-123' },
+      room: { id: 'r-123', code: 'ABCDEF', status: 'IN_PROGRESS', hostId: 'h-123', hostName: null },
     }),
 }));
 
@@ -111,8 +111,12 @@ describe('useSocketSync Hook', () => {
     // Trigger RoomStateUpdated
     const roomStateCb = findCallback('RoomStateUpdated');
     expect(roomStateCb).toBeDefined();
-    roomStateCb({ status: 'LOBBY', hostId: 'host-1', players: [mockPlayer] });
-    expect(mockActions.setRoom).toHaveBeenCalledWith({ status: 'LOBBY', hostId: 'host-1' });
+    roomStateCb({ status: 'LOBBY', hostId: 'host-1', hostName: null, players: [mockPlayer] });
+    expect(mockActions.setRoom).toHaveBeenCalledWith({
+      status: 'LOBBY',
+      hostId: 'host-1',
+      hostName: null,
+    });
     expect(mockActions.setPlayers).toHaveBeenCalledWith([mockPlayer]);
 
     // Trigger GameStarted
