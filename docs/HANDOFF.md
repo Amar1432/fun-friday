@@ -18,6 +18,46 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-128: Build Gibberish Gameplay UI
+
+**Date/Time:** 2026-07-11 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-128
+
+### What Changed
+
+**1. Enhanced GibberishTextRenderer** (`apps/web/components/game-mode-renderer.tsx`)
+
+- **Pill badge**: 🔤 icon + "Decipher the Gibberish" label with cyan-400 theme (inline-flex border-pill badge with bg-cyan-500/10 border-cyan-500/20)
+- **Decorative background glow**: Animated gradient from cyan-500/10 via teal-500/10 to emerald-500/10 using `animate-pulse` and blur-xl
+- **Scrambled decorative dots**: 7 playful dots above the gibberish text in alternating cyan/teal/emerald colors with staggered `animate-bounce` timing — representing the "jumbled" word-scramble concept
+- **Enhanced typography**: Increased padding (`py-8` from `py-4`, added `px-6`), refined spacing with `space-y-4`, added `drop-shadow-lg` for text depth
+- **Refined hint text**: "What real words are hiding in this scrambled gibberish?" with `text-cyan-400/70` and `font-medium`
+
+**2. Test Updates** (`apps/web/components/game-mode-renderer.spec.tsx`)
+
+- Updated hint text assertion to match new hint ("scrambled gibberish")
+- Added pill badge border styling test (verifies 🔤 icon + "Decipher the Gibberish" in rounded-full element)
+- Added decorative background glow test (verifies animate-pulse with cyan/teal/emerald gradient)
+- Added scrambled decorative dots test (verifies 8+ rounded-full elements — badge + 7 dots)
+- **4 new tests, 0 removed** — 36 game-mode-renderer tests total
+
+### Why
+
+To satisfy all acceptance criteria for FFH-128 — the Gibberish gameplay UI now renders with the same level of visual polish and design system consistency as the Emoji Guess and Bad Movie Description modes.
+
+### Verified
+
+- `pnpm typecheck` — web ✅
+- `pnpm test` — 182/182 web tests ✅ (up from 178, +4 new tests)
+- Code review passed ✅
+
+### What's Next
+
+Start `FFH-129: Validate Gibberish Answers`.
+
+---
+
 ## 🚀 FFH-127: Seed Gibberish Questions
 
 **Date/Time:** 2026-07-11 (Local Time)

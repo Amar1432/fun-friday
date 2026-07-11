@@ -1,23 +1,23 @@
 # Active Task
 
-**Ticket:** FFH-128
-**Title:** Build Gibberish Gameplay UI
+**Ticket:** FFH-129
+**Title:** Validate Gibberish Answers
 
 ## Objective
 
-Render Gibberish prompts during gameplay.
+Integrate fuzzy matching with Gibberish answer evaluation.
 
 ## Acceptance Criteria
 
-UI displays:
+Evaluation supports:
 
-- Gibberish text.
-- Round information.
-- Timer.
-- Answer input.
+- Exact matches.
+- Space normalization.
+- Hyphen normalization.
+- Typo tolerance.
 
-Presentation matches application design system.
+Incorrect answers are rejected.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-129).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-130).

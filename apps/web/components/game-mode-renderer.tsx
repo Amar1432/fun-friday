@@ -106,17 +106,41 @@ const DescriptionTextRenderer: React.FC<PromptRendererProps> = ({ prompt }) => (
 
 /**
  * Gibberish Text Renderer
- * Displays a gibberish phrase in a distorted, playful format.
+ * Displays a gibberish phrase in a distorted, playful format with a colorful,
+ * word-scramble aesthetic — matching the visual polish of other renderers.
  */
 const GibberishTextRenderer: React.FC<PromptRendererProps> = ({ prompt }) => (
-  <div className="space-y-3">
-    <span className="text-xs text-cyan-400 font-bold uppercase tracking-wider">
-      🔤 Decipher the Gibberish
-    </span>
-    <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-wider py-4 select-none drop-shadow-lg break-words text-cyan-200">
-      {prompt}
+  <div className="space-y-4">
+    <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full">
+      <span className="text-lg" role="img" aria-hidden="true">
+        🔤
+      </span>
+      <span className="text-xs text-cyan-400 font-bold uppercase tracking-wider">
+        Decipher the Gibberish
+      </span>
     </div>
-    <p className="text-xs text-slate-500 mt-2">What real words are hiding in this gibberish?</p>
+    <div className="relative">
+      {/* Decorative background glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-emerald-500/10 rounded-3xl blur-xl animate-pulse" />
+      {/* Scrambled decorative dots — playful "jumble" accent */}
+      <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-25">
+        {[...Array(7)].map((_, i) => (
+          <div
+            key={i}
+            className={`w-1.5 h-1.5 rounded-full ${
+              i % 3 === 0 ? 'bg-cyan-400' : i % 3 === 1 ? 'bg-teal-400' : 'bg-emerald-400'
+            } ${i % 2 === 0 ? 'animate-bounce' : ''}`}
+            style={{ animationDelay: `${i * 0.15}s` }}
+          />
+        ))}
+      </div>
+      <div className="relative text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-wider py-8 px-6 select-none drop-shadow-lg break-words text-cyan-200">
+        {prompt}
+      </div>
+    </div>
+    <p className="text-xs sm:text-sm text-cyan-400/70 mt-2 font-medium">
+      What real words are hiding in this scrambled gibberish?
+    </p>
   </div>
 );
 

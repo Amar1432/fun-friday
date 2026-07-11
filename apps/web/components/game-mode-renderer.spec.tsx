@@ -137,7 +137,34 @@ describe('GameModeRenderer', () => {
 
     it('renders hint text', () => {
       const { container } = render(<GibberishTextRenderer prompt="Test gibberish" />);
-      expect(container.textContent).toContain('What real words are hiding in this gibberish?');
+      expect(container.textContent).toContain(
+        'What real words are hiding in this scrambled gibberish?',
+      );
+    });
+
+    it('has pill badge with border styling', () => {
+      const { container } = render(<GibberishTextRenderer prompt="Test" />);
+      const pillBadge = container.querySelector('.rounded-full');
+      expect(pillBadge).toBeInTheDocument();
+      expect(pillBadge?.textContent).toContain('🔤');
+      expect(pillBadge?.textContent).toContain('Decipher the Gibberish');
+    });
+
+    it('has decorative background glow', () => {
+      const { container } = render(<GibberishTextRenderer prompt="Test" />);
+      const glow = container.querySelector('.animate-pulse');
+      expect(glow).toBeInTheDocument();
+      expect(glow?.className).toContain('from-cyan-500');
+      expect(glow?.className).toContain('via-teal-500');
+      expect(glow?.className).toContain('to-emerald-500');
+    });
+
+    it('shows scrambled decorative dots', () => {
+      const { container } = render(<GibberishTextRenderer prompt="Test" />);
+      // The scrambled decorative dots use rounded-full divs in multiple colors
+      const dots = container.querySelectorAll('.rounded-full');
+      // At least 7 decorative dots + the pill badge
+      expect(dots.length).toBeGreaterThanOrEqual(8);
     });
   });
 
