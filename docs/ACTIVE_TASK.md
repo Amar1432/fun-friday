@@ -1,35 +1,27 @@
 # Active Task
 
-**Ticket:** FFH-134
-**Title:** Validate Complete Game Mode Flow
+**Ticket:** FFH-135
+**Title:** Perform Regression Validation
 
 ## Objective
 
-Verify the complete experience for all supported game modes.
+Ensure new game modes do not impact existing multiplayer functionality.
 
 ## Acceptance Criteria
 
-Validated flow:
+Regression testing confirms:
 
-- Host selects game.
-- Room created.
-- Guests join.
-- Questions load.
-- Gameplay starts.
-- Answers submitted.
-- Answers evaluated.
-- Scores updated.
-- Leaderboard displayed.
-- Game completes.
+- Authentication remains functional.
+- Room lifecycle remains functional.
+- Socket events remain unchanged.
+- Reconnection works.
+- Leaderboard updates correctly.
+- Existing scoring pipeline functions correctly.
+- Redis state remains consistent.
+- PostgreSQL persistence remains correct.
 
-Flow succeeds for:
-
-- Emoji Guess.
-- Bad Movie Description.
-- Gibberish.
-
-No blocking issues remain.
+All existing MVP functionality continues to operate successfully.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-135).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step.

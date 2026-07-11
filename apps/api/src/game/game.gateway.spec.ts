@@ -4616,4 +4616,243 @@ describe('GameGateway', () => {
       });
     });
   });
+
+  describe('Complete Game Mode Flow', () => {
+    let toEmitMock: jest.Mock;
+    let hostSocket: any;
+
+    const mockRoom = {
+      id: 'room-id-123',
+      code: 'ROOM12',
+      status: 'LOBBY',
+      hostId: 'host-123',
+    };
+
+    beforeEach(() => {
+      toEmitMock = jest.fn();
+      hostSocket = {
+        id: 'socket-host-123',
+        data: {
+          user: { sub: 'host-123', name: 'Host', role: 'host' },
+        },
+        emit: jest.fn(),
+      };
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: toEmitMock }),
+        in: jest.fn().mockReturnValue({
+          fetchSockets: jest.fn().mockResolvedValue([
+            {
+              id: 'socket-host-123',
+              data: { user: { sub: 'host-123', role: 'host' } },
+            },
+          ]),
+        }),
+      } as unknown as Server;
+      jest.spyOn(gateway, 'startTimer').mockImplementation(() => {});
+      jest
+        .spyOn(gateway, 'completeRound')
+        .mockImplementation(() => Promise.resolve());
+    });
+
+    // ── SelectGame → StartGame → SubmitAnswer → completeRound ─────────────
+
+    it('should run full game mode lifecycle: select, start, submit answer, and complete', async () => {
+      const GAME_ID = '1cd83808-737f-4c29-ab51-adff5c6a1ef5'; // Emoji Guess
+      const mockQuestions = [
+        {
+          id: 'q-1',
+          prompt: '🦁👑',
+          answer: 'The Lion King',
+          difficulty: 'EASY',
+          category: 'Movies',
+          metadata: { hint: "Simba's journey", acceptedAnswers: ['Lion King'] },
+        },
+      ];
+
+      // Step 1 — Host selects game
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      prismaMock.game.findUnique.mockResolvedValue({
+        id: GAME_ID,
+        name: 'Emoji Guess',
+        _count: { questions: 1 },
+      });
+      redisRoomRepositoryMock.getRoomMetadata
+        .mockResolvedValueOnce({
+          id: 'room-id-123',
+          status: 'LOBBY',
+          hostId: 'host-123',
+        })
+        .mockResolvedValueOnce({
+          id: 'room-id-123',
+          status: 'LOBBY',
+          hostId: 'host-123',
+          selectedGameId: GAME_ID,
+        });
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
+
+      await gateway.handleSelectGame(hostSocket, {
+        roomId: 'room-id-123',
+        gameId: GAME_ID,
+      });
+
+      // Verify selection persisted
+      expect(redisRoomRepositoryMock.updateRoomMetadata).toHaveBeenCalledWith(
+        'ROOM12',
+        { selectedGameId: GAME_ID },
+      );
+      expect(toEmitMock).toHaveBeenCalledWith(
+        'RoomStateUpdated',
+        expect.objectContaining({ selectedGameId: GAME_ID }),
+      );
+
+      // Step 2 — StartGame (reads persisted selectedGameId, not payload)
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      prismaMock.room.update.mockResolvedValue({
+        ...mockRoom,
+        status: 'IN_PROGRESS',
+      });
+      prismaMock.game.findUnique.mockResolvedValue({
+        id: GAME_ID,
+        name: 'Emoji Guess',
+        _count: { questions: 1 },
+      });
+      prismaMock.question.findMany.mockResolvedValue(mockQuestions);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': JSON.stringify({
+          id: 'player-1',
+          displayName: 'P1',
+          score: 0,
+          isReady: true,
+        }),
+      });
+      redisRoomRepositoryMock.loadQuestions.mockResolvedValue(true);
+      // getRoomMetadata called from handleStartGame (3rd call) — returns LOBBY
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        status: 'LOBBY',
+        selectedGameId: GAME_ID,
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue(mockQuestions[0]);
+      prismaMock.round.create.mockResolvedValue({
+        id: 'round-id-abc',
+        roomId: 'room-id-123',
+        questionId: 'q-1',
+        startedAt: new Date(),
+        endedAt: null,
+      });
+
+      await gateway.handleStartGame(hostSocket, {
+        roomId: 'room-id-123',
+        gameId: 'different-game-id', // Different from selected
+      });
+
+      // Verify questions fetched FOR the selected game, not the payload
+      expect(prismaMock.question.findMany).toHaveBeenCalledWith({
+        where: { gameId: GAME_ID },
+        orderBy: { id: 'asc' },
+      });
+
+      // Verify questions loaded into Redis
+      expect(redisRoomRepositoryMock.loadQuestions).toHaveBeenCalledWith(
+        'ROOM12',
+        mockQuestions,
+      );
+
+      // Verify GameStarted emitted with the right game ID
+      expect(toEmitMock).toHaveBeenCalledWith('GameStarted', {
+        gameId: GAME_ID,
+        totalRounds: 1,
+      });
+
+      // Verify first question started
+      expect(toEmitMock).toHaveBeenCalledWith('QuestionStarted', {
+        roundNumber: 1,
+        questionId: 'q-1',
+        prompt: '🦁👑',
+        metadata: { hint: "Simba's journey", acceptedAnswers: ['Lion King'] },
+        timeLimitSeconds: 20,
+        difficulty: 'EASY',
+      });
+
+      // No errors emitted
+      expect(hostSocket.emit).not.toHaveBeenCalledWith(
+        'error',
+        expect.any(Object),
+      );
+    });
+
+    it('should load game-specific questions by gameId excluding questions from other game modes', async () => {
+      const EMOJI_GAME_ID = '1cd83808-737f-4c29-ab51-adff5c6a1ef5';
+      const BAD_MOVIE_GAME_ID = '2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708';
+
+      const emojiQuestions = [
+        {
+          id: 'q-emoji-1',
+          prompt: '🦁👑',
+          answer: 'The Lion King',
+          difficulty: 'EASY',
+          category: 'Movies',
+          metadata: null,
+        },
+      ];
+
+      // Setup: room in LOBBY, Emoji Guess selected
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      prismaMock.room.update.mockResolvedValue({
+        ...mockRoom,
+        status: 'IN_PROGRESS',
+      });
+      prismaMock.game.findUnique.mockResolvedValue({
+        id: EMOJI_GAME_ID,
+        name: 'Emoji Guess',
+        _count: { questions: 1 },
+      });
+      prismaMock.question.findMany.mockResolvedValue(emojiQuestions);
+
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({
+        'player-1': JSON.stringify({
+          id: 'player-1',
+          displayName: 'P1',
+          score: 0,
+          isReady: true,
+        }),
+      });
+      redisRoomRepositoryMock.loadQuestions.mockResolvedValue(true);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        id: 'room-id-123',
+        status: 'LOBBY',
+        selectedGameId: EMOJI_GAME_ID,
+      });
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue(emojiQuestions[0]);
+      prismaMock.round.create.mockResolvedValue({
+        id: 'round-id-abc',
+        roomId: 'room-id-123',
+        questionId: 'q-emoji-1',
+        startedAt: new Date(),
+        endedAt: null,
+      });
+
+      await gateway.handleStartGame(hostSocket, {
+        roomId: 'room-id-123',
+        gameId: EMOJI_GAME_ID,
+      });
+
+      // Verify questions only for Emoji Guess, not Bad Movie Description
+      expect(prismaMock.question.findMany).toHaveBeenCalledWith({
+        where: { gameId: EMOJI_GAME_ID },
+        orderBy: { id: 'asc' },
+      });
+
+      // Bad Movie Description questions should NOT be included
+      expect(prismaMock.question.findMany).not.toHaveBeenCalledWith(
+        expect.objectContaining({ where: { gameId: BAD_MOVIE_GAME_ID } }),
+      );
+
+      // Only Emoji Guess questions loaded into Redis
+      expect(redisRoomRepositoryMock.loadQuestions).toHaveBeenCalledWith(
+        'ROOM12',
+        expect.arrayContaining([expect.objectContaining({ id: 'q-emoji-1' })]),
+      );
+    });
+  });
 });

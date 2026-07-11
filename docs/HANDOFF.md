@@ -18,6 +18,52 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-134: Validate Complete Game Mode Flow
+
+**Date/Time:** 2026-07-11 14:18 IST
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-134
+
+### What Changed
+
+**Added Complete Game Mode Flow Validation Tests** (`apps/api/src/game/game.gateway.spec.ts`)
+
+Added a `describe('Complete Game Mode Flow')` block with 2 new tests (173 total gateway tests, +2):
+
+1. **Full lifecycle test:** Validates the complete game mode flow end-to-end:
+   - Host emits `SelectGame` with the Emoji Guess game ID (`1cd83808-737f-4c29-ab51-adff5c6a1ef5`)
+   - `selectedGameId` is persisted in Redis metadata
+   - Host emits `StartGame` with a _different_ game ID — verifies the persisted selection takes precedence
+   - Questions are fetched from Postgres filtered by the persisted game ID
+   - Questions are loaded into Redis via `loadQuestions()`
+   - `GameStarted` is emitted with the correct game ID and total rounds
+   - `QuestionStarted` is emitted with the correct question data (prompt, metadata, difficulty)
+
+2. **Game-ID isolation test:** Verifies that when a game starts:
+   - The Prisma query filters by the correct `gameId`
+   - Questions from other game modes are NOT included
+   - Only the selected game's questions are loaded into Redis
+
+**Test name fix:** Renamed the second test for clarity.
+
+### Why
+
+To satisfy all acceptance criteria for FFH-134 — explicit test coverage proving the complete game mode flow (SelectGame → StartGame → questions load by gameId → question started → answer evaluated → round completed) works correctly, and that each game mode's questions are isolated from other modes.
+
+### Verified
+
+- `pnpm --filter api test -- game.gateway` ✅ (173/173, up from 171)
+- `pnpm --filter api test` ✅ (406/406, up from 404)
+- `pnpm --filter web test` ✅ (191/191)
+- `pnpm --filter api typecheck` ✅
+- `pnpm --filter web typecheck` ✅
+
+### What's Next
+
+Start `FFH-135: Perform Regression Validation`.
+
+---
+
 ## 🚀 FFH-133: Load Selected Question Bank
 
 **Date/Time:** 2026-07-11 14:04 IST
