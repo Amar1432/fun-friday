@@ -18,6 +18,50 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-131: Build Game Selection Cards
+
+**Date/Time:** 2026-07-11 13:38 IST
+**Agent:** Codex
+**Ticket:** FFH-131
+
+### What Changed
+
+**1. Reusable Game Selection Components** (`apps/web/components/game-selection-card.tsx`)
+
+- Added `GameSelectionCard` for a single selectable game mode.
+- Added `GameSelectionGrid` for the accessible radio-group layout.
+- Each card displays game icon, name, description, question count, and selected state.
+- Selected cards use design-system tokens for border, background, shadow, and mode-specific accents.
+
+**2. Create Room Integration** (`apps/web/app/room/create/page.tsx`)
+
+- Replaced the inline game-card markup with `GameSelectionGrid`.
+- Kept page-level state responsible only for the selected `gameId`.
+- Preserved the FFH-130 behavior where selected game IDs are carried into the lobby URL.
+
+**3. Test Coverage** (`apps/web/components/game-selection-card.spec.tsx`)
+
+- Added component tests for content rendering, accessible selected state, visual selected classes, and `onSelect` behavior.
+- Added grid tests for radiogroup rendering and selected-card propagation.
+
+### Verified
+
+- `pnpm --filter web test -- components/game-selection-card.spec.tsx` ✅
+- `pnpm --filter web test -- app/room/create/page.spec.tsx` ✅
+- `pnpm --filter web typecheck` ✅
+- `pnpm --filter web lint` ✅ (existing HeroUI mock warnings only)
+- `pnpm --filter web test` ✅ (188/188)
+- `pnpm --filter web build` ✅ (rerun with network approval after Next.js needed Google Fonts)
+- `pnpm build` ✅
+- `pnpm lint` ✅ (existing HeroUI mock warnings only)
+- `pnpm test` ✅ (API 398/398, web 188/188)
+
+### What's Next
+
+Start `FFH-132: Persist Selected Game`.
+
+---
+
 ## 🚀 FFH-130: Build Game Selection Screen
 
 **Date/Time:** 2026-07-11 13:32 IST

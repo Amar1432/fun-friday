@@ -1,25 +1,23 @@
 # Active Task
 
-**Ticket:** FFH-131
-**Title:** Build Game Selection Cards
+**Ticket:** FFH-132
+**Title:** Persist Selected Game
 
 ## Objective
 
-Create reusable game selection components.
+Store the host's selected game for the room.
 
 ## Acceptance Criteria
 
-Each card displays:
+Selection is:
 
-- Game name.
-- Description.
-- Icon.
-- Selection state.
+- Saved before gameplay.
+- Included in room state.
+- Available after reconnect.
+- Used when loading question sets.
 
-Selected game is visually distinguishable.
-
-Tailwind CSS styling is applied consistently.
+Changing the game replaces any previous selection.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-132).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-133).

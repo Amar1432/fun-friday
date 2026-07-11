@@ -6,7 +6,7 @@ import { Card, Button } from '@heroui/react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { createRoom, ApiError } from '@/lib/api';
 import { config } from '@/lib/config';
-import { getGameModeVisualTokens } from '@/lib/design-system';
+import { GameSelectionGrid } from '@/components/game-selection-card';
 import { DEFAULT_GAME_ID, getAllGameModes, getGameModeByGameId } from '@/lib/game-modes';
 
 const supportedGameModes = getAllGameModes();
@@ -202,67 +202,11 @@ export default function CreateRoomPage() {
                 </div>
               )}
 
-              <div
-                className="grid grid-cols-1 gap-3 md:grid-cols-3"
-                role="radiogroup"
-                aria-label="Game mode"
-              >
-                {supportedGameModes.map((mode) => {
-                  const visualTokens = getGameModeVisualTokens(mode.identifier);
-                  const isSelected = mode.gameId === selectedGameId;
-
-                  return (
-                    <button
-                      key={mode.identifier}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      onClick={() => setSelectedGameId(mode.gameId)}
-                      className={[
-                        'group flex h-full min-h-[180px] flex-col rounded-card border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-app-background',
-                        visualTokens.focusRingClassName,
-                        isSelected
-                          ? `${visualTokens.borderClassName} bg-surface-raised shadow-panel`
-                          : 'border-border bg-surface-muted hover:border-border-strong hover:bg-surface-raised',
-                      ].join(' ')}
-                    >
-                      <span
-                        className={[
-                          'inline-flex h-11 w-11 items-center justify-center rounded-control border text-2xl',
-                          visualTokens.softSurfaceClassName,
-                          visualTokens.borderClassName,
-                        ].join(' ')}
-                        aria-hidden="true"
-                      >
-                        {mode.iconRef}
-                      </span>
-                      <span className="mt-4 flex items-start justify-between gap-3">
-                        <span>
-                          <span className="block text-base font-bold text-app-foreground">
-                            {mode.displayName}
-                          </span>
-                          <span className="mt-1 block text-sm leading-5 text-muted">
-                            {mode.description}
-                          </span>
-                        </span>
-                        <span
-                          className={[
-                            'mt-0.5 h-3 w-3 shrink-0 rounded-full border',
-                            isSelected
-                              ? `${visualTokens.softSurfaceClassName} ${visualTokens.borderClassName}`
-                              : 'border-border-strong bg-surface',
-                          ].join(' ')}
-                        />
-                      </span>
-                      <span className="mt-auto pt-4 text-xs font-semibold uppercase tracking-wider text-muted">
-                        {mode.questionCount
-                          ? `${mode.questionCount} questions`
-                          : 'Question count pending'}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              <GameSelectionGrid
+                modes={supportedGameModes}
+                selectedGameId={selectedGameId}
+                onSelectGame={setSelectedGameId}
+              />
 
               <Button
                 fullWidth
