@@ -1,20 +1,22 @@
 # Active Task
 
-**Ticket:** FFH-123
-**Title:** Validate Emoji Guess Answers
+**Ticket:** FFH-124
+**Title:** Seed Bad Movie Description Questions
 
 ## Objective
 
-Integrate answer evaluation with Emoji Guess to ensure proper validation of player responses.
+Populate the database with Bad Movie Description questions for gameplay.
 
 ## Execution Requirements
 
-1. **Evaluation supports:**
-   - Normalized answers.
-   - Alternate spellings.
-   - Minor typos.
-2. **Results integrate with existing scoring flow.**
+1. Each question contains:
+   - Description.
+   - Correct answer.
+   - Difficulty.
+   - Category.
+   - Metadata.
+2. Seeds execute successfully.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-124).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-125).

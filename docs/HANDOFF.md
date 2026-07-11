@@ -18,6 +18,35 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-123: Validate Emoji Guess Answers
+
+**Date/Time:** 2026-07-11 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-123
+
+### What Changed
+
+- **Seed script** (`scripts/seed-games.ts`): Added `acceptedAnswers` arrays to question metadata for 16 Emoji Guess questions that benefit from alternate spellings.
+  - Common abbreviations: `Teenage Mutant Ninja Turtles` → also accepts `TMNT`/`Ninja Turtles`, `Game of Thrones` → also accepts `GoT`, `House M.D.` → also accepts `House`/`House MD`.
+  - "The"-less variants: `The Lion King` → also accepts `Lion King`, `The Dark Knight` → also accepts `Dark Knight`, etc.
+  - Punctuation variants: `2001: A Space Odyssey` → also accepts `2001 A Space Odyssey`, `L.A. Confidential` → also accepts `LA Confidential`.
+- **Game gateway** (`apps/api/src/game/game.gateway.ts`): Updated `handleSubmitAnswer` to:
+  - Extract `acceptedAnswers` from `question.metadata` and build a combined targets array.
+  - Pass the targets with a typo tolerance threshold of **1** (single missing/extra/incorrect/transposed char).
+  - Gracefully handles questions with and without alternate spellings (backward compatible).
+- **Gateway spec** (`apps/api/src/game/game.gateway.spec.ts`): Updated the answer evaluation test to assert the new 3-argument call signature (`evaluate(answer, targets, 1)`).
+- **Verified:** `pnpm test` — 156/156 gateway tests ✅, `pnpm tsc --noEmit` ✅
+
+### Why
+
+To satisfy all acceptance criteria for FFH-123 — Emoji Guess answer validation now supports normalized answers (via existing normalization), alternate spellings (via `acceptedAnswers` metadata), minor typos (via threshold=1 Levenshtein distance), and results integrate with the existing scoring flow.
+
+### What's Next
+
+Start `FFH-124: Seed Bad Movie Description Questions`.
+
+---
+
 ## 🚀 FFH-122: Build Emoji Guess Gameplay UI
 
 **Date/Time:** 2026-07-10 (Local Time)
