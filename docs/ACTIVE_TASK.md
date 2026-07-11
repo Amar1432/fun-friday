@@ -16,6 +16,7 @@ Screen displays:
 - Icons.
 - Question count (if available).
 - Only supported games appear.
+- Game cards use the shared design-system tokens from `docs/DESIGN_SYSTEM.md`.
 
 ## Completion
 

@@ -18,6 +18,43 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🎨 Design System Seed for FFH-130
+
+**Date/Time:** 2026-07-11 13:23 IST
+**Agent:** Codex
+**Context:** User-approved design system foundation before `FFH-130`
+
+### What Changed
+
+**1. Tailwind v4 Design Tokens** (`apps/web/app/globals.css`)
+
+- Added semantic app tokens for surfaces, borders, text, action colors, feedback states, focus rings, radii, and panel shadow.
+- Added game-mode accent tokens for Emoji Guess, Bad Movie Description, and Gibberish.
+- Kept the implementation CSS-first and compatible with the existing HeroUI import.
+
+**2. Typed Game Mode Visual Registry** (`apps/web/lib/design-system.ts`)
+
+- Added `getGameModeVisualTokens()` so game selection cards can use consistent accent, soft surface, border, and focus classes by game identifier.
+- Included a safe default token set for future/unknown modes.
+
+**3. Design System Documentation** (`docs/DESIGN_SYSTEM.md`)
+
+- Documented token usage, game-mode accents, component direction, and accessibility expectations.
+- Linked the design system from `docs/ARCHITECTURE.md`.
+- Updated `docs/ACTIVE_TASK.md` so `FFH-130` game cards use shared design-system tokens.
+
+### Verified
+
+- `pnpm --filter web typecheck` ✅
+- `pnpm --filter web lint` ✅ (existing HeroUI mock warnings only)
+- `pnpm --filter web build` ✅ (rerun with network approval after Next.js needed Google Fonts)
+
+### What's Next
+
+Implement `FFH-130: Build Game Selection Screen` using `docs/DESIGN_SYSTEM.md` and `getGameModeVisualTokens()`.
+
+---
+
 ## 🚀 FFH-129: Validate Gibberish Answers
 
 **Date/Time:** 2026-07-11 13:15 IST

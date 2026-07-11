@@ -6,13 +6,68 @@
 @source "../../../packages/ui/src";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(99% 0.004 255);
+  --foreground: oklch(16% 0.024 255);
+
+  --ds-app-background: oklch(99% 0.004 255);
+  --ds-app-foreground: oklch(16% 0.024 255);
+  --ds-surface: oklch(100% 0 0);
+  --ds-surface-muted: oklch(96% 0.012 255);
+  --ds-surface-raised: oklch(98% 0.008 255);
+  --ds-border: oklch(89% 0.018 255);
+  --ds-border-strong: oklch(78% 0.026 255);
+  --ds-muted: oklch(49% 0.03 255);
+  --ds-muted-strong: oklch(35% 0.035 255);
+  --ds-primary: oklch(56% 0.19 265);
+  --ds-primary-soft: oklch(94% 0.04 265);
+  --ds-primary-foreground: oklch(99% 0.004 255);
+  --ds-success: oklch(64% 0.16 154);
+  --ds-warning: oklch(73% 0.17 75);
+  --ds-danger: oklch(58% 0.21 25);
+  --ds-focus: oklch(66% 0.2 265);
+
+  --ds-game-emoji: oklch(64% 0.18 294);
+  --ds-game-emoji-soft: oklch(94% 0.055 294);
+  --ds-game-description: oklch(74% 0.16 72);
+  --ds-game-description-soft: oklch(95% 0.055 72);
+  --ds-game-gibberish: oklch(70% 0.14 194);
+  --ds-game-gibberish-soft: oklch(94% 0.045 194);
+
+  --ds-radius-control: 0.5rem;
+  --ds-radius-panel: 0.75rem;
+  --ds-radius-card: 0.5rem;
+  --ds-shadow-panel: 0 18px 55px rgb(15 23 42 / 0.16);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-app-background: var(--ds-app-background);
+  --color-app-foreground: var(--ds-app-foreground);
+  --color-surface: var(--ds-surface);
+  --color-surface-muted: var(--ds-surface-muted);
+  --color-surface-raised: var(--ds-surface-raised);
+  --color-border: var(--ds-border);
+  --color-border-strong: var(--ds-border-strong);
+  --color-muted: var(--ds-muted);
+  --color-muted-strong: var(--ds-muted-strong);
+  --color-primary: var(--ds-primary);
+  --color-primary-soft: var(--ds-primary-soft);
+  --color-primary-foreground: var(--ds-primary-foreground);
+  --color-success: var(--ds-success);
+  --color-warning: var(--ds-warning);
+  --color-danger: var(--ds-danger);
+  --color-focus: var(--ds-focus);
+  --color-game-emoji: var(--ds-game-emoji);
+  --color-game-emoji-soft: var(--ds-game-emoji-soft);
+  --color-game-description: var(--ds-game-description);
+  --color-game-description-soft: var(--ds-game-description-soft);
+  --color-game-gibberish: var(--ds-game-gibberish);
+  --color-game-gibberish-soft: var(--ds-game-gibberish-soft);
+  --radius-control: var(--ds-radius-control);
+  --radius-panel: var(--ds-radius-panel);
+  --radius-card: var(--ds-radius-card);
+  --shadow-panel: var(--ds-shadow-panel);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
@@ -84,13 +139,39 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: oklch(14% 0.025 255);
+    --foreground: oklch(96% 0.006 255);
+
+    --ds-app-background: oklch(14% 0.025 255);
+    --ds-app-foreground: oklch(96% 0.006 255);
+    --ds-surface: oklch(18% 0.028 255);
+    --ds-surface-muted: oklch(21% 0.03 255);
+    --ds-surface-raised: oklch(24% 0.032 255);
+    --ds-border: oklch(29% 0.032 255);
+    --ds-border-strong: oklch(39% 0.04 255);
+    --ds-muted: oklch(70% 0.03 255);
+    --ds-muted-strong: oklch(84% 0.02 255);
+    --ds-primary: oklch(66% 0.2 265);
+    --ds-primary-soft: oklch(24% 0.08 265);
+    --ds-primary-foreground: oklch(99% 0.004 255);
+    --ds-success: oklch(69% 0.16 154);
+    --ds-warning: oklch(78% 0.16 75);
+    --ds-danger: oklch(64% 0.21 25);
+    --ds-focus: oklch(70% 0.2 265);
+
+    --ds-game-emoji: oklch(72% 0.18 294);
+    --ds-game-emoji-soft: oklch(25% 0.08 294);
+    --ds-game-description: oklch(78% 0.16 72);
+    --ds-game-description-soft: oklch(24% 0.07 72);
+    --ds-game-gibberish: oklch(76% 0.14 194);
+    --ds-game-gibberish-soft: oklch(24% 0.06 194);
+
+    --ds-shadow-panel: 0 18px 55px rgb(0 0 0 / 0.28);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }

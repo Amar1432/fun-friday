@@ -20,6 +20,7 @@ The project relies on a lean pnpm@10 workspace architecture.
 - **apps/web**: Contains the Next.js frontend client.
 - **apps/api**: Contains the NestJS backend and Socket.IO real-time gateway.
 - **packages/shared**: Houses shared logic such as Zod validation schemas and shared Socket.IO payload types.
+- **Web Design System**: `apps/web/app/globals.css` owns Tailwind v4 semantic tokens, while `docs/DESIGN_SYSTEM.md` documents token usage and reusable component direction.
 
 ## 3. Real-Time Data Flow
 
