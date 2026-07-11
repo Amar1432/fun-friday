@@ -275,6 +275,10 @@ describe('getStrategyForGameId', () => {
     expect(getStrategyForGameId('2f8b9a1c-4d5e-6f70-81a2-b3c4d5e6f708')).toBe('description-text');
   });
 
+  it('returns gibberish-text for known Gibberish game ID', () => {
+    expect(getStrategyForGameId('3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709')).toBe('gibberish-text');
+  });
+
   it('falls back to emoji-prompt for unknown game ID', () => {
     expect(getStrategyForGameId('unknown-game-id')).toBe('emoji-prompt');
   });

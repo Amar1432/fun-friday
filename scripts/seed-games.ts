@@ -854,6 +854,365 @@ async function main() {
     where: { gameId: badMovieGame.id, difficulty: QuestionDifficulty.HARD },
   });
 
+  // 4. Create Gibberish Game with comprehensive question bank
+  const gibberishGame = await prisma.game.create({
+    data: {
+      id: '3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709',
+      name: 'Gibberish',
+      description: 'Decode the funny-sounding gibberish phrase into real words.',
+      questions: {
+        create: [
+          // ─── EASY QUESTIONS ─────────────────────────────────────────────
+          // Movies - Easy
+          {
+            prompt: 'Shtar Vars',
+            answer: 'Star Wars',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'May the force be with you' },
+          },
+          {
+            prompt: 'Hairy Pot-ter',
+            answer: 'Harry Potter',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'The boy who lived' },
+          },
+          {
+            prompt: 'Fight Glub',
+            answer: 'Fight Club',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'First rule: do not talk about it' },
+          },
+          {
+            prompt: 'Jur-ass-ick Pork',
+            answer: 'Jurassic Park',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'Life finds a way' },
+          },
+          {
+            prompt: 'For-rest Gump',
+            answer: 'Forrest Gump',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'Life is like a box of chocolates' },
+          },
+          {
+            prompt: 'Free Wil-ly',
+            answer: 'Free Willy',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'A boy and a whale' },
+          },
+          {
+            prompt: 'Tree Men und a Baby',
+            answer: 'Three Men and a Baby',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'Three bachelors raise a baby' },
+          },
+          {
+            prompt: 'Ice Ag-ee',
+            answer: 'Ice Age',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'A sloth, a mammoth, and a saber-tooth tiger' },
+          },
+          {
+            prompt: 'Mah-ter-mind',
+            answer: 'Masterminds',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'Movies',
+            metadata: { hint: 'A heist gone hilariously wrong' },
+          },
+          // TV Shows - Easy
+          {
+            prompt: "Free-and's",
+            answer: 'Friends',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'TV Shows',
+            metadata: { hint: 'Could this BE any more iconic?' },
+          },
+          {
+            prompt: 'Bray-king Bad',
+            answer: 'Breaking Bad',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'TV Shows',
+            metadata: { hint: 'Say my name' },
+          },
+          {
+            prompt: 'Sponch-bob',
+            answer: 'SpongeBob SquarePants',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'TV Shows',
+            metadata: {
+              hint: 'Absorbent and yellow',
+              acceptedAnswers: ['SpongeBob'],
+            },
+          },
+          {
+            prompt: 'Strange-er Fings',
+            answer: 'Stranger Things',
+            difficulty: QuestionDifficulty.EASY,
+            category: 'TV Shows',
+            metadata: { hint: 'Friends do not lie' },
+          },
+
+          // ─── MEDIUM QUESTIONS ──────────────────────────────────────────
+          // Movies - Medium
+          {
+            prompt: 'Gone vit da Vind',
+            answer: 'Gone with the Wind',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: { hint: 'Classic romance during the Civil War' },
+          },
+          {
+            prompt: 'Da Vinchy Code',
+            answer: 'The Da Vinci Code',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: {
+              hint: 'A secret hidden in plain sight',
+              acceptedAnswers: ['Da Vinci Code'],
+            },
+          },
+          {
+            prompt: 'Pirates of da Carib-bean',
+            answer: 'Pirates of the Caribbean',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: { hint: 'Yo ho, yo ho, a pirate life for me' },
+          },
+          {
+            prompt: 'Hung-er Gaymes',
+            answer: 'The Hunger Games',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: {
+              hint: 'May the odds be ever in your favor',
+              acceptedAnswers: ['Hunger Games'],
+            },
+          },
+          {
+            prompt: 'Back to da Future',
+            answer: 'Back to the Future',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: { hint: '1.21 gigawatts!' },
+          },
+          {
+            prompt: 'Shaw-shank Re-demp-shun',
+            answer: 'The Shawshank Redemption',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: {
+              hint: 'Hope is a good thing',
+              acceptedAnswers: ['Shawshank Redemption'],
+            },
+          },
+          {
+            prompt: 'Indie-pend-ence Day',
+            answer: 'Independence Day',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: { hint: 'Welcome to Earth!' },
+          },
+          {
+            prompt: 'Wiz-ard of Ahz',
+            answer: 'The Wizard of Oz',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: {
+              hint: 'There is no place like home',
+              acceptedAnswers: ['Wizard of Oz'],
+            },
+          },
+          {
+            prompt: 'Nigh-tmare on Elm Street',
+            answer: 'A Nightmare on Elm Street',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'Movies',
+            metadata: {
+              hint: 'Do not fall asleep',
+              acceptedAnswers: ['Nightmare on Elm Street'],
+            },
+          },
+          // TV Shows - Medium
+          {
+            prompt: 'Fresh Prince of Bel-Lair',
+            answer: 'The Fresh Prince of Bel-Air',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'TV Shows',
+            metadata: {
+              hint: 'In west Philadelphia, born and raised',
+              acceptedAnswers: ['Fresh Prince of Bel-Air'],
+            },
+          },
+          {
+            prompt: "Grey's Ana-tom-ee",
+            answer: "Grey's Anatomy",
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'TV Shows',
+            metadata: {
+              hint: 'Seattle Grace Hospital drama',
+              acceptedAnswers: ['Greys Anatomy'],
+            },
+          },
+          {
+            prompt: 'How Eye Met Your Math-er',
+            answer: 'How I Met Your Mother',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'TV Shows',
+            metadata: { hint: 'Legendary... wait for it...' },
+          },
+          {
+            prompt: 'Big Bang Thee-uh-ree',
+            answer: 'The Big Bang Theory',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'TV Shows',
+            metadata: {
+              hint: 'Bazinga!',
+              acceptedAnswers: ['Big Bang Theory'],
+            },
+          },
+          {
+            prompt: 'House of the Drag-on',
+            answer: 'House of the Dragon',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'TV Shows',
+            metadata: { hint: 'The Targaryen civil war' },
+          },
+          {
+            prompt: 'Squid Gaymes',
+            answer: 'Squid Game',
+            difficulty: QuestionDifficulty.MEDIUM,
+            category: 'TV Shows',
+            metadata: { hint: 'Red light, green light' },
+          },
+
+          // ─── HARD QUESTIONS ────────────────────────────────────────────
+          // Movies - Hard
+          {
+            prompt: 'Pulp Fic-shun',
+            answer: 'Pulp Fiction',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: { hint: 'Say what again!' },
+          },
+          {
+            prompt: "Schin-dler's List-ah",
+            answer: "Schindler's List",
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: {
+              hint: 'A Holocaust drama',
+              acceptedAnswers: ['Schindlers List'],
+            },
+          },
+          {
+            prompt: 'Citi-zin Kane-ee',
+            answer: 'Citizen Kane',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: { hint: 'Rosebud' },
+          },
+          {
+            prompt: 'Psycho-oh',
+            answer: 'Psycho',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: { hint: "A boy's best friend is his mother" },
+          },
+          {
+            prompt: 'Twen-ee Thou-sand Leagues',
+            answer: '20,000 Leagues Under the Sea',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: {
+              hint: "Captain Nemo's submarine adventure",
+              acceptedAnswers: ['20000 Leagues Under the Sea'],
+            },
+          },
+          {
+            prompt: 'Brave-heart-ee',
+            answer: 'Braveheart',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: {
+              hint: "They may take our lives, but they'll never take our freedom!",
+            },
+          },
+          {
+            prompt: 'Casa-blank-a',
+            answer: 'Casablanca',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: { hint: 'Play it again, Sam' },
+          },
+          {
+            prompt: 'Taxi Driv-er-oh',
+            answer: 'Taxi Driver',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'Movies',
+            metadata: { hint: "You talkin' to me?" },
+          },
+          // TV Shows - Hard
+          {
+            prompt: 'Twin Peaks-ee',
+            answer: 'Twin Peaks',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'TV Shows',
+            metadata: { hint: 'A damn fine cup of coffee' },
+          },
+          {
+            prompt: 'X-Files-ee',
+            answer: 'The X-Files',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'TV Shows',
+            metadata: {
+              hint: 'The truth is out there',
+              acceptedAnswers: ['X-Files', 'X Files'],
+            },
+          },
+          {
+            prompt: 'True Detec-tive-oh',
+            answer: 'True Detective',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'TV Shows',
+            metadata: { hint: 'Time is a flat circle' },
+          },
+          {
+            prompt: 'Mad Men-ee',
+            answer: 'Mad Men',
+            difficulty: QuestionDifficulty.HARD,
+            category: 'TV Shows',
+            metadata: { hint: 'Advertising on Madison Avenue' },
+          },
+        ],
+      },
+    },
+  });
+
+  // Count questions per game
+  const gibberishQuestionCount = await prisma.question.count({
+    where: { gameId: gibberishGame.id },
+  });
+
+  const gibberishEasyCount = await prisma.question.count({
+    where: { gameId: gibberishGame.id, difficulty: QuestionDifficulty.EASY },
+  });
+
+  const gibberishMediumCount = await prisma.question.count({
+    where: { gameId: gibberishGame.id, difficulty: QuestionDifficulty.MEDIUM },
+  });
+
+  const gibberishHardCount = await prisma.question.count({
+    where: { gameId: gibberishGame.id, difficulty: QuestionDifficulty.HARD },
+  });
+
   console.log(`Seeding complete.`);
   console.log(`  Emoji Guess Game ID: ${game.id}`);
   console.log(`    Total questions: ${questionCount}`);
@@ -865,6 +1224,11 @@ async function main() {
   console.log(`    Easy: ${badMovieEasyCount}`);
   console.log(`    Medium: ${badMovieMediumCount}`);
   console.log(`    Hard: ${badMovieHardCount}`);
+  console.log(`  Gibberish Game ID: ${gibberishGame.id}`);
+  console.log(`    Total questions: ${gibberishQuestionCount}`);
+  console.log(`    Easy: ${gibberishEasyCount}`);
+  console.log(`    Medium: ${gibberishMediumCount}`);
+  console.log(`    Hard: ${gibberishHardCount}`);
 }
 
 main()

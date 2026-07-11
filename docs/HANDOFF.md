@@ -16,8 +16,6 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 6 (Game Modes & Answer Evaluation)
 
----
-
 ## 🚀 FFH-126: Validate Bad Movie Description Answers
 
 **Date/Time:** 2026-07-11 (Local Time)
