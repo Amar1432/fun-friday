@@ -1,21 +1,22 @@
 # Active Task
 
-**Ticket:** FFH-126
-**Title:** Validate Bad Movie Description Answers
+**Ticket:** FFH-127
+**Title:** Seed Gibberish Questions
 
 ## Objective
 
-Integrate answer evaluation with Bad Movie Description.
+Populate the database with Gibberish questions.
 
 ## Execution Requirements
 
-1. Evaluation supports:
-   - Exact match.
-   - Normalized match.
-   - Alternate movie titles.
-   - Minor spelling mistakes.
-2. Scoring integrates with existing engine.
+1. Each record contains:
+   - Gibberish phrase.
+   - Correct answer.
+   - Difficulty.
+   - Category.
+   - Metadata.
+2. Seeds execute without duplication.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-127).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-128).

@@ -3133,6 +3133,157 @@ describe('GameGateway', () => {
       );
     });
 
+    it('should evaluate Bad Movie Description answer with alternate movie titles', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-2',
+        currentQuestionId: 'q-2',
+        currentRoundIndex: '1',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-2',
+        answer: 'Spider-Man',
+        metadata: {
+          hint: 'Superhero with a spider bite',
+          acceptedAnswers: ['Spiderman'],
+        },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-2',
+        answer: 'spiderman',
+        responseTimeMs: 3000,
+      });
+
+      // Should pass the answer, both primary and alternate targets, and threshold of 1
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'spiderman',
+        ['Spider-Man', 'Spiderman'],
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-2',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
+    it('should evaluate Bad Movie Description answer with alternate title without "The" prefix', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-3',
+        currentQuestionId: 'q-3',
+        currentRoundIndex: '2',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-3',
+        answer: 'The Lion King',
+        metadata: {
+          hint: 'Disney animated classic',
+          acceptedAnswers: ['Lion King'],
+        },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-3',
+        answer: 'Lion King',
+        responseTimeMs: 5000,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'Lion King',
+        ['The Lion King', 'Lion King'],
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-3',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
+    it('should accept minor typo in Bad Movie Description answer via threshold=1', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-4',
+        currentQuestionId: 'q-4',
+        currentRoundIndex: '3',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-4',
+        answer: 'Harry Potter',
+        metadata: {
+          hint: 'The boy who lived',
+          acceptedAnswers: [],
+        },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-4',
+        answer: 'Harry Poter', // Typo: missing 't'
+        responseTimeMs: 2000,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'Harry Poter',
+        'Harry Potter',
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-4',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
+    it('should accept normalized Bad Movie Description answer with punctuation differences', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-5',
+        currentQuestionId: 'q-5',
+        currentRoundIndex: '4',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-5',
+        answer: 'E.T.',
+        metadata: {
+          hint: 'Phone home',
+          acceptedAnswers: ['ET'],
+        },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-5',
+        answer: 'ET',
+        responseTimeMs: 1500,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'ET',
+        ['E.T.', 'ET'],
+        1,
+      );
+    });
+
     it('should save incorrect answer in Redis and emit SubmitAnswerAck', async () => {
       prismaMock.room.findUnique.mockResolvedValue(mockRoom);
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({

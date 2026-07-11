@@ -16,6 +16,40 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ## 🚀 Active Sprint: Sprint 6 (Game Modes & Answer Evaluation)
 
+---
+
+## 🚀 FFH-126: Validate Bad Movie Description Answers
+
+**Date/Time:** 2026-07-11 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-126
+
+### What Changed
+
+**1. Gateway Tests for Bad Movie Description Answer Validation** (`apps/api/src/game/game.gateway.spec.ts`)
+
+- Added **4 new tests** in `handleSubmitAnswer` that simulate Bad Movie Description questions with `acceptedAnswers` metadata matching real seed data:
+  - **Alternate movie titles** — verifies `Spider-Man` question with `acceptedAnswers: ['Spiderman']` correctly builds `['Spider-Man', 'Spiderman']` targets array and calls `evaluate()` with it + threshold=1
+  - **"The" prefix variants** — verifies `The Lion King` question with `acceptedAnswers: ['Lion King']` correctly passes both variants
+  - **Minor typo tolerance** — verifies `Harry Poter` (missing 't') with threshold=1 is accepted by the evaluation pipeline
+  - **Punctuation normalization** — verifies `E.T.` question with `acceptedAnswers: ['ET']` correctly builds `['E.T.', 'ET']` targets
+
+### Why
+
+To satisfy all acceptance criteria for FFH-126 — test coverage now explicitly validates that Bad Movie Description answer evaluation supports exact match (existing tests), normalized match (via `AnswerEvaluationService` pipeline), alternate movie titles (via `acceptedAnswers` metadata), minor spelling mistakes (via threshold=1), and scoring integrates with the existing game-agnostic engine.
+
+### Verified
+
+- `pnpm typecheck` — api ✅
+- `pnpm test` — 388/388 API tests ✅ (up from 384, +4 new gateway tests)
+- Web tests unaffected — 178/178 web tests ✅
+
+### What's Next
+
+Start `FFH-127: Seed Gibberish Questions`.
+
+---
+
 ## 🚀 FFH-125: Build Bad Movie Description UI
 
 **Date/Time:** 2026-07-11 (Local Time)
