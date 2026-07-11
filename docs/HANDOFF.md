@@ -18,6 +18,55 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-130: Build Game Selection Screen
+
+**Date/Time:** 2026-07-11 13:32 IST
+**Agent:** Codex
+**Ticket:** FFH-130
+
+### What Changed
+
+**1. Host Game Selection Screen** (`apps/web/app/room/create/page.tsx`)
+
+- Reworked the create-room panel into a compact host setup screen with selectable game choices.
+- Displays all supported games, descriptions, icons, and seeded question counts.
+- Uses shared design-system tokens and `getGameModeVisualTokens()` for mode-specific card accents.
+- Carries the selected `gameId` into the lobby URL after room creation.
+
+**2. Game Registry Metadata** (`apps/web/lib/game-modes.ts`)
+
+- Added seeded `gameId` and `questionCount` metadata to frontend game modes.
+- Added `DEFAULT_GAME_ID`, `getGameModeByGameId()`, and `isSupportedGameId()` helpers.
+- Kept `GAME_ID_TO_STRATEGY` derived from the supported frontend registry.
+
+**3. Lobby StartGame Selection** (`apps/web/app/lobby/[roomCode]/page.tsx`)
+
+- Lobby now reads `gameId` from the URL and starts that supported game.
+- Falls back to Emoji Guess if the URL does not include a supported game ID.
+
+**4. Test Coverage**
+
+- Added create-room tests for visible game cards, counts, and selecting Gibberish before room creation.
+- Added lobby test proving StartGame uses the selected URL `gameId`.
+- Updated registry fixture coverage for the new required `gameId` field.
+
+### Verified
+
+- `pnpm --filter web test -- app/room/create/page.spec.tsx` ✅
+- `pnpm --filter web test -- app/lobby/\\[roomCode\\]/page.spec.tsx` ✅
+- `pnpm --filter web test -- components/game-mode-renderer.spec.tsx` ✅
+- `pnpm --filter web typecheck` ✅
+- `pnpm --filter web build` ✅ (rerun with network approval after Next.js needed Google Fonts)
+- `pnpm build` ✅
+- `pnpm lint` ✅ (existing HeroUI mock warnings only)
+- `pnpm test` ✅ (API 398/398, web 184/184)
+
+### What's Next
+
+Start `FFH-131: Build Game Selection Cards` to extract the inline create-room cards into reusable components with a formal selected state API.
+
+---
+
 ## 🎨 Design System Seed for FFH-130
 
 **Date/Time:** 2026-07-11 13:23 IST

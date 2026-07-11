@@ -18,6 +18,7 @@ import { SoundToggle } from '@/components/sound-toggle';
 import { useConfettiOnCorrectAnswer } from '@/lib/confetti/use-confetti';
 import { useSoundSettings } from '@/lib/sound/use-sound-settings';
 import { playCorrectSound, playTimerWarningSound } from '@/lib/sound/sound-engine';
+import { DEFAULT_GAME_ID, isSupportedGameId } from '@/lib/game-modes';
 
 export default function LobbyPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -25,6 +26,10 @@ export default function LobbyPage() {
   const { roomCode } = useParams();
   const searchParams = useSearchParams();
   const roomIdParam = searchParams.get('roomId');
+  const selectedGameIdParam = searchParams.get('gameId');
+  const selectedGameId = isSupportedGameId(selectedGameIdParam)
+    ? selectedGameIdParam
+    : DEFAULT_GAME_ID;
 
   const setRoom = useGameStore((state) => state.setRoom);
   const room = useGameStore((state) => state.room);
@@ -185,10 +190,8 @@ export default function LobbyPage() {
     setIsStarting(true);
     setStartError(null);
 
-    // Default to the seeded Emoji Guess game
-    const gameId = '1cd83808-737f-4c29-ab51-adff5c6a1ef5';
-    dispatcher.startGame({ roomId: activeRoomId, gameId });
-  }, [socketStatus, room.id, roomIdParam, dispatcher]);
+    dispatcher.startGame({ roomId: activeRoomId, gameId: selectedGameId });
+  }, [socketStatus, room.id, roomIdParam, selectedGameId, dispatcher]);
 
   const handleNextRound = React.useCallback(() => {
     const activeRoomId = room.id || roomIdParam;

@@ -283,6 +283,7 @@ describe('Game Modes Registry (lib/game-modes)', () => {
     expect(all).toHaveLength(3);
     // Modifying the returned array should not affect the original
     all.push({
+      gameId: 'test-game-id',
       identifier: 'test',
       displayName: 'Test',
       description: 'Test',

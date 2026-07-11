@@ -216,6 +216,28 @@ describe('LobbyPage Component', () => {
     });
   });
 
+  it('starts the selected game from the lobby URL when provided', async () => {
+    mockStorePlayers = [
+      { id: 'p-1', displayName: 'Player 1', score: 0, isReady: true, isConnected: true },
+    ];
+    (useSearchParams as jest.Mock).mockReturnValue({
+      get: (key: string) => {
+        if (key === 'roomId') return 'room-123';
+        if (key === 'gameId') return '3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709';
+        return null;
+      },
+    });
+
+    render(<LobbyPage />);
+
+    fireEvent.click(screen.getByTestId('start-game-button'));
+
+    expect(mockDispatcher.startGame).toHaveBeenCalledWith({
+      roomId: 'room-123',
+      gameId: '3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709',
+    });
+  });
+
   it('transitions UI and renders gameplay screen when room status is IN_PROGRESS', () => {
     mockRoomState.status = 'IN_PROGRESS';
     mockGameState.currentQuestion = {

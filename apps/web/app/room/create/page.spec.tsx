@@ -101,7 +101,12 @@ describe('CreateRoomPage', () => {
 
     render(<CreateRoomPage />);
 
-    expect(screen.getByText('Create New Room')).toBeInTheDocument();
+    expect(screen.getByText('Choose a game')).toBeInTheDocument();
+    expect(screen.getAllByText('Emoji Guess')).toHaveLength(2);
+    expect(screen.getByText('Bad Movie Description')).toBeInTheDocument();
+    expect(screen.getByText('Gibberish')).toBeInTheDocument();
+    expect(screen.getByText('39 questions')).toBeInTheDocument();
+    expect(screen.getAllByText('40 questions')).toHaveLength(2);
     expect(screen.getByText('Create Room')).toBeInTheDocument();
   });
 
@@ -135,6 +140,42 @@ describe('CreateRoomPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Room Created!')).toBeInTheDocument();
       expect(screen.getByText('ABC123')).toBeInTheDocument();
+    });
+  });
+
+  it('lets host choose a supported game before creating the room', async () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      token: 'test-token',
+      isLoading: false,
+      login: jest.fn(),
+      logout: jest.fn(),
+    });
+
+    mockCreateRoom.mockResolvedValue({
+      room: {
+        id: 'room-1',
+        code: 'ABC123',
+        status: 'LOBBY',
+        createdAt: new Date().toISOString(),
+      },
+    });
+
+    render(<CreateRoomPage />);
+
+    fireEvent.click(screen.getByRole('radio', { name: /Gibberish/ }));
+    fireEvent.click(screen.getByText('Create Room'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Room Created!')).toBeInTheDocument();
+    });
+
+    jest.advanceTimersByTime(3000);
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith(
+        '/lobby/ABC123?roomId=room-1&gameId=3a9b1c2d-5e6f-4070-81a2-b3c4d5e6f709',
+      );
     });
   });
 
@@ -190,7 +231,9 @@ describe('CreateRoomPage', () => {
     jest.advanceTimersByTime(3000);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/lobby/ABC123?roomId=room-1');
+      expect(mockPush).toHaveBeenCalledWith(
+        '/lobby/ABC123?roomId=room-1&gameId=1cd83808-737f-4c29-ab51-adff5c6a1ef5',
+      );
     });
   });
 

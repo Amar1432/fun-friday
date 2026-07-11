@@ -6,6 +6,17 @@ import { Card, Button } from '@heroui/react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { createRoom, ApiError } from '@/lib/api';
 import { config } from '@/lib/config';
+import { getGameModeVisualTokens } from '@/lib/design-system';
+import { DEFAULT_GAME_ID, getAllGameModes, getGameModeByGameId } from '@/lib/game-modes';
+
+const supportedGameModes = getAllGameModes();
+
+function buildLobbyUrl(roomCode: string | null, roomId: string | null, gameId: string): string {
+  const params = new URLSearchParams();
+  if (roomId) params.set('roomId', roomId);
+  params.set('gameId', gameId);
+  return `/lobby/${roomCode}?${params.toString()}`;
+}
 
 export default function CreateRoomPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -15,6 +26,9 @@ export default function CreateRoomPage() {
   const [roomCode, setRoomCode] = React.useState<string | null>(null);
   const [roomId, setRoomId] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [selectedGameId, setSelectedGameId] = React.useState(DEFAULT_GAME_ID);
+
+  const selectedGameMode = getGameModeByGameId(selectedGameId) ?? supportedGameModes[0];
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -40,7 +54,7 @@ export default function CreateRoomPage() {
 
       // Auto-navigate to lobby after 3 seconds
       setTimeout(() => {
-        router.push(`/lobby/${response.room.code}?roomId=${response.room.id}`);
+        router.push(buildLobbyUrl(response.room.code, response.room.id, selectedGameId));
       }, 3000);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -142,32 +156,31 @@ export default function CreateRoomPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
-        <div className="w-full max-w-md">
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 lg:py-12 relative z-10">
+        <div className="w-full max-w-5xl">
           {!isSuccess ? (
-            <Card className="bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl p-8 space-y-6 shadow-2xl">
-              <Card.Header className="text-center space-y-2 px-0 pt-0 pb-0 block">
-                <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 items-center justify-center mx-auto shadow-lg shadow-indigo-500/20 mb-4">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
+            <Card className="bg-surface/80 border border-border backdrop-blur-xl p-5 sm:p-6 lg:p-7 space-y-6 shadow-panel">
+              <Card.Header className="px-0 pt-0 pb-0 block">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                      Host setup
+                    </p>
+                    <Card.Title className="text-2xl sm:text-3xl font-bold text-app-foreground block">
+                      Choose a game
+                    </Card.Title>
+                    <Card.Description className="text-sm text-muted block max-w-2xl">
+                      Pick the mode your team will play, then create a lobby with a shareable room
+                      code.
+                    </Card.Description>
+                  </div>
+                  <div className="rounded-panel border border-border bg-surface-muted px-4 py-3 text-sm">
+                    <p className="text-xs uppercase tracking-wider text-muted">Selected</p>
+                    <p className="mt-1 font-semibold text-app-foreground">
+                      {selectedGameMode.displayName}
+                    </p>
+                  </div>
                 </div>
-                <Card.Title className="text-2xl font-bold text-white block">
-                  Create New Room
-                </Card.Title>
-                <Card.Description className="text-sm text-slate-400 block">
-                  Generate a room code to start hosting a multiplayer game session.
-                </Card.Description>
               </Card.Header>
 
               {error && (
@@ -189,12 +202,74 @@ export default function CreateRoomPage() {
                 </div>
               )}
 
+              <div
+                className="grid grid-cols-1 gap-3 md:grid-cols-3"
+                role="radiogroup"
+                aria-label="Game mode"
+              >
+                {supportedGameModes.map((mode) => {
+                  const visualTokens = getGameModeVisualTokens(mode.identifier);
+                  const isSelected = mode.gameId === selectedGameId;
+
+                  return (
+                    <button
+                      key={mode.identifier}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => setSelectedGameId(mode.gameId)}
+                      className={[
+                        'group flex h-full min-h-[180px] flex-col rounded-card border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-app-background',
+                        visualTokens.focusRingClassName,
+                        isSelected
+                          ? `${visualTokens.borderClassName} bg-surface-raised shadow-panel`
+                          : 'border-border bg-surface-muted hover:border-border-strong hover:bg-surface-raised',
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'inline-flex h-11 w-11 items-center justify-center rounded-control border text-2xl',
+                          visualTokens.softSurfaceClassName,
+                          visualTokens.borderClassName,
+                        ].join(' ')}
+                        aria-hidden="true"
+                      >
+                        {mode.iconRef}
+                      </span>
+                      <span className="mt-4 flex items-start justify-between gap-3">
+                        <span>
+                          <span className="block text-base font-bold text-app-foreground">
+                            {mode.displayName}
+                          </span>
+                          <span className="mt-1 block text-sm leading-5 text-muted">
+                            {mode.description}
+                          </span>
+                        </span>
+                        <span
+                          className={[
+                            'mt-0.5 h-3 w-3 shrink-0 rounded-full border',
+                            isSelected
+                              ? `${visualTokens.softSurfaceClassName} ${visualTokens.borderClassName}`
+                              : 'border-border-strong bg-surface',
+                          ].join(' ')}
+                        />
+                      </span>
+                      <span className="mt-auto pt-4 text-xs font-semibold uppercase tracking-wider text-muted">
+                        {mode.questionCount
+                          ? `${mode.questionCount} questions`
+                          : 'Question count pending'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
               <Button
                 fullWidth
                 onPress={handleCreateRoom}
                 isDisabled={isCreating}
                 size="lg"
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-800 text-white font-semibold text-base shadow-xl shadow-indigo-500/20"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-surface-muted disabled:text-muted font-semibold text-base shadow-panel"
               >
                 {isCreating ? (
                   <>
@@ -236,8 +311,9 @@ export default function CreateRoomPage() {
               </Button>
 
               <div className="text-center">
-                <p className="text-xs text-slate-500">
-                  Players will use the generated room code to join your session
+                <p className="text-xs text-muted">
+                  Players will join the lobby first. The selected game starts when the host is
+                  ready.
                 </p>
               </div>
             </Card>
@@ -301,7 +377,7 @@ export default function CreateRoomPage() {
                   <span className="text-indigo-400 font-semibold">3 seconds</span>...
                 </p>
                 <button
-                  onClick={() => router.push(`/lobby/${roomCode}?roomId=${roomId}`)}
+                  onClick={() => router.push(buildLobbyUrl(roomCode, roomId, selectedGameId))}
                   className="text-sm text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
                 >
                   Go to lobby now
