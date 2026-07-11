@@ -1,23 +1,22 @@
 # Active Task
 
-**Ticket:** FFH-129
-**Title:** Validate Gibberish Answers
+**Ticket:** FFH-130
+**Title:** Build Game Selection Screen
 
 ## Objective
 
-Integrate fuzzy matching with Gibberish answer evaluation.
+Allow hosts to choose a game before starting a room.
 
 ## Acceptance Criteria
 
-Evaluation supports:
+Screen displays:
 
-- Exact matches.
-- Space normalization.
-- Hyphen normalization.
-- Typo tolerance.
-
-Incorrect answers are rejected.
+- Available games.
+- Game descriptions.
+- Icons.
+- Question count (if available).
+- Only supported games appear.
 
 ## Completion
 
-Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-130).
+Stage, commit, update `docs/HANDOFF.md`, and update this file to point to the next logical step (FFH-131).

@@ -267,9 +267,9 @@ describe('AnswerEvaluationService', () => {
     });
 
     it('should detect a single adjacent transposition', () => {
-      expect(service.calculateDistance('harry potter', 'haryr potter')).toBe(2);
-      // "ahrry" vs "harry" — the 'h' and 'a' are swapped
-      expect(service.calculateDistance('ahry', 'hary')).toBe(2);
+      expect(service.calculateDistance('harry potter', 'haryr potter')).toBe(1);
+      // "ahry" vs "hary" swaps the first two characters.
+      expect(service.calculateDistance('ahry', 'hary')).toBe(1);
     });
 
     it('should detect a single incorrect character (substitution)', () => {
@@ -304,9 +304,9 @@ describe('AnswerEvaluationService', () => {
       expect(service.evaluate('Harry Kotter', 'Harry Potter', 1)).toBe(true);
     });
 
-    it('should accept a single adjacent transposition within threshold 2', () => {
-      // "Potter" → "Potetr" is a transposition requiring 2 edits
-      expect(service.evaluate('Harry Potetr', 'Harry Potter', 2)).toBe(true);
+    it('should accept a single adjacent transposition within threshold 1', () => {
+      // "Potter" -> "Potetr" is one adjacent transposition.
+      expect(service.evaluate('Harry Potetr', 'Harry Potter', 1)).toBe(true);
     });
 
     it('should reject answers with multiple unrelated mistakes', () => {
@@ -535,6 +535,39 @@ describe('AnswerEvaluationService', () => {
           'The Boy Who Lived',
         ]),
       ).toBe(true);
+    });
+  });
+
+  describe('evaluate Gibberish answers', () => {
+    it('should accept exact Gibberish target answers', () => {
+      expect(service.evaluate('Star Wars', 'Star Wars', 1)).toBe(true);
+    });
+
+    it('should accept Gibberish answers with normalized spacing', () => {
+      expect(
+        service.evaluate('Back   to   the   Future', 'Back to the Future', 1),
+      ).toBe(true);
+    });
+
+    it('should accept Gibberish answers with hyphen variants', () => {
+      expect(
+        service.evaluate('X Files', ['The X-Files', 'X-Files', 'X Files'], 1),
+      ).toBe(true);
+      expect(
+        service.evaluate(
+          'Fresh Prince of Bel Air',
+          ['The Fresh Prince of Bel-Air', 'Fresh Prince of Bel-Air'],
+          1,
+        ),
+      ).toBe(true);
+    });
+
+    it('should accept a minor Gibberish answer typo', () => {
+      expect(service.evaluate('Harry Pottre', 'Harry Potter', 1)).toBe(true);
+    });
+
+    it('should reject incorrect Gibberish answers', () => {
+      expect(service.evaluate('Voldemort', 'Harry Potter', 1)).toBe(false);
     });
   });
 });

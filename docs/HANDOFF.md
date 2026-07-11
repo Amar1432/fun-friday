@@ -18,6 +18,48 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-129: Validate Gibberish Answers
+
+**Date/Time:** 2026-07-11 13:15 IST
+**Agent:** Codex
+**Ticket:** FFH-129
+
+### What Changed
+
+**1. Typo-Tolerant Answer Evaluation** (`apps/api/src/game/answer-evaluation/answer-evaluation.service.ts`)
+
+- Updated `calculateDistance()` from plain Levenshtein behavior to optimal string alignment edit distance.
+- A single adjacent character transposition now counts as one typo, matching the gateway's existing `threshold=1` answer validation behavior.
+- Kept normalization and the public `evaluate(input, targets, threshold)` interface unchanged.
+
+**2. Gibberish Evaluation Coverage** (`apps/api/src/game/answer-evaluation/answer-evaluation.service.spec.ts`)
+
+- Added Gibberish-specific evaluator tests for exact answers, collapsed spacing, hyphen variants, minor typos, and incorrect answer rejection.
+- Updated existing transposition expectations from distance `2` to distance `1`.
+
+**3. Gibberish SubmitAnswer Integration Coverage** (`apps/api/src/game/game.gateway.spec.ts`)
+
+- Added gateway tests proving Gibberish answers route through `AnswerEvaluationService` with `threshold=1`.
+- Covered exact match, spacing normalization, metadata `acceptedAnswers` for hyphen variants, typo tolerance, and incorrect answer persistence.
+
+### Why
+
+To satisfy FFH-129 acceptance criteria while preserving the game-agnostic answer evaluation flow used by Emoji Guess and Bad Movie Description.
+
+### Verified
+
+- `pnpm --filter api test -- answer-evaluation.service.spec.ts` ✅
+- `pnpm --filter api test -- game.gateway.spec.ts` ✅
+- `pnpm build` ✅ (rerun with network approval after Next.js needed Google Fonts)
+- `pnpm lint` ✅ (web mock warnings only)
+- `pnpm test` ✅ (API 398/398, web 182/182)
+
+### What's Next
+
+Start `FFH-130: Build Game Selection Screen`.
+
+---
+
 ## 🚀 FFH-128: Build Gibberish Gameplay UI
 
 **Date/Time:** 2026-07-11 (Local Time)

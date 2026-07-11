@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
  * Service responsible for evaluating player answers independently of any
  * specific game mode. Performs exact matching after normalizing both the
  * input and target answers, with optional typo-tolerant matching via a
- * configurable Levenshtein-distance threshold.
+ * configurable edit-distance threshold.
  *
  * This service is intentionally isolated from Socket.IO handlers and the
  * game loop. The public interface supports future game modes without
@@ -46,12 +46,10 @@ export class AnswerEvaluationService {
   }
 
   /**
-   * Computes the Levenshtein distance between two strings using an iterative
-   * two-row DP approach for O(n) memory efficiency.
+   * Computes the optimal string alignment edit distance between two strings.
    *
-   * The Levenshtein distance is the minimum number of single-character edits
-   * (insertions, deletions, or substitutions) required to transform one string
-   * into the other.
+   * This is Levenshtein distance plus adjacent transpositions, so a single
+   * swapped pair of neighboring characters counts as one typo.
    *
    * @param a - The first string.
    * @param b - The second string.
@@ -65,38 +63,38 @@ export class AnswerEvaluationService {
     if (aLen === 0) return bLen;
     if (bLen === 0) return aLen;
 
-    // Use two rows for O(min(aLen, bLen)) memory
-    // Ensure b is the shorter dimension for less memory usage
-    if (aLen < bLen) {
-      return this.calculateDistance(b, a);
+    const distances: number[][] = Array.from({ length: aLen + 1 }, () =>
+      Array<number>(bLen + 1).fill(0),
+    );
+
+    for (let i = 0; i <= aLen; i++) {
+      distances[i][0] = i;
     }
 
-    let prevRow: number[] = [];
-    let currRow: number[] = [];
-
-    // Initialize previous row (edits to transform empty string into b)
     for (let j = 0; j <= bLen; j++) {
-      prevRow[j] = j;
+      distances[0][j] = j;
     }
 
     for (let i = 1; i <= aLen; i++) {
-      currRow[0] = i;
-
       for (let j = 1; j <= bLen; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
-        currRow[j] = Math.min(
-          prevRow[j] + 1, // deletion
-          currRow[j - 1] + 1, // insertion
-          prevRow[j - 1] + cost, // substitution
+        distances[i][j] = Math.min(
+          distances[i - 1][j] + 1,
+          distances[i][j - 1] + 1,
+          distances[i - 1][j - 1] + cost,
         );
-      }
 
-      // Swap rows for next iteration
-      [prevRow, currRow] = [currRow, prevRow];
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+          distances[i][j] = Math.min(
+            distances[i][j],
+            distances[i - 2][j - 2] + 1,
+          );
+        }
+      }
     }
 
-    return prevRow[bLen];
+    return distances[aLen][bLen];
   }
 
   /**
@@ -110,8 +108,8 @@ export class AnswerEvaluationService {
    *
    * Both input and each target are normalized via {@link normalize} before
    * comparison. When `threshold > 0`, the Levenshtein distance between the
-   * normalized strings is computed, and the match succeeds if the distance
-   * is within the threshold for that particular target.
+   * normalized strings is computed, and the match succeeds if the edit
+   * distance is within the threshold for that particular target.
    *
    * @param input     - The raw answer submitted by the player.
    * @param targets   - The correct/expected answer(s) for the current

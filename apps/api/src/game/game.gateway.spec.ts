@@ -3284,6 +3284,189 @@ describe('GameGateway', () => {
       );
     });
 
+    it('should evaluate Gibberish exact answers through the shared evaluator', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-6',
+        currentQuestionId: 'q-6',
+        currentRoundIndex: '5',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-6',
+        answer: 'Star Wars',
+        metadata: { hint: 'May the force be with you' },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-6',
+        answer: 'Star Wars',
+        responseTimeMs: 1100,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'Star Wars',
+        'Star Wars',
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-6',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
+    it('should evaluate Gibberish answers with normalized spacing', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-7',
+        currentQuestionId: 'q-7',
+        currentRoundIndex: '6',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-7',
+        answer: 'Back to the Future',
+        metadata: { hint: '1.21 gigawatts!' },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-7',
+        answer: 'Back   to   the   Future',
+        responseTimeMs: 2100,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'Back   to   the   Future',
+        'Back to the Future',
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-7',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
+    it('should evaluate Gibberish answers with hyphen variants from acceptedAnswers', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-8',
+        currentQuestionId: 'q-8',
+        currentRoundIndex: '7',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-8',
+        answer: 'The X-Files',
+        metadata: {
+          hint: 'The truth is out there',
+          acceptedAnswers: ['X-Files', 'X Files'],
+        },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-8',
+        answer: 'X Files',
+        responseTimeMs: 1800,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'X Files',
+        ['The X-Files', 'X-Files', 'X Files'],
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-8',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
+    it('should accept minor typos in Gibberish answers via threshold=1', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-9',
+        currentQuestionId: 'q-9',
+        currentRoundIndex: '8',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-9',
+        answer: 'Harry Potter',
+        metadata: { hint: 'The boy who lived' },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(true);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-9',
+        answer: 'Harry Pottre',
+        responseTimeMs: 1900,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'Harry Pottre',
+        'Harry Potter',
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-9',
+        'player-123',
+        expect.stringContaining('"isCorrect":true'),
+      );
+    });
+
+    it('should reject incorrect Gibberish answers', async () => {
+      prismaMock.room.findUnique.mockResolvedValue(mockRoom);
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
+        status: 'IN_PROGRESS',
+        currentRoundId: 'round-10',
+        currentQuestionId: 'q-10',
+        currentRoundIndex: '9',
+      });
+      redisRoomRepositoryMock.getAnswers.mockResolvedValue({});
+      redisRoomRepositoryMock.getQuestion.mockResolvedValue({
+        id: 'q-10',
+        answer: 'Harry Potter',
+        metadata: { hint: 'The boy who lived' },
+      });
+      answerEvaluationServiceMock.evaluate.mockReturnValue(false);
+
+      await gateway.handleSubmitAnswer(mockSocket as unknown as Socket, {
+        roomId: 'room-id-123',
+        questionId: 'q-10',
+        answer: 'Voldemort',
+        responseTimeMs: 1900,
+      });
+
+      expect(answerEvaluationServiceMock.evaluate).toHaveBeenCalledWith(
+        'Voldemort',
+        'Harry Potter',
+        1,
+      );
+      expect(redisRoomRepositoryMock.setAnswer).toHaveBeenCalledWith(
+        'ROOM12',
+        'round-10',
+        'player-123',
+        expect.stringContaining('"isCorrect":false'),
+      );
+    });
+
     it('should save incorrect answer in Redis and emit SubmitAnswerAck', async () => {
       prismaMock.room.findUnique.mockResolvedValue(mockRoom);
       redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({
