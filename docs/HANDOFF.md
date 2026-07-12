@@ -20,6 +20,54 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-137: Verify Production Authentication Providers
+
+**Date/Time:** 2026-07-12 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-137
+
+### What Was Verified
+
+Comprehensive verification of the production authentication flow across the entire codebase:
+
+**1. Mock auth completely removed** ✅
+
+- Zero matches for mock login patterns (`handleMockLogin`, `mock_login`, `mockToken`, `mock_token`) across all source files.
+- Google SSO provider always calls `google-auth-library` — no `NODE_ENV` bypass.
+- Login page has only Google SSO + Microsoft SSO buttons.
+
+**2. Auth code audit — Production-ready** ✅
+
+- **Frontend:** `auth-context.tsx` (JWT session management), `google.ts` (GIS), `microsoft.ts` (MSAL.js), `login/page.tsx` (clean SSO-only UI)
+- **Backend:** `auth.service.ts` (provider registry: `google` + `microsoft` only), `google-sso.provider.ts` (OAuth2Client verification), `microsoft-sso.provider.ts` (JWKS + jsonwebtoken)
+- **Config:** No mock auth feature flags or env vars exist.
+
+**3. Validation coverage** ✅
+
+| Criteria                        | Status | Details                                                               |
+| ------------------------------- | ------ | --------------------------------------------------------------------- |
+| Successful login                | ✅     | Full code path: SSO → id_token → backend verification → JWT issuance  |
+| Failed login handling           | ✅     | Error banners on login page, provider exception propagation           |
+| Logout                          | ✅     | `AuthProvider.logout()` clears localStorage, redirects to `/login`    |
+| Session restoration             | ✅     | `AuthProvider` restores from `localStorage` on mount                  |
+| Token expiration handling       | ✅     | 401 global handler → auto-logout → `/login?session_expired=true`      |
+| Unauthorized access redirection | ✅     | Protected routes → `/login`; authenticated on `/login` → `/dashboard` |
+| No mock auth entry points       | ✅     | Zero matches across all `.ts`, `.tsx`, `.js`, `.env*`, `.json`        |
+
+**4. Tests & Typechecks** ✅
+
+- Auth test suites: 6/6 passed (45/45 tests) — 0 auth failures
+- Full API test suite: 403/406 passed (3 pre-existing `handleDisconnect` failures in `game.gateway.spec.ts` — unrelated)
+- Full web test suite: 189/191 passed (2 pre-existing socket dispatcher failures — unrelated)
+- `pnpm --filter api typecheck`: ✅ No errors
+- `pnpm --filter web typecheck`: ✅ No errors
+
+### Next Steps
+
+Begin `FFH-138: Provision Production PostgreSQL Database`.
+
+---
+
 ## 🚀 FFH-136: Remove Mock Authentication Flow
 
 **Date/Time:** 2026-07-12 (Local Time)
@@ -64,7 +112,7 @@ Start `FFH-137: Verify Production Authentication Providers` — validate Google 
 
 | Epic                                | Tickets         | Status  |
 | ----------------------------------- | --------------- | ------- |
-| Epic 35 — Production Authentication | FFH-136–FFH-137 | Pending |
+| Epic 35 — Production Authentication | FFH-136–FFH-137 | ✅ Done |
 | Epic 36 — Cloud Infrastructure      | FFH-138–FFH-141 | Pending |
 | Epic 37 — Production Configuration  | FFH-142–FFH-144 | Pending |
 | Epic 38 — Deployment Pipeline       | FFH-145–FFH-148 | Pending |

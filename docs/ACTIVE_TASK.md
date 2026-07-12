@@ -1,23 +1,14 @@
-## FFH-137: Verify Production Authentication Providers
+## FFH-138: Provision Production PostgreSQL Database
 
 ### Description
 
-Validate the production authentication flow before deployment.
+Provision the managed PostgreSQL production database.
 
 ### Acceptance Criteria
 
-The application supports only:
-
-- Google SSO
-- Microsoft SSO
-
-Validation confirms:
-
-- Successful login.
-- Failed login handling.
-- Logout.
-- Session restoration.
-- Token expiration handling.
-- Unauthorized access redirection.
-
-No mock authentication entry points remain.
+- Production database instance is created.
+- Database credentials are generated.
+- SSL connection is enabled.
+- Connection string is documented.
+- Access credentials are stored securely.
+- Database is reachable from the backend.
