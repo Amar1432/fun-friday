@@ -14,6 +14,51 @@ _(See `docs/archive/SPRINT_4_HANDOFF.md` for Sprint 4 detail)_
 
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
+## 🚀 FFH-135: Perform Regression Validation
+
+**Date/Time:** 2026-07-12 (Local Time)
+**Agent:** Command Code
+**Ticket:** FFH-135
+
+### What Changed
+
+**No code changes required.** FFH-135 is a pure verification ticket confirming the new game modes (Emoji Guess, Bad Movie Description, Gibberish) did not regress existing MVP multiplayer functionality.
+
+### Why
+
+Sprint 6 introduced answer evaluation, a game-mode registry, a shared renderer, new question banks, and host game selection (FFH-114–FFH-134). FFH-135 confirms the pre-existing authentication, room lifecycle, socket contracts, reconnection, leaderboard, scoring pipeline, Redis state, and Postgres persistence all remain intact.
+
+### Verified
+
+Full regression sweep across the workspace (CI-equivalent commands, `NODE_ENV=test` for web):
+
+- `pnpm --filter api test` ✅ (406/406 API tests)
+- `pnpm --filter web test` ✅ (191/191 web tests)
+- `pnpm -r typecheck` ✅ (api, web, packages/ui — all green)
+- `pnpm -r lint` ✅ (web: 0 errors, only 5 pre-existing HeroUI mock `_var` warnings)
+- `pnpm -r build` ✅ (NestJS `nest build` + Next.js 16 `next build` with all routes compiled)
+
+**Acceptance criteria coverage:**
+
+- **Authentication remains functional** — auth service/token/guard/SSO provider specs green.
+- **Room lifecycle remains functional** — rooms service/controller/gateway lifecycle specs green.
+- **Socket events remain unchanged** — gateway spec suite (173 tests) green; no event signatures changed by Sprint 6.
+- **Reconnection works** — socket sync + reconnection spec coverage green.
+- **Leaderboard updates correctly** — scoring/leaderboard assertions in gateway specs green.
+- **Existing scoring pipeline functions** — AnswerEvaluationService (FFH-114–FFH-118) and gateway scoring integration green.
+- **Redis state remains consistent** — redis service + gateway Redis metadata paths green.
+- **PostgreSQL persistence remains correct** — Prisma service + question/game seeding specs green.
+
+### Note
+
+An environment-only issue surfaced locally: the shell had `NODE_ENV=production` set, which makes React ship its production `act` stub and breaks **every** `@testing-library/react` render (`TypeError: React.act is not a function`), yielding 154 "failures". This is **not** a code regression — re-running with `NODE_ENV=test` restored the full 191/191 green. CI runs with `NODE_ENV` unset (defaults to dev/test in jest), so the pipeline is unaffected. No fix was applied since the app code is correct; the tests must simply run under a non-production `NODE_ENV`.
+
+### What's Next
+
+Sprint 6 (Game Modes & Answer Evaluation) is complete. Next logical step: plan Sprint 7 — candidate work includes production deployment hardening, additional game modes (registry already supports expansion via one-entry `modes` array), or a shared answer-validation package extracted from `apps/api`.
+
+---
+
 ## 🚀 Active Sprint: Sprint 6 (Game Modes & Answer Evaluation)
 
 ---
