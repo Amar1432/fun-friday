@@ -106,23 +106,6 @@ export default function LoginPage() {
     [loadingProvider, login],
   );
 
-  // Shared handler for mock login
-  const handleMockLogin = React.useCallback(async () => {
-    setError(null);
-    setLoadingProvider('google');
-    try {
-      const result = await ssoLogin('google', 'mock_token_host@funfriday.com');
-      setSuccess(true);
-      setTimeout(() => {
-        login(result.accessToken, result.user);
-      }, 1200);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Dev login failed');
-    } finally {
-      setLoadingProvider(null);
-    }
-  }, [login]);
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans relative overflow-hidden justify-between">
       {/* Background ambient glows */}
@@ -264,17 +247,6 @@ export default function LoginPage() {
             ) : (
               /* Main Buttons List */
               <div className="space-y-4">
-                {/* Dev Mock Login Button */}
-                <Button
-                  id="dev-login-button"
-                  fullWidth
-                  onPress={handleMockLogin}
-                  isDisabled={loadingProvider !== null}
-                  className="bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-md"
-                >
-                  Dev / Mock Login (host@funfriday.com)
-                </Button>
-
                 {/* Google SSO Button */}
                 <Button
                   id="google-login-button"

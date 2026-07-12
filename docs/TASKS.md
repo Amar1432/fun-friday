@@ -1,687 +1,314 @@
 # TASKS.md
 
 _(Note: For completed Sprint 1 & 2 tasks, see `docs/archive/SPRINT_1_2_AND_3_TASKS.md`)_
+_(Note: For completed Sprint 4, 5, & 6 tasks, see `docs/archive/SPRINT_4_5_6_TASKS.md`)_
 
-# Sprint 4 — Frictionless Entry & UI/UX Revamp
-
-**Sprint Goal**
-Initialize NextUI in the monorepo, fix authentication edge cases, implement one-click anonymous guest access with shareable links, and redesign the UI/UX layout to be clean, compact, and completely viewable without vertical scrolling.
-
----
-
-# Epic 24 — Workspace Tooling & Auth Hardening
-
----
-
-## FFH-103: Initialize NextUI in Monorepo Workspace
-
-### Description
-
-Install and configure NextUI and Framer Motion to provide glassmorphic, animated UI components for the frontend.
-
-### Acceptance Criteria
-
-- `@nextui-org/react` and `framer-motion` installed in the workspace.
-- `tailwind.config.ts` (or shared config) updated with the NextUI plugin.
-- `NextUIProvider` successfully wraps the root layout in `apps/web`.
-- `apps/web` successfully builds and starts without styling conflicts.
-
----
-
-## FFH-104: Implement Global 401 Auth Interceptor
-
-### Description
-
-Handle expired host tokens gracefully by logging out the user instead of letting them stay stuck on restricted pages.
-
-### Acceptance Criteria
-
-- API client interceptor intercepts any `401 Unauthorized` responses.
-- Local auth state/token is securely wiped immediately upon 401.
-- User is gracefully redirected back to `/login` with an intuitive toast message.
-
----
-
-# Epic 25 — Frictionless Guest Entry & Shareable Links
-
----
-
-## FFH-105: Anonymous Guest Onboarding Flow
-
-### Description
-
-Strip away any residual authentication barriers for guests. They should only need a display name and room code to jump right in.
-
-### Acceptance Criteria
-
-- Guest endpoints accept `displayName` and `roomCode` with zero auth requirements.
-- Room token generated for guests is scoped exclusively to their active temporary session.
-- Integration tests confirm unauthenticated guests can connect to socket rooms safely.
-
-## FFH-106: Shareable Lobby Links & Auto-Fill
-
-### Description
-
-Generate instant shareable invite links for hosts to distribute to players.
-
-### Acceptance Criteria
-
-- Host lobby UI displays a prominent "Copy Invite Link" action button.
-- URL copies to clipboard in the format: `/room/join?code=D9FD81`.
-- When opened by a guest, the Room Code field is locked/auto-filled, requiring only their name.
-
----
-
-# Epic 26 — NextUI-Style UI/UX Compact Revamp
-
----
-
-## FFH-107: Compact Lobby Layout Redesign
-
-### Description
-
-Overhaul the layout from the large vertical blocks seen in the current MVP to a tight, high-density dashboard grid that requires zero scrolling.
-
-### Acceptance Criteria
-
-- Vertical margins and padding reduced significantly across components.
-- Room info panel and player list converted into a compact, side-by-side split grid.
-- Primary host controls ("Start Game", "Leave Room") placed in a fixed, space-efficient header or bottom bar.
-- Layout remains fully viewable above the fold on desktop screen resolutions.
-
-## FFH-108: Micro-Animations & Sound Engine
-
-### Description
-
-Add responsive user feedback through subtle animations and audio toggles.
-
-### Acceptance Criteria
-
-- `canvas-confetti` runs immediately upon correct answers.
-- Audio engine utilities loaded for correct feedback and timer warnings.
-- Header includes a global persistence mute/unmute control button.
-
-# Sprint 5 — Admin Controls & Global Polish
+# Sprint 7 — Production Deployment Strategy
 
 **Sprint Goal**
-Empower the host with lobby management tools (player kicking, real-time presence monitoring), handle guest edge cases (duplicate names), and perform a complete global NextUI revamp, focusing heavily on the landing page.
+
+Prepare Fun Friday Hub for its first production deployment by removing all development-only authentication, provisioning production cloud infrastructure, securing runtime configuration, and establishing a fully automated CI/CD pipeline.
 
 ---
 
-# Epic 27 — Admin Controls & Presence
+# Epic 35 — Production Authentication
 
 ---
 
-## FFH-109: Implement Host Kick Functionality
+## FFH-136: Remove Mock Authentication Flow
 
 ### Description
 
-Allow the host to remove unwanted players from the room securely.
+Remove all mock authentication functionality from the frontend and backend so that only production authentication providers remain available.
 
 ### Acceptance Criteria
 
-- Backend: Create a `KickPlayer` socket event that requires host authentication.
-- Backend: Target socket is forcefully disconnected and removed from Redis room state.
-- Frontend: Add a "Kick" action (e.g., an 'X' icon or dropdown) to each guest card in the Host Lobby UI.
-- Frontend: Kicked guest is redirected to the landing page with an alert: "You have been removed by the host."
+- All mock login buttons are removed from the HeroUI interface.
+- All mock authentication routes are removed.
+- All mock authentication services are removed.
+- All mock authentication feature flags are removed.
+- No production code references mock authentication.
+- Application behavior remains unchanged for Google and Microsoft SSO users.
+- Existing authentication tests are updated accordingly.
 
-## FFH-110: Real-Time Presence & Offline Status
+---
+
+## FFH-137: Verify Production Authentication Providers
 
 ### Description
 
-Visually distinguish between players who are actively connected and those who have temporarily dropped off.
+Validate the production authentication flow before deployment.
 
 ### Acceptance Criteria
 
-- Backend: Redis state correctly flags `status: 'offline'` immediately on socket disconnect without removing the player instantly.
-- Frontend: NextUI player cards apply a visual "offline" state (e.g., grayscale, reduced opacity, or an "Offline" badge) for disconnected players.
-- Reconnections seamlessly remove the offline visual state.
+The application supports only:
+
+- Google SSO
+- Microsoft SSO
+
+Validation confirms:
+
+- Successful login.
+- Failed login handling.
+- Logout.
+- Session restoration.
+- Token expiration handling.
+- Unauthorized access redirection.
+
+No mock authentication entry points remain.
 
 ---
 
-# Epic 28 — Guest Experience Enhancements
+# Epic 36 — Cloud Infrastructure
 
 ---
 
-## FFH-111: Duplicate Name Resolution
+## FFH-138: Provision Production PostgreSQL Database
 
 ### Description
 
-Prevent guests from being blocked from joining if someone else used their preferred display name.
+Provision the managed PostgreSQL production database.
 
 ### Acceptance Criteria
 
-- Backend `JoinRoom` handler intercepts duplicate `displayName` requests.
-- Logic appends a numbered suffix (e.g., "John (1)", "John (2)") if the exact name already exists in the Redis room state.
-- Guest successfully connects and their UI reflects their newly suffixed name.
+- Production database instance is created.
+- Database credentials are generated.
+- SSL connection is enabled.
+- Connection string is documented.
+- Access credentials are stored securely.
+- Database is reachable from the backend.
 
 ---
 
-# Epic 29 — Global UI Revamp
-
----
-
-## FFH-112: Landing Page Overhaul
+## FFH-139: Provision Production Redis Instance
 
 ### Description
 
-Redesign the application root (`/`) to serve as a modern, high-converting entry point using NextUI and Framer Motion.
+Provision the managed Redis instance for ephemeral game state.
 
 ### Acceptance Criteria
 
-- Hero section utilizes glassmorphism, bold typography, and a clear call-to-action ("Join Game" and "Host Game").
-- Background features subtle, animated geometric shapes or gradients.
-- Fully responsive on mobile, tablet, and desktop viewports.
+- Redis instance is created.
+- Connection URL is generated.
+- Authentication is enabled.
+- TLS support is configured if available.
+- Credentials are stored securely.
+- Backend connectivity is verified.
 
-## FFH-113: Global NextUI Consistency Audit
+---
+
+## FFH-140: Provision Frontend Hosting Environment
 
 ### Description
 
-Ensure no legacy Tailwind-only components clash with the new NextUI aesthetic.
+Prepare the production frontend hosting platform.
 
 ### Acceptance Criteria
 
-- Host Login screen revamped with NextUI Cards and Inputs.
-- Create Room flow matches the new design language.
-- All toasts, modals, and error boundaries consistently use NextUI primitives.
-
-# Sprint 6 — Game Modes & Answer Evaluation
-
-**Sprint Goal**
-
-Expand the MVP by introducing reusable answer evaluation, multiple game modes, and a host-driven game selection flow. The backend remains responsible for all answer validation while the frontend dynamically renders the selected game mode using a common gameplay framework.
+- Project is created.
+- Production environment is configured.
+- Build settings are verified.
+- Framework is correctly detected.
+- Environment variable support is available.
 
 ---
 
-# Epic 28 — Answer Evaluation Engine
-
----
-
-## FFH-114: Create Answer Evaluation Module
+## FFH-141: Provision Backend Hosting Environment
 
 ### Description
 
-Create a dedicated backend module responsible for evaluating player answers independently of any specific game mode.
+Prepare the production backend hosting platform.
 
 ### Acceptance Criteria
 
-- A standalone Answer Evaluation module exists.
-- Module is injectable throughout the backend.
-- Evaluation logic is isolated from Socket.IO handlers.
-- Public interface is documented.
-- Module supports future game modes without modification.
+- Service is created.
+- Runtime environment is configured.
+- Build settings are verified.
+- Health endpoint is configured.
+- Environment variable support is enabled.
 
 ---
 
-## FFH-115: Implement Answer Normalization
+# Epic 37 — Production Configuration
+
+---
+
+## FFH-142: Configure Frontend Production Environment Variables
 
 ### Description
 
-Normalize incoming answers before evaluation.
+Configure all frontend runtime variables.
 
 ### Acceptance Criteria
 
-Normalization performs:
+Environment includes only required public variables such as:
 
-- Lowercase conversion.
-- Trim leading and trailing whitespace.
-- Collapse multiple spaces into a single space.
-- Remove punctuation.
-- Ignore hyphens.
-- Ignore underscores.
-- Ignore repeated whitespace.
+- API base URL.
+- Public application URL.
+- Google authentication configuration.
+- Microsoft authentication configuration.
 
-Example expectations:
-
-- "Spider-man"
-- "Spider man"
-- "spiderman"
-
-all normalize to the same value.
+No secrets are exposed to the client.
 
 ---
 
-## FFH-116: Implement Minor Typo Tolerance
+## FFH-143: Configure Backend Production Environment Variables
 
 ### Description
 
-Support small spelling mistakes during answer evaluation.
+Configure secure backend runtime configuration.
 
 ### Acceptance Criteria
 
-Evaluation accepts:
+Backend variables include:
 
-- Single missing character.
-- Single additional character.
-- Single adjacent transposition.
-- Single incorrect character.
+- Database connection.
+- Redis connection.
+- JWT secret.
+- JWT expiration.
+- Google OAuth credentials.
+- Microsoft OAuth credentials.
+- CORS origin.
+- Application environment.
 
-Evaluation rejects:
-
-- Completely different words.
-- Multiple unrelated spelling mistakes.
-- Incorrect movie or game titles.
-
-Matching threshold is configurable.
+Sensitive values are never committed to source control.
 
 ---
 
-## FFH-117: Support Multiple Accepted Answers
+## FFH-144: Validate Production Secret Management
 
 ### Description
 
-Allow questions to define multiple valid answers.
+Ensure secrets are managed securely across all deployment platforms.
 
 ### Acceptance Criteria
 
-Question evaluation supports:
-
-- Primary answer.
-- Alternate spellings.
-- Common abbreviations.
-- Aliases.
-- Synonyms when explicitly configured.
-
-Evaluation succeeds if any accepted answer matches.
+- No secrets exist in the repository.
+- No secrets exist in committed configuration files.
+- Secrets are configured using hosting platform secret management.
+- Local development configuration remains independent from production.
 
 ---
 
-## FFH-118: Create Answer Evaluation Test Suite
+# Epic 38 — Deployment Pipeline
+
+---
+
+## FFH-145: Connect Repository to Frontend Deployment
 
 ### Description
 
-Validate answer matching behavior.
+Connect the Git repository to the frontend hosting platform.
 
 ### Acceptance Criteria
 
-Automated tests cover:
-
-- Exact matches.
-- Normalized matches.
-- Typo tolerance.
-- Alternate answers.
-- Invalid answers.
-- Empty answers.
-- Unicode characters.
-- Numbers.
-- Special characters.
-
-All tests pass.
+- Repository is linked.
+- Production branch is configured.
+- Automatic deployment is enabled.
+- Preview deployments are enabled for pull requests if supported.
+- Successful deployment is confirmed.
 
 ---
 
-# Epic 29 — Game Mode Framework
-
----
-
-## FFH-119: Create Game Mode Registry
+## FFH-146: Connect Repository to Backend Deployment
 
 ### Description
 
-Implement a centralized registry of supported game modes.
+Connect the Git repository to the backend hosting platform.
 
 ### Acceptance Criteria
 
-Registry contains:
-
-- Emoji Guess.
-- Bad Movie Description.
-- Gibberish.
-
-Registry provides:
-
-- Identifier.
-- Display name.
-- Description.
-- Icon reference.
-- Rendering strategy.
-
-Registry supports future expansion.
+- Repository is linked.
+- Production branch is configured.
+- Automatic deployment is enabled.
+- Build process completes successfully.
+- Service starts successfully after deployment.
 
 ---
 
-## FFH-120: Create Shared Game Mode Renderer
+## FFH-147: Configure Automatic Production Deployments
 
 ### Description
 
-Build a frontend rendering layer capable of displaying different game modes.
+Establish continuous deployment for the application.
 
 ### Acceptance Criteria
 
-Renderer:
+Every push to the `main` branch automatically:
 
-- Receives game type.
-- Chooses correct presentation.
-- Uses shared layout.
-- Prevents duplicate UI implementations.
+- Builds the frontend.
+- Deploys the frontend.
+- Builds the backend.
+- Deploys the backend.
 
-Gameplay state remains shared.
-
----
-
-# Epic 30 — Emoji Guess
+Deployment failures are reported clearly.
 
 ---
 
-## FFH-121: Seed Emoji Guess Questions
+## FFH-148: Verify Production Build Process
 
 ### Description
 
-Populate the database with Emoji Guess questions.
+Validate the complete production build workflow.
 
 ### Acceptance Criteria
 
-Seed includes:
+Production pipeline successfully:
 
-- Prompt.
-- Correct answer.
-- Difficulty.
-- Category.
-- Metadata.
-
-Questions import successfully.
-
-No duplicate records created.
+- Installs dependencies.
+- Generates Prisma client.
+- Builds frontend.
+- Builds backend.
+- Produces optimized production artifacts.
+- Completes without build warnings that block deployment.
 
 ---
 
-## FFH-122: Build Emoji Guess Gameplay UI
+# Epic 39 — Production Validation
+
+---
+
+## FFH-149: Execute Production Smoke Tests
 
 ### Description
 
-Render Emoji Guess questions during gameplay.
+Validate the deployed application using core user journeys.
 
 ### Acceptance Criteria
 
-UI displays:
-
-- Emoji prompt.
-- Round information.
-- Timer.
-- Answer input.
-
-Rendering remains responsive.
-
-Correct answers are never exposed.
-
----
-
-## FFH-123: Validate Emoji Guess Answers
-
-### Description
-
-Integrate answer evaluation with Emoji Guess.
-
-### Acceptance Criteria
-
-Evaluation supports:
-
-- Normalized answers.
-- Alternate spellings.
-- Minor typos.
-
-Results integrate with existing scoring flow.
-
----
-
-# Epic 31 — Bad Movie Description
-
----
-
-## FFH-124: Seed Bad Movie Description Questions
-
-### Description
-
-Populate the database with Bad Movie Description content.
-
-### Acceptance Criteria
-
-Each question contains:
-
-- Description.
-- Correct answer.
-- Difficulty.
-- Category.
-- Metadata.
-
-Seeds execute successfully.
-
----
-
-## FFH-125: Build Bad Movie Description UI
-
-### Description
-
-Render movie descriptions during gameplay.
-
-### Acceptance Criteria
-
-UI displays:
-
-- Description text.
-- Round number.
-- Countdown timer.
-- Answer input.
-
-Layout remains consistent with shared gameplay screen.
-
----
-
-## FFH-126: Validate Bad Movie Description Answers
-
-### Description
-
-Integrate answer evaluation.
-
-### Acceptance Criteria
-
-Evaluation supports:
-
-- Exact match.
-- Normalized match.
-- Alternate movie titles.
-- Minor spelling mistakes.
-
-Scoring integrates with existing engine.
-
----
-
-# Epic 32 — Gibberish
-
----
-
-## FFH-127: Seed Gibberish Questions
-
-### Description
-
-Populate the database with Gibberish questions.
-
-### Acceptance Criteria
-
-Each record contains:
-
-- Gibberish phrase.
-- Correct answer.
-- Difficulty.
-- Category.
-- Metadata.
-
-Seeds execute without duplication.
-
----
-
-## FFH-128: Build Gibberish Gameplay UI
-
-### Description
-
-Render Gibberish prompts.
-
-### Acceptance Criteria
-
-UI displays:
-
-- Gibberish text.
-- Round information.
-- Timer.
-- Answer input.
-
-Presentation matches application design system.
-
----
-
-## FFH-129: Validate Gibberish Answers
-
-### Description
-
-Integrate fuzzy matching with Gibberish.
-
-### Acceptance Criteria
-
-Evaluation supports:
-
-- Exact matches.
-- Space normalization.
-- Hyphen normalization.
-- Typo tolerance.
-
-Incorrect answers are rejected.
-
----
-
-# Epic 33 — Host Game Selection
-
----
-
-## FFH-130: Build Game Selection Screen
-
-### Description
-
-Allow hosts to choose a game before starting a room.
-
-### Acceptance Criteria
-
-Screen displays:
-
-- Available games.
-- Game descriptions.
-- Icons.
-- Question count (if available).
-
-Only supported games appear.
-
----
-
-## FFH-131: Build Game Selection Cards
-
-### Description
-
-Create reusable game selection components.
-
-### Acceptance Criteria
-
-Each card displays:
-
-- Game name.
-- Description.
-- Icon.
-- Selection state.
-
-Selected game is visually distinguishable.
-
-Tailwind CSS styling is applied consistently.
-
----
-
-## FFH-132: Persist Selected Game
-
-### Description
-
-Store the host's selected game for the room.
-
-### Acceptance Criteria
-
-Selection is:
-
-- Saved before gameplay.
-- Included in room state.
-- Available after reconnect.
-- Used when loading question sets.
-
-Changing the game replaces any previous selection.
-
----
-
-## FFH-133: Load Selected Question Bank
-
-### Description
-
-Load questions for the chosen game mode.
-
-### Acceptance Criteria
-
-Question loader:
-
-- Uses selected game identifier.
-- Retrieves only matching questions.
-- Honors existing filtering rules.
-- Loads questions into Redis.
-
-No questions from other game modes are included.
-
----
-
-# Epic 34 — End-to-End Validation
-
----
-
-## FFH-134: Validate Complete Game Mode Flow
-
-### Description
-
-Verify the complete experience for all supported game modes.
-
-### Acceptance Criteria
-
-Validated flow:
-
-- Host selects game.
-- Room created.
-- Guests join.
-- Questions load.
-- Gameplay starts.
-- Answers submitted.
-- Answers evaluated.
-- Scores updated.
-- Leaderboard displayed.
-- Game completes.
-
-Flow succeeds for:
-
-- Emoji Guess.
-- Bad Movie Description.
-- Gibberish.
-
-No blocking issues remain.
-
----
-
-## FFH-135: Perform Regression Validation
-
-### Description
-
-Ensure new game modes do not impact existing multiplayer functionality.
-
-### Acceptance Criteria
-
-Regression testing confirms:
-
-- Authentication remains functional.
-- Room lifecycle remains functional.
-- Socket events remain unchanged.
-- Reconnection works.
+Smoke tests verify:
+
+- Frontend loads successfully.
+- Backend health endpoint responds.
+- Google authentication works.
+- Microsoft authentication works.
+- Room creation succeeds.
+- Guest joining succeeds.
+- Socket connection succeeds.
+- Gameplay starts successfully.
+- Answer submission succeeds.
 - Leaderboard updates correctly.
-- Existing scoring pipeline functions correctly.
-- Redis state remains consistent.
-- PostgreSQL persistence remains correct.
 
-All existing MVP functionality continues to operate successfully.
+No critical production issues are identified.
+
+---
+
+## FFH-150: Perform Production Readiness Review
+
+### Description
+
+Confirm that the application satisfies the minimum requirements for a public MVP deployment.
+
+### Acceptance Criteria
+
+Review confirms:
+
+- Production URLs are operational.
+- HTTPS is enabled.
+- Environment variables are configured correctly.
+- Authentication works end-to-end.
+- Database connectivity is stable.
+- Redis connectivity is stable.
+- Automatic deployments are operational.
+- Mock authentication has been completely removed.
+- Production documentation is updated to reflect the deployed architecture.
