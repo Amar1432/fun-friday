@@ -44,7 +44,7 @@ export const GAME_MODES: readonly GameModeDefinition[] = [
     displayName: 'Emoji Guess',
     description: 'Guess the movie, show, or phrase from a set of emojis!',
     iconRef: '🎭',
-    questionCount: 40,
+    questionCount: 43,
     renderingStrategy: 'emoji-prompt',
   },
   {
@@ -53,7 +53,7 @@ export const GAME_MODES: readonly GameModeDefinition[] = [
     displayName: 'Bad Movie Description',
     description: 'Figure out the movie from a hilariously terrible description.',
     iconRef: '🎬',
-    questionCount: 39,
+    questionCount: 43,
     renderingStrategy: 'description-text',
   },
   {

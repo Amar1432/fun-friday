@@ -1,5 +1,62 @@
 # Session Handoff Log
 
+## 🚀 Build Fix & Game Mode Investigation
+
+**Date/Time:** 2026-07-12 (Local Time)
+**Agent:** Freebuff (Buffy)
+
+### What Was Investigated
+
+The user reported that non-emoji games (Bad Movie Description, Gibberish) were not starting, even though Emoji Guess worked.
+
+### Root Cause Found
+
+**The `nest build` command was producing zero output files.** The API's `dist/` folder only contained compiled files from July 7th (pre-Sprint 5/6), meaning ALL modules added during Sprints 5 and 6 — `AuthModule`, `RoomsModule`, `GameModule`, `RedisModule`, `GameGateway`, etc. — were completely missing from the compiled output.
+
+- The database **did** have all 3 games seeded with questions ✅
+- The `nest build` command exits with code 0 but emits no `.js` files
+- This is caused by an incompatibility between `nest build` (which uses Angular build system internally) and the current `tsconfig` settings (`module: "nodenext"` + `moduleResolution: "nodenext"`)
+- Using `tsc` directly with `--outDir dist` works correctly
+
+The server only had the root `AppController` loaded, so ALL game starting requests to `GameGateway.handleStartGame` were failing with 404 — not just non-emoji games. However, the web app's Dev Mock Login uses a REST API call that also requires the `AuthController`, which was also missing. When users tried to log in, they got CORS/auth errors too.
+
+### What Changed
+
+**1. Build script fix** (`apps/api/package.json`)
+
+- `"build": "nest build"` → `"build": "rm -rf dist && tsc --project tsconfig.build.json --outDir dist --declaration --sourceMap"`
+- This ensures all modules are properly compiled
+
+**2. Crash fix** (`apps/api/src/game/game.gateway.ts`)
+
+- Added `.catch()` handlers to the two `void` fire-and-forget calls in `handleDisconnect`
+- Prevents unhandled promise rejections from crashing the Node.js process when Redis is closed during server shutdown
+- Errors are logged as warnings instead of crashing
+
+### Verified
+
+- `pnpm build` succeeds (exit 0) and produces all module files: `auth/`, `rooms/`, `game/`, `redis/`, `common/`
+- Browser agent confirmed game flow works for Bad Movie Description:
+  - Host login ✅
+  - Create room with Bad Movie Description ✅
+  - Join room as player ✅
+  - Start game ✅
+  - Game loads correctly ✅
+
+### What Changed (after question count fix)
+
+**3. Question count alignment** (`apps/web/lib/game-modes.ts`)
+
+- Emoji Guess: `40` → `43` (13E + 15M + 15H)
+- Bad Movie Description: `39` → `43` (13E + 15M + 15H)
+- Gibberish: `40` — already correct (13E + 15M + 12H)
+
+### What's Next
+
+Fix the `dev` script to also use `tsc --watch` instead of `nest start --watch`, which has the same issue.
+
+---
+
 ## 🏛️ Project State Summary (Previously Completed)
 
 _(See `docs/archive/SPRINT_1_AND_2_HANDOFF.md` for Sprints 1 & 2 history)_

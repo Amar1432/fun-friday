@@ -116,17 +116,29 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     // Mark player as disconnected in Redis metadata (for UI indication, not removal yet)
-    void this.redisRoomRepository.updateRoomMetadata(roomCode, {
-      [`player:${playerId}:disconnected`]: Date.now().toString(),
-    });
+    void this.redisRoomRepository
+      .updateRoomMetadata(roomCode, {
+        [`player:${playerId}:disconnected`]: Date.now().toString(),
+      })
+      .catch((err) => {
+        this.logger.warn(
+          `Failed to mark player ${playerId} as disconnected in Redis: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      });
 
     // Broadcast updated room state immediately so all remaining clients
     // see the player's isConnected=false status without waiting for cleanup
-    void this.buildRoomStatePayload(roomCode).then((payload) => {
-      if (this.server) {
-        this.server.to(roomCode).emit('RoomStateUpdated', payload);
-      }
-    });
+    void this.buildRoomStatePayload(roomCode)
+      .then((payload) => {
+        if (this.server) {
+          this.server.to(roomCode).emit('RoomStateUpdated', payload);
+        }
+      })
+      .catch((err) => {
+        this.logger.warn(
+          `Failed to broadcast updated room state on disconnect: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      });
 
     // Schedule delayed cleanup
     const timer = setTimeout(() => {
