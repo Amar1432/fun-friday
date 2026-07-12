@@ -58,9 +58,19 @@ To satisfy all acceptance criteria for FFH-134 — explicit test coverage provin
 - `pnpm --filter api typecheck` ✅
 - `pnpm --filter web typecheck` ✅
 
+### Verified
+
+- `pnpm --filter api test -- game.gateway` ✅ (173/173, up from 171)
+- `pnpm --filter api test` ✅ (406/406, up from 404)
+- `pnpm --filter web test` ✅ (191/191)
+- `pnpm --filter api typecheck` ✅
+- `pnpm --filter web typecheck` ✅
+
 ### What's Next
 
 Start `FFH-135: Perform Regression Validation`.
+
+Note: Code review feedback addressed — test name clarified (removed "submit answer, and complete" from description since those steps aren't executed in this test), redundant `completeRound` spy removed.
 
 ---
 

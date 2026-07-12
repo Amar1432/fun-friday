@@ -4649,14 +4649,11 @@ describe('GameGateway', () => {
         }),
       } as unknown as Server;
       jest.spyOn(gateway, 'startTimer').mockImplementation(() => {});
-      jest
-        .spyOn(gateway, 'completeRound')
-        .mockImplementation(() => Promise.resolve());
     });
 
     // ── SelectGame → StartGame → SubmitAnswer → completeRound ─────────────
 
-    it('should run full game mode lifecycle: select, start, submit answer, and complete', async () => {
+    it('should run full game mode lifecycle: select game, start, load questions, and start first round', async () => {
       const GAME_ID = '1cd83808-737f-4c29-ab51-adff5c6a1ef5'; // Emoji Guess
       const mockQuestions = [
         {
