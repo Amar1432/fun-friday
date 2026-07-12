@@ -1,14 +1,13 @@
-## FFH-139: Provision Production Redis Instance
+## FFH-140: Provision Frontend Hosting Environment
 
 ### Description
 
-Provision the managed Redis instance for ephemeral game state.
+Prepare the production frontend hosting platform.
 
 ### Acceptance Criteria
 
-- Redis instance is created.
-- Connection URL is generated.
-- Authentication is enabled.
-- TLS support is configured if available.
-- Credentials are stored securely.
-- Backend connectivity is verified.
+- Project is created.
+- Production environment is configured.
+- Build settings are verified.
+- Framework is correctly detected.
+- Environment variable support is available.

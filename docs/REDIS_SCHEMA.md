@@ -2,6 +2,25 @@
 
 This document defines the strict data structures and key naming conventions used in Redis for managing transient game state. All rapid, real-time operations (player connections, room lobby, round transitions, active timer tick, and live leaderboard calculations) must adhere to these schemas.
 
+## Production Redis
+
+**Provider:** [Redis Cloud](https://redis.io/cloud) (Redis Labs)
+**Status:** ✅ Provisioned (FFH-139)
+**TLS:** Available (add `s` to protocol — `rediss://`)
+
+### Connection
+
+The production Redis URL is stored in:
+
+- `apps/api/.env.production` under `REDIS_URL` (gitignored — never committed)
+- Uses `redis://` protocol (TLS available as `rediss://`)
+
+### Verified
+
+```
+PING → PONG ✅
+```
+
 ---
 
 ## 1. Key Lifecycles & TTLs

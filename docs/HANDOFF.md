@@ -20,6 +20,46 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-139: Provision Production Redis Instance
+
+**Date/Time:** 2026-07-12 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-139
+
+### What Was Provisioned
+
+**Provider:** [Redis Cloud](https://redis.io/cloud) (Redis Labs)
+**Instance:** `platinum-waves-cough-48182.db.redis.io:13834`
+
+### Actions Completed
+
+1. **🔍 Provider selection** — Evaluated Redis Cloud (free tier, TLS, low latency) as the best fit for ephemeral game state with real-time multiplayer. Already using `ioredis` — zero code changes.
+
+2. **📄 Production env updated** (`apps/api/.env.production`)
+   - Added `REDIS_URL` pointing to the Redis Cloud managed instance.
+   - File remains gitignored (`.env.*` pattern) — secrets never committed.
+
+3. **✅ Connectivity verified** — Successful PING/PONG response from the production Redis instance.
+
+4. **📝 Documentation updated** — `docs/REDIS_SCHEMA.md` now includes production Redis details and verification result.
+
+### Acceptance Criteria Met
+
+| Criteria                      | Status                                                         |
+| ----------------------------- | -------------------------------------------------------------- |
+| Redis instance created        | ✅ Redis Cloud managed instance provisioned                    |
+| Connection URL generated      | ✅ Provided by Redis Cloud dashboard                           |
+| Authentication enabled        | ✅ Password included in connection string                      |
+| TLS support available         | ✅ Protocol supports `rediss://` for TLS (current: `redis://`) |
+| Credentials stored securely   | ✅ `apps/api/.env.production` (matches `.gitignore` patterns)  |
+| Backend connectivity verified | ✅ PING → PONG confirmed                                       |
+
+### What's Next
+
+Start `FFH-140: Provision Frontend Hosting Environment`.
+
+---
+
 ## 🚀 FFH-138: Provision Production PostgreSQL Database
 
 **Date/Time:** 2026-07-12 (Local Time)
@@ -158,13 +198,13 @@ Start `FFH-137: Verify Production Authentication Providers` — validate Google 
 
 **Sprint Goal:** Prepare Fun Friday Hub for its first production deployment by removing all development-only authentication, provisioning production cloud infrastructure, securing runtime configuration, and establishing a fully automated CI/CD pipeline.
 
-| Epic                                | Tickets         | Status     |
-| ----------------------------------- | --------------- | ---------- |
-| Epic 35 — Production Authentication | FFH-136–FFH-137 | ✅ Done    |
-| Epic 36 — Cloud Infrastructure      | FFH-138–FFH-141 | FFH-138 ✅ |
-| Epic 37 — Production Configuration  | FFH-142–FFH-144 | Pending    |
-| Epic 38 — Deployment Pipeline       | FFH-145–FFH-148 | Pending    |
-| Epic 39 — Production Validation     | FFH-149–FFH-150 | Pending    |
+| Epic                                | Tickets         | Status                 |
+| ----------------------------------- | --------------- | ---------------------- |
+| Epic 35 — Production Authentication | FFH-136–FFH-137 | ✅ Done                |
+| Epic 36 — Cloud Infrastructure      | FFH-138–FFH-141 | FFH-138 ✅, FFH-139 ✅ |
+| Epic 37 — Production Configuration  | FFH-142–FFH-144 | Pending                |
+| Epic 38 — Deployment Pipeline       | FFH-145–FFH-148 | Pending                |
+| Epic 39 — Production Validation     | FFH-149–FFH-150 | Pending                |
 
 ---
 
