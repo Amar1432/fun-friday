@@ -20,6 +20,54 @@ _(Agents: Prepend your latest update to the top of this list. Never overwrite pr
 
 ---
 
+## 🚀 FFH-138: Provision Production PostgreSQL Database
+
+**Date/Time:** 2026-07-12 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** FFH-138
+
+### What Was Provisioned
+
+**Provider:** [Neon](https://neon.tech) — Serverless PostgreSQL
+**Instance:** `ep-odd-dust-at6lmhzn-pooler` (us-east-1, AWS)
+
+### Actions Completed
+
+1. **🔍 Provider selection** — Evaluated Neon (92/100 quality score) vs Tiger Cloud (50/100). Neon was chosen for its serverless Postgres, generous free tier, simple setup, and first-class Prisma support.
+
+2. **📄 Production env file created** (`apps/api/.env.production`)
+   - Contains `DATABASE_URL` with SSL-enforced connection string (`sslmode=require`).
+   - File is gitignored (`.env.*` pattern) — secrets never committed.
+
+3. **🗄️ Prisma migrations applied** — `20260706195605_init` migration deployed successfully.
+
+4. **🌱 Game data seeded** — All three game modes populated:
+
+   | Game                  | Questions |
+   | --------------------- | --------- |
+   | Emoji Guess           | 43        |
+   | Bad Movie Description | 43        |
+   | Gibberish             | 40        |
+
+5. **📝 Documentation updated** — `docs/DATABASE.md` now includes production connection details, setup commands, and seeded data summary.
+
+### Acceptance Criteria Met
+
+| Criteria                             | Status                                                                                         |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Production database instance created | ✅ Neon serverless Postgres provisioned                                                        |
+| Database credentials generated       | ✅ Connection string provided via Neon dashboard                                               |
+| SSL connection enabled               | ✅ `sslmode=require` in connection string                                                      |
+| Connection string documented         | ✅ Stored in `apps/api/.env.production` (gitignored), production section in `docs/DATABASE.md` |
+| Access credentials stored securely   | ✅ `.env.production` matches `.gitignore` patterns                                             |
+| Database reachable from backend      | ✅ Prisma migrate + seed completed successfully                                                |
+
+### What's Next
+
+Start `FFH-139: Provision Production Redis Instance`.
+
+---
+
 ## 🚀 FFH-137: Verify Production Authentication Providers
 
 **Date/Time:** 2026-07-12 (Local Time)
@@ -110,13 +158,13 @@ Start `FFH-137: Verify Production Authentication Providers` — validate Google 
 
 **Sprint Goal:** Prepare Fun Friday Hub for its first production deployment by removing all development-only authentication, provisioning production cloud infrastructure, securing runtime configuration, and establishing a fully automated CI/CD pipeline.
 
-| Epic                                | Tickets         | Status  |
-| ----------------------------------- | --------------- | ------- |
-| Epic 35 — Production Authentication | FFH-136–FFH-137 | ✅ Done |
-| Epic 36 — Cloud Infrastructure      | FFH-138–FFH-141 | Pending |
-| Epic 37 — Production Configuration  | FFH-142–FFH-144 | Pending |
-| Epic 38 — Deployment Pipeline       | FFH-145–FFH-148 | Pending |
-| Epic 39 — Production Validation     | FFH-149–FFH-150 | Pending |
+| Epic                                | Tickets         | Status     |
+| ----------------------------------- | --------------- | ---------- |
+| Epic 35 — Production Authentication | FFH-136–FFH-137 | ✅ Done    |
+| Epic 36 — Cloud Infrastructure      | FFH-138–FFH-141 | FFH-138 ✅ |
+| Epic 37 — Production Configuration  | FFH-142–FFH-144 | Pending    |
+| Epic 38 — Deployment Pipeline       | FFH-145–FFH-148 | Pending    |
+| Epic 39 — Production Validation     | FFH-149–FFH-150 | Pending    |
 
 ---
 

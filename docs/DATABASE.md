@@ -4,6 +4,39 @@ This document defines the persistent storage layer for the Fun Friday Hub. It us
 
 **Note on State:** This database is strictly for long-term persistence (User profiles, Game templates, Historical analytics). All rapid, in-game state changes (active timers, live scoreboards) are handled in-memory via Redis.
 
+## Production Database
+
+**Provider:** [Neon](https://neon.tech) — Serverless PostgreSQL
+**Status:** ✅ Provisioned (FFH-138)
+**SSL:** Enabled (required by connection string)
+
+### Connection
+
+The production connection string is stored in:
+
+- `apps/api/.env.production` (gitignored — never committed)
+- Only needs the `DATABASE_URL` variable
+
+### Setup Commands (for reference)
+
+```bash
+# Deploy migrations to production
+dotenv -e apps/api/.env.production -- npx prisma migrate deploy
+
+# Seed games into production
+dotenv -e apps/api/.env.production -- npx tsx scripts/seed-games.ts
+```
+
+### Seeded Data
+
+| Game                  | Questions |
+| --------------------- | --------- |
+| Emoji Guess           | 43        |
+| Bad Movie Description | 43        |
+| Gibberish             | 40        |
+
+---
+
 ## Prisma Schema
 
 ```prisma

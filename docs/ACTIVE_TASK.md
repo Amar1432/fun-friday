@@ -1,14 +1,14 @@
-## FFH-138: Provision Production PostgreSQL Database
+## FFH-139: Provision Production Redis Instance
 
 ### Description
 
-Provision the managed PostgreSQL production database.
+Provision the managed Redis instance for ephemeral game state.
 
 ### Acceptance Criteria
 
-- Production database instance is created.
-- Database credentials are generated.
-- SSL connection is enabled.
-- Connection string is documented.
-- Access credentials are stored securely.
-- Database is reachable from the backend.
+- Redis instance is created.
+- Connection URL is generated.
+- Authentication is enabled.
+- TLS support is configured if available.
+- Credentials are stored securely.
+- Backend connectivity is verified.
