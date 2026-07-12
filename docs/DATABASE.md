@@ -21,10 +21,14 @@ The production connection string is stored in:
 
 ```bash
 # Deploy migrations to production
-dotenv -e apps/api/.env.production -- npx prisma migrate deploy
+export DATABASE_URL=$(grep DATABASE_URL apps/api/.env.production | cut -d= -f2-) && npx prisma migrate deploy
 
 # Seed games into production
-dotenv -e apps/api/.env.production -- npx tsx scripts/seed-games.ts
+export DATABASE_URL=$(grep DATABASE_URL apps/api/.env.production | cut -d= -f2-) && npx tsx scripts/seed-games.ts
+
+# Or pass inline:
+# DATABASE_URL='your-connection-string' npx prisma migrate deploy
+# DATABASE_URL='your-connection-string' npx tsx scripts/seed-games.ts
 ```
 
 ### Seeded Data
