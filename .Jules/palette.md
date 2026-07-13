@@ -1,0 +1,3 @@
+## 2026-07-13 - [Lobby Controls Accessibility Improvement]
+**Learning:** Added aria-hidden attributes to decorative SVG icons and aria-live='polite' to dynamic status messages in lobby controls to improve screen reader feedback. It is crucial to remember to apply aria-hidden to inline SVGs that do not have title or explicit labels, to reduce verbosity for screen readers. Using aria-live makes the screen reader aware of real-time state changes, like user readiness.
+**Action:** Remember to check purely decorative elements for aria-hidden when auditing files and components that handle real-time status updates.
