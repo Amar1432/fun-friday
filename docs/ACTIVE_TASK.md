@@ -1,13 +1,16 @@
-## FFH-141: Provision Backend Hosting Environment
+## FFH-142: Configure Frontend Production Environment Variables
 
 ### Description
 
-Prepare the production backend hosting platform.
+Configure all frontend runtime variables.
 
 ### Acceptance Criteria
 
-- Service is created.
-- Runtime environment is configured.
-- Build settings are verified.
-- Health endpoint is configured.
-- Environment variable support is enabled.
+Environment includes only required public variables such as:
+
+- API base URL.
+- Public application URL.
+- Google authentication configuration.
+- Microsoft authentication configuration.
+
+No secrets are exposed to the client.

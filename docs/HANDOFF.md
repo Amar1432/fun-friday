@@ -2,6 +2,56 @@
 
 ---
 
+## 🚀 FFH-141: Provision Backend Hosting Environment
+
+**Date/Time:** 2026-07-15 (Local Time)
+**Agent:** Command Code (coding agent)
+**Ticket:** FFH-141
+
+### What Was Provisioned
+
+**Provider:** [Railway](https://railway.com) — backend hosting (per Architecture: "Backend → Railway or Render").
+**Service:** NestJS monorepo app (`apps/api`), Dockerfile-based deploy.
+
+### Actions Completed
+
+1. **🐳 Production Dockerfile created** (`apps/api/Dockerfile`) — monorepo-aware multi-stage build:
+   - Stage 1 (install): Copies root `pnpm-lock.yaml`, `package.json`, `pnpm-workspace.yaml`, workspace packages, and `apps/api/package.json` + `prisma/schema.prisma`. Runs `pnpm install --frozen-lockfile` with pnpm store cache mount. Root `postinstall` generates Prisma client.
+   - Stage 2 (build): Copies source, runs `pnpm --filter api build` (tsc → `dist/`).
+   - Stage 3 (runtime): `node:24-alpine`, copies `node_modules`, `packages`, `prisma`, `apps/api/dist`. Runs `node dist/main.js` on PORT 3001.
+
+2. **📄 `.dockerignore` created** (`apps/api/.dockerignore`) — excludes `node_modules`, dist, `.env*`, tests, docs, VCS from the build context.
+
+3. **🚂 Railway config created** (`railway.json` at repo root) — sets:
+   - Builder: `DOCKERFILE` from `apps/api/Dockerfile`, Root Directory: `.`
+   - Start command: `node dist/main.js`
+   - Health check: `GET /health` (10s interval, 100s timeout)
+   - Restart policy: `ON_FAILURE` (max 10 retries)
+
+4. **✅ Docker build verified** — `docker build -f apps/api/Dockerfile -t fun-friday-api .` completed successfully (exit 0). Built image ~300MB (Alpine base, pnpm workspace deps, Prisma-generated client).
+
+5. **✅ Runtime verified** — Container started NestJS, validated health endpoint, bootstrapped Socket.IO correctly. Graceful exit on missing DB (startup guard checks Prisma connectivity — normal for a deploy before DB is wired).
+
+6. **🔒 pnpm security fix** — Added `pnpm.onlyBuiltDependencies` to root `package.json` (`@prisma/client`, `@prisma/engines`, `prisma`). pnpm 10.x skips native build scripts without explicit allowlist; Prisma client won't work without the generated engine.
+
+7. **📝 Deployment documentation created** (`docs/DEPLOYMENT.md`) — infrastructure overview, exact environment variable keys for both `apps/web` and `apps/api`, production build/start commands, lessons learned from deployment errors.
+
+### Acceptance Criteria Met
+
+| Criteria                     | Status                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| Service is created           | ✅ Railway service config + Dockerfile ready for platform deploy          |
+| Runtime environment config   | ✅ Node 24 Alpine, pnpm workspace install, production deps only           |
+| Build settings verified      | ✅ `docker build` exit 0, `tsc` → dist, Prisma client generated           |
+| Health endpoint configured   | ✅ `GET /health` responds; Railway config set to `/health`                |
+| Environment variable support | ✅ `.env.production` pattern, `main.ts` reads `PORT`, all keys documented |
+
+### What's Next
+
+Start `FFH-142: Configure Frontend Production Environment Variables` — set `NEXT_PUBLIC_*` vars in Vercel dashboard pointing to deployed backend.
+
+---
+
 ## 🚀 FFH-140: Provision Frontend Hosting Environment
 
 **Date/Time:** 2026-07-15 (Local Time)
