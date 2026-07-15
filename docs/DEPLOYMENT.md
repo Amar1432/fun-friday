@@ -6,13 +6,13 @@ This document captures the production deployment strategy, environment variables
 
 ## Infrastructure Overview
 
-| Component                 | Host               | Details                                                    |
-| ------------------------- | ------------------ | ---------------------------------------------------------- |
-| **Frontend (Next.js)**    | Vercel             | Monorepo app (`apps/web`), auto-deploys from `main` branch |
-| **Backend (NestJS)**      | Railway            | Dockerfile-based deploy from `apps/api/Dockerfile`         |
-| **Database (PostgreSQL)** | Neon               | Serverless Postgres, `DATABASE_URL` with SSL               |
-| **Cache (Redis)**         | Redis Cloud        | Ephemeral room/game state                                  |
-| **Auth**                  | Google + Microsoft | OAuth SSO only (mock auth fully removed)                   |
+| Component                 | Host               | Details                                                                                 |
+| ------------------------- | ------------------ | --------------------------------------------------------------------------------------- |
+| **Frontend (Next.js)**    | Vercel             | `fun-friday-tau.vercel.app`, monorepo app (`apps/web`), auto-deploys from `main` branch |
+| **Backend (NestJS)**      | Railway            | `fun-friday-api.railway.app`, Dockerfile-based deploy from `apps/api/Dockerfile`        |
+| **Database (PostgreSQL)** | Neon               | Serverless Postgres, `DATABASE_URL` with SSL                                            |
+| **Cache (Redis)**         | Redis Cloud        | Ephemeral room/game state                                                               |
+| **Auth**                  | Google + Microsoft | OAuth SSO only (mock auth fully removed)                                                |
 
 ---
 

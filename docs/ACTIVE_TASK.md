@@ -1,16 +1,20 @@
-## FFH-142: Configure Frontend Production Environment Variables
+## FFH-143: Configure Backend Production Environment Variables
 
 ### Description
 
-Configure all frontend runtime variables.
+Configure secure backend runtime configuration.
 
 ### Acceptance Criteria
 
-Environment includes only required public variables such as:
+Backend variables include:
 
-- API base URL.
-- Public application URL.
-- Google authentication configuration.
-- Microsoft authentication configuration.
+- Database connection.
+- Redis connection.
+- JWT secret.
+- JWT expiration.
+- Google OAuth credentials.
+- Microsoft OAuth credentials.
+- CORS origin.
+- Application environment.
 
-No secrets are exposed to the client.
+Sensitive values are never committed to source control.

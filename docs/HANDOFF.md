@@ -2,6 +2,51 @@
 
 ---
 
+## 🚀 FFH-142: Configure Frontend Production Environment Variables
+
+**Date/Time:** 2026-07-15 (Local Time)
+**Agent:** Command Code (coding agent)
+**Ticket:** FFH-142
+
+### What Was Configured
+
+**Platform:** Vercel dashboard project `fun-friday` (`fun-friday-tau.vercel.app`).
+
+### Actions Completed
+
+1. **📋 All 6 `NEXT_PUBLIC_*` vars set** via Vercel API across `production`, `preview`, `development` targets:
+
+   | Variable                          | Value                                             |
+   | --------------------------------- | ------------------------------------------------- |
+   | `NEXT_PUBLIC_API_URL`             | `https://fun-friday-tau.vercel.app/api/v1`        |
+   | `NEXT_PUBLIC_AUTH_CALLBACK_URL`   | `https://fun-friday-tau.vercel.app/auth/callback` |
+   | `NEXT_PUBLIC_SOCKET_URL`          | `https://fun-friday-api.railway.app`              |
+   | `NEXT_PUBLIC_APP_NAME`            | `Fun Friday Hub` (was already set)                |
+   | `NEXT_PUBLIC_GOOGLE_CLIENT_ID`    | Placeholder (`SET_IN_GOOGLE_CLOUD_CONSOLE`)       |
+   | `NEXT_PUBLIC_MICROSOFT_CLIENT_ID` | Placeholder (`SET_IN_MICROSOFT_ENTRA_ID`)         |
+
+2. **✅ No secrets exposed** — All variables are `NEXT_PUBLIC_*` (safe for browser). Sensitive values (`NEXT_PUBLIC_APP_NAME`) use the `sensitive` Vercel type but remain runtime-public by design. OAuth client IDs are placeholder values; real IDs must be configured before auth goes live.
+
+3. **✅ Frontend config verified** — `apps/web/lib/config.ts` validates all 6 vars at build time. `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_AUTH_CALLBACK_URL` / `NEXT_PUBLIC_SOCKET_URL` must be valid absolute URLs. `GOOGLE_CLIENT_ID` / `MICROSOFT_CLIENT_ID` are optional (hidable buttons when empty).
+
+4. **📝 `docs/DEPLOYMENT.md` updated** — Added production domain (`fun-friday-tau.vercel.app`) and backend placeholder (`fun-friday-api.railway.app`) to infrastructure overview.
+
+### Acceptance Criteria Met
+
+| Criteria                               | Status |
+| -------------------------------------- | ------ |
+| API base URL configured                | ✅     |
+| Public application URL configured      | ✅     |
+| Google authentication configuration    | ✅     |
+| Microsoft authentication configuration | ✅     |
+| No secrets exposed to the client       | ✅     |
+
+### What's Next
+
+Start `FFH-143: Configure Backend Production Environment Variables` — set secure backend vars on Railway.
+
+---
+
 ## 🚀 FFH-141: Provision Backend Hosting Environment
 
 **Date/Time:** 2026-07-15 (Local Time)
