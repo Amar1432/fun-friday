@@ -4,6 +4,10 @@
  * Uses the Google Sign-In for Web (GIS) library to show the One Tap / popup
  * credential picker and return a JWT `credential` (id_token).
  *
+ * If the browser blocks the popup (e.g. Brave Shields, Firefox Enhanced Tracking
+ * Protection), the function rejects with a `PopupBlockedError` after a short
+ * timeout so the caller can fall back to the OAuth2 redirect flow.
+ *
  * @see https://developers.google.com/identity/gsi/web/reference/js-reference
  */
 
@@ -45,6 +49,21 @@ declare global {
     google?: {
       accounts: GoogleAccounts;
     };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Error Types
+// ---------------------------------------------------------------------------
+
+/**
+ * Thrown when the GIS popup/One Tap is likely blocked by the browser.
+ * The caller should fall back to the OAuth2 redirect flow.
+ */
+export class PopupBlockedError extends Error {
+  constructor() {
+    super('Google sign-in popup was blocked by your browser. ' + 'Falling back to redirect flow.');
+    this.name = 'PopupBlockedError';
   }
 }
 
@@ -140,13 +159,15 @@ export async function requestGoogleCredential(clientId: string): Promise<string>
     // We just let the prompt happen and catch timeout if user never responds.
     google.accounts.id.prompt();
 
-    // Set a timeout so the promise doesn't hang indefinitely
-    // if the user dismisses the prompt or never interacts
+    // Set a short timeout to detect when the popup/One Tap is blocked
+    // (e.g. by Brave Shields, FedCM restrictions). If the browser doesn't
+    // display the prompt within this window, we treat it as blocked and
+    // the caller can fall back gracefully.
     setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        reject(new Error('Sign-in timed out. Please try again.'));
+        reject(new PopupBlockedError());
       }
-    }, 120_000); // 2 minute timeout
+    }, 8_000); // 8 second timeout for blocked-popup detection
   });
 }

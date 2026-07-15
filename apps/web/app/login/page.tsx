@@ -6,8 +6,9 @@ import { useSearchParams } from 'next/navigation';
 import { Card, Button } from '@heroui/react';
 import { config } from '@/lib/config';
 import { ssoLogin } from '@/lib/api';
-import { requestGoogleCredential } from '@/lib/auth/google';
+import { requestGoogleCredential, PopupBlockedError } from '@/lib/auth/google';
 import { requestMicrosoftCredential } from '@/lib/auth/microsoft';
+import { redirectToGoogle } from '@/lib/auth/google-redirect';
 
 import { useAuth } from '@/lib/auth/auth-context';
 
@@ -72,6 +73,8 @@ export default function LoginPage() {
               'Google Client ID is not configured. Set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file.',
             );
           }
+
+          // Try GIS popup first
           idToken = await requestGoogleCredential(config.googleClientId);
         } else {
           if (!config.microsoftClientId) {
@@ -94,6 +97,23 @@ export default function LoginPage() {
           login(result.accessToken, result.user);
         }, 1200);
       } catch (err) {
+        // Detect blocked popup (Brave, Firefox ETP, etc.) and auto-fallback
+        if (provider === 'google' && err instanceof PopupBlockedError) {
+          // The GIS popup was blocked — automatically redirect the browser
+          // to Google's own sign-in page via the OAuth2 redirect flow.
+          // This works in all browsers including Brave.
+          try {
+            redirectToGoogle();
+          } catch (redirectErr) {
+            const message =
+              redirectErr instanceof Error
+                ? redirectErr.message
+                : 'Failed to initiate sign-in redirect';
+            setError(message);
+          }
+          return;
+        }
+
         const message =
           err instanceof Error
             ? err.message
@@ -351,6 +371,29 @@ export default function LoginPage() {
                     {loadingProvider === 'microsoft' ? 'Signing in...' : 'Sign in with Microsoft'}
                   </Button>
                 )}
+
+                {/* Redirect fallback for browsers that block GIS popups (Brave, etc.) */}
+                <div className="text-center space-y-2">
+                  <p className="text-xs text-slate-500">
+                    Sign-in not working?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          redirectToGoogle();
+                        } catch (err) {
+                          setError(
+                            err instanceof Error ? err.message : 'Failed to initiate sign-in',
+                          );
+                        }
+                      }}
+                      disabled={loadingProvider !== null}
+                      className="text-indigo-400 hover:text-indigo-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded underline underline-offset-2 decoration-indigo-500/30 hover:decoration-indigo-400 disabled:opacity-50"
+                    >
+                      Use browser redirect
+                    </button>
+                  </p>
+                </div>
               </div>
             )}
 
