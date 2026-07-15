@@ -1,12 +1,13 @@
-## FFH-144: Validate Production Secret Management
+## FFH-145: Connect Repository to Frontend Deployment
 
 ### Description
 
-Ensure secrets are managed securely across all deployment platforms.
+Connect the Git repository to the frontend hosting platform.
 
 ### Acceptance Criteria
 
-- No secrets exist in the repository.
-- No secrets exist in committed configuration files.
-- Secrets are configured using hosting platform secret management.
-- Local development configuration remains independent from production.
+- Repository is linked.
+- Production branch is configured.
+- Automatic deployment is enabled.
+- Preview deployments are enabled for pull requests if supported.
+- Successful deployment is confirmed.
