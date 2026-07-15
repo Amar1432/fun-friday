@@ -1,5 +1,58 @@
 # Session Handoff Log
 
+---
+
+## 🚀 FFH-140: Provision Frontend Hosting Environment
+
+**Date/Time:** 2026-07-15 (Local Time)
+**Agent:** Command Code (coding agent)
+**Ticket:** FFH-140
+
+### What Was Provisioned
+
+**Provider:** [Vercel](https://vercel.com) — frontend hosting (per Architecture: "Frontend → Vercel").
+**Project:** `fun-friday` under team `amar1432s-projects`.
+
+### Actions Completed
+
+1. **🔗 Repo-linked project** — Used `vercel link --repo` against `https://github.com/Amar1432/fun-friday.git`. No new project was created (one already existed for this repo). `.vercel/repo.json` written (gitignored).
+
+2. **⚙️ Production build settings configured** (via Vercel API, verified through `vercel project inspect`):
+   - **Root Directory:** `apps/web` (monorepo frontend app).
+   - **Framework Preset:** `nextjs` (Next.js 16.2.10, Turbopack).
+   - **Install Command:** `pnpm install` (workspace install at repo root).
+   - **Build Command:** `pnpm --filter web build`.
+   - **Output Directory:** `.next`.
+   - **Node.js Version:** `24.x`.
+
+3. **🐛 Build failure diagnosed & fixed** — Initial deploys failed instantly with `Error: No Next.js version detected`. Root cause: Root Directory was the repo root (`.`), where the root `package.json` has no `next` dependency, so Vercel's framework autodetection could not find Next.js. Fix: set Root Directory to `apps/web` where `next` lives. Confirmed via `vercel build` reproduction locally and the explicit CD error.
+
+4. **✅ Build settings verified** — Triggered preview deployment `fun-friday-pfi02kqkz-amar1432s-projects.vercel.app` → status **`● Ready`**, 47 output items, serverless functions built successfully.
+
+5. **🔐 Environment variable support enabled** — `vercel env pull` downloaded preview env to `.vercel/.env.preview.local` (gitignored). Public runtime vars (`NEXT_PUBLIC_*`) are supported; secrets stay on the Vercel platform.
+
+6. **📄 `.gitignore` updated** — Added `.vercel` and `.env*` so link artifacts and environment files are never committed.
+
+### Acceptance Criteria Met
+
+| Criteria                          | Status                                                   |
+| --------------------------------- | -------------------------------------------------------- |
+| Project is created                | ✅ Vercel project `fun-friday` linked to the Git repo    |
+| Production environment configured | ✅ Root `apps/web`, Node 24.x, framework nextjs          |
+| Build settings verified           | ✅ Preview deploy `● Ready` (47 outputs)                 |
+| Framework correctly detected      | ✅ Next.js preset active                                 |
+| Environment variable support      | ✅ Vercel env + `.env.preview.local` pulled (gitignored) |
+
+### Note
+
+`apps/web/vercel.json` (committed in an earlier FFH-140 commit) sets only `installCommand: pnpm install`; project-level settings (Root Directory, build command, framework) are managed in the Vercel dashboard/API. Keep `.vercel` and `.env*` gitignored.
+
+### What's Next
+
+Start `FFH-141: Provision Backend Hosting Environment` (Railway or Render per Architecture).
+
+---
+
 ## 🏛️ Project State Summary
 
 _(See `docs/archive/SPRINT_1_AND_2_HANDOFF.md` for Sprints 1 & 2 history)_

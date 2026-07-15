@@ -1,13 +1,13 @@
-## FFH-140: Provision Frontend Hosting Environment
+## FFH-141: Provision Backend Hosting Environment
 
 ### Description
 
-Prepare the production frontend hosting platform.
+Prepare the production backend hosting platform.
 
 ### Acceptance Criteria
 
-- Project is created.
-- Production environment is configured.
+- Service is created.
+- Runtime environment is configured.
 - Build settings are verified.
-- Framework is correctly detected.
-- Environment variable support is available.
+- Health endpoint is configured.
+- Environment variable support is enabled.
