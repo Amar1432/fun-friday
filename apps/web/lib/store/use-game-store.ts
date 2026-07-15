@@ -223,8 +223,11 @@ export const useGameStore = create<GameStore>((set) => ({
         timerRemaining: question.timeLimitSeconds,
         correctAnswer: null,
         submittedAnswer: null,
+        // Only advance the round index when transitioning FROM an existing
+        // question to a different one. The very first question does NOT
+        // increment — setGameStarted already set currentRoundIndex to 0.
         currentRoundIndex:
-          !state.game.currentQuestion || state.game.currentQuestion.id !== question.id
+          state.game.currentQuestion && state.game.currentQuestion.id !== question.id
             ? state.game.currentRoundIndex + 1
             : state.game.currentRoundIndex,
       },

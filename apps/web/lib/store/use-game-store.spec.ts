@@ -139,7 +139,7 @@ describe('useGameStore', () => {
   it('should handle question started and round updates', () => {
     const store = useGameStore.getState();
 
-    // First question
+    // First question — should NOT increment (setGameStarted already set index to 0)
     store.setQuestionStarted({
       id: 'q-1',
       prompt: 'Prompt 1',
@@ -155,7 +155,8 @@ describe('useGameStore', () => {
       difficulty: 'EASY',
     });
     expect(state.game.timerRemaining).toBe(15);
-    expect(state.game.currentRoundIndex).toBe(1);
+    // First question keeps initial index 0 (setGameStarted sets it)
+    expect(state.game.currentRoundIndex).toBe(0);
 
     // Same question start (e.g. re-broadcast or sync) should not increment round
     store.setQuestionStarted({
@@ -164,16 +165,16 @@ describe('useGameStore', () => {
       timeLimitSeconds: 15,
       difficulty: 'EASY',
     });
-    expect(useGameStore.getState().game.currentRoundIndex).toBe(1);
+    expect(useGameStore.getState().game.currentRoundIndex).toBe(0);
 
-    // Next question
+    // Next question (different ID) — should increment
     store.setQuestionStarted({
       id: 'q-2',
       prompt: 'Prompt 2',
       timeLimitSeconds: 20,
       difficulty: 'MEDIUM',
     });
-    expect(useGameStore.getState().game.currentRoundIndex).toBe(2);
+    expect(useGameStore.getState().game.currentRoundIndex).toBe(1);
   });
 
   it('should handle timer ticks, answer submissions, reveals, and game completion', () => {
