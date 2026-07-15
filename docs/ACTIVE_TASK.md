@@ -1,13 +1,16 @@
-## FFH-146: Connect Repository to Backend Deployment
+## FFH-147: Configure Automatic Production Deployments
 
 ### Description
 
-Connect the Git repository to the backend hosting platform.
+Establish continuous deployment for the application.
 
 ### Acceptance Criteria
 
-- Repository is linked.
-- Production branch is configured.
-- Automatic deployment is enabled.
-- Build process completes successfully.
-- Service starts successfully after deployment.
+Every push to the `main` branch automatically:
+
+- Builds the frontend.
+- Deploys the frontend.
+- Builds the backend.
+- Deploys the backend.
+
+Deployment failures are reported clearly.

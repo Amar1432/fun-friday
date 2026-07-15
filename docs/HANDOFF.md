@@ -2,6 +2,48 @@
 
 ---
 
+## 🚀 FFH-146: Connect Repository to Backend Deployment
+
+**Date/Time:** 2026-07-15 (Local Time)
+**Agent:** Command Code (coding agent)
+**Ticket:** FFH-146
+
+### What Was Configured
+
+**Platform:** Railway — NestJS backend deployed from `Amar1432/fun-friday`.
+
+### Actions Completed
+
+1. **🚂 Railway CLI installed + authenticated** — Installed `@railway/cli@5.26.1`, signed in as `Amarjeet Kumar`.
+
+2. **📦 Project created** — `railway init` + `railway up` created project `fun-friday` on `Amarjeet Kumar's Projects`. Auto-detected `railway.json` config (Dockerfile builder, health check at `/health`).
+
+3. **🐳 Docker build debugged & fixed** — Railway's Docker builder rejected `--mount=type=cache` flag. Removed cache mount → build succeeded. All nine environment variables set (DB, Redis, JWT, Google/MS OAuth, CORS, NODE_ENV, PORT) via `railway variable set`.
+
+4. **🔗 GitHub source connected** — `railway service source connect --repo Amar1432/fun-friday --branch main` linked the repo for auto-deploy on push.
+
+5. **✅ Production deployment verified:**
+   - **Status:** `● SUCCESS` (deployment `046d12d0`)
+   - **Public URL:** `https://fun-friday-production.up.railway.app`
+   - **Health check:** `GET /health` → `{"status":"ok","redis":"up","uptime":119s}`
+   - NestJS started, Redis connected, all routes mapped, Socket.IO gateway subscribed
+
+### Acceptance Criteria Met
+
+| Criteria                             | Status |
+| ------------------------------------ | ------ |
+| Repository is linked                 | ✅     |
+| Production branch is configured      | ✅     |
+| Automatic deployment is enabled      | ✅     |
+| Build process completes successfully | ✅     |
+| Service starts successfully          | ✅     |
+
+### What's Next
+
+Start `FFH-147: Configure Automatic Production Deployments` — verify that every push to `main` triggers frontend + backend deploy automatically.
+
+---
+
 ## 🚀 FFH-145: Connect Repository to Frontend Deployment
 
 **Date/Time:** 2026-07-15 (Local Time)
