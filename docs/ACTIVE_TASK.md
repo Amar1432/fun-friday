@@ -1,13 +1,13 @@
-## FFH-145: Connect Repository to Frontend Deployment
+## FFH-146: Connect Repository to Backend Deployment
 
 ### Description
 
-Connect the Git repository to the frontend hosting platform.
+Connect the Git repository to the backend hosting platform.
 
 ### Acceptance Criteria
 
 - Repository is linked.
 - Production branch is configured.
 - Automatic deployment is enabled.
-- Preview deployments are enabled for pull requests if supported.
-- Successful deployment is confirmed.
+- Build process completes successfully.
+- Service starts successfully after deployment.
