@@ -347,6 +347,56 @@ _(See `docs/archive/SPRINT_6_HANDOFF.md` for Sprint 6 handoff entries FFH-114–
 
 ---
 
+## 🚀 Production Auth Fix: Hide Microsoft SSO Button & Fix Vercel Env Vars
+
+**Date/Time:** 2026-07-15 (Local Time)
+**Agent:** Freebuff (Buffy)
+**Ticket:** N/A — Auth production fixes
+
+### Issues Fixed
+
+**1. 🔴 Microsoft SSO button showing on production**
+
+- Root cause: `apps/web/.env` (local, uncommitted) had `NEXT_PUBLIC_MICROSOFT_CLIENT_ID=your-microsoft-client-id-uuid`. Vercel was picking up this `.env` file during deploy because `.env` was NOT in `.vercelignore`.
+- Fix: Added `.env` to `.vercelignore` so local env files don't leak into Vercel builds.
+- `NEXT_PUBLIC_MICROSOFT_CLIENT_ID` environment variable removed from Vercel dashboard — button now hidden in production.
+- Verified: Browser agent confirmed no Microsoft button on `https://fun-friday-tau.vercel.app/login`.
+
+**2. 🔴 Google SSO not working**
+
+- Root cause #1: `NEXT_PUBLIC_API_URL` was pointing to `https://fun-friday-tau.vercel.app/api/v1` (Vercel frontend) instead of `https://fun-friday-production.up.railway.app/api/v1` (Railway backend). Frontend couldn't reach the authentication API.
+- Root cause #2: `NEXT_PUBLIC_SOCKET_URL` was pointing to `https://fun-friday-api.railway.app` which doesn't exist. Correct URL is `https://fun-friday-production.up.railway.app`.
+- Fix: Updated both env vars on Vercel dashboard to point to the correct Railway backend URL.
+- Root cause #3: Google Cloud Console OAuth 2.0 Client ID does not have `https://fun-friday-tau.vercel.app` in its Authorized JavaScript origins. This must be configured manually in Google Cloud Console.
+
+**3. 🔧 `.vercelignore` updated**
+
+- Added `.env` to the ignore list (alongside existing `.env.local`, `.env.production`, `.env.development`)
+- Prevents Vercel builds from reading local `.env` files that may contain placeholder env vars
+
+### Vercel Env Variables (Current State)
+
+| Variable                          | Value                                                                      | Environments                     |
+| --------------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
+| `NEXT_PUBLIC_API_URL`             | `https://fun-friday-production.up.railway.app/api/v1`                      | Production, Development          |
+| `NEXT_PUBLIC_SOCKET_URL`          | `https://fun-friday-production.up.railway.app`                             | Production, Development          |
+| `NEXT_PUBLIC_AUTH_CALLBACK_URL`   | `https://fun-friday-tau.vercel.app/auth/callback`                          | Production, Preview, Development |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`    | `821144914424-3tspjh5u8o0343e3ljgc49vp7q637lbc.apps.googleusercontent.com` | Production, Preview, Development |
+| `NEXT_PUBLIC_APP_NAME`            | `Fun Friday Hub`                                                           | Production                       |
+| `NEXT_PUBLIC_MICROSOFT_CLIENT_ID` | _Not set_ (button hidden)                                                  | —                                |
+
+### Git Changes
+
+- `./vercelignore` — Added `.env` to exclude from Vercel build context
+- `apps/web/.env` — Commented out `NEXT_PUBLIC_MICROSOFT_CLIENT_ID` (gitignored)
+
+### What's Next
+
+- Configure Authorized JavaScript origins in Google Cloud Console OAuth client
+- Consider Preview environment env vars for API_URL and SOCKET_URL
+
+---
+
 _(Agents: Prepend your latest update to the top of this list. Never overwrite previous entries.)_
 
 ---

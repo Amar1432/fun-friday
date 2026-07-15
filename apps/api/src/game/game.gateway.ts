@@ -15,6 +15,7 @@ import { SocketLoggingInterceptor } from '../common/interceptors/socket-logging.
 import { WsValidationPipe } from '../common/pipes/ws-validation.pipe';
 import { PrismaService } from '../database/prisma.service';
 import { RedisRoomRepository } from '../redis/redis-room.repository';
+import { isOriginAllowed } from '../config/cors.config';
 import { JoinRoomDto } from './dto/join-room.dto';
 import { LeaveRoomDto } from './dto/leave-room.dto';
 import { PlayerReadyDto } from './dto/player-ready.dto';
@@ -30,9 +31,16 @@ import { AnswerEvaluationService } from './answer-evaluation/answer-evaluation.s
 /** Grace period (ms) before an unexpectedly disconnected player is removed. */
 const DISCONNECT_CLEANUP_DELAY_MS = 30_000;
 
+const configuredOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000',
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allowed: boolean) => void,
+    ) => {
+      callback(null, isOriginAllowed(origin, configuredOrigin));
+    },
     credentials: true,
   },
 })
