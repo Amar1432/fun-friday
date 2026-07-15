@@ -23,8 +23,20 @@ interface GoogleAccounts {
       callback: (response: CredentialResponse) => void;
       auto_select?: boolean;
       cancel_on_tap_outside?: boolean;
+      use_fedcm_for_button?: boolean;
     }) => void;
-    prompt: (notification?: (n: { isNotDisplayed: () => boolean }) => void) => void;
+    prompt: (
+      notification?: (n: {
+        isDisplayMoment: () => boolean;
+        isDisplayed: () => boolean;
+        isNotDisplayed: () => boolean;
+        getNotDisplayedReason: () => string;
+        isSkippedMoment: () => boolean;
+        getSkippedReason: () => string;
+        isDismissedMoment: () => boolean;
+        getDismissedReason: () => string;
+      }) => void,
+    ) => void;
   };
 }
 
@@ -103,12 +115,18 @@ export async function requestGoogleCredential(clientId: string): Promise<string>
   }
 
   return new Promise<string>((resolve, reject) => {
+    // Track if prompt was already handled to avoid double resolve/reject
+    let resolved = false;
+
     google.accounts.id.initialize({
       client_id: clientId,
       callback: (response: CredentialResponse) => {
+        if (resolved) return;
         if (response.credential) {
+          resolved = true;
           resolve(response.credential);
         } else {
+          resolved = true;
           reject(new Error('Google sign-in did not return a credential'));
         }
       },
@@ -117,16 +135,18 @@ export async function requestGoogleCredential(clientId: string): Promise<string>
     });
 
     // Trigger the prompt
-    google.accounts.id.prompt((notification) => {
-      // If One Tap is not displayed (e.g. user dismissed it before),
-      // the prompt will not show. In that case we can fall back or reject.
-      if (notification.isNotDisplayed()) {
-        reject(
-          new Error(
-            'Google One Tap not displayed. Please check your browser settings and try again.',
-          ),
-        );
+    // Note: Under FedCM, the notification callback no longer returns display
+    // moment info (isDisplayed/isNotDisplayed are deprecated).
+    // We just let the prompt happen and catch timeout if user never responds.
+    google.accounts.id.prompt();
+
+    // Set a timeout so the promise doesn't hang indefinitely
+    // if the user dismisses the prompt or never interacts
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        reject(new Error('Sign-in timed out. Please try again.'));
       }
-    });
+    }, 120_000); // 2 minute timeout
   });
 }
