@@ -105,7 +105,10 @@ function loadGoogleScript(): Promise<void> {
 
     script.onerror = () => {
       scriptLoadPromise = null;
-      reject(new Error('Failed to load Google Identity Services script'));
+      // In browsers like Brave with Shields enabled, the GIS script is blocked
+      // at the network level. Treat this as a blocked popup so the caller can
+      // fall back to the OAuth2 redirect flow.
+      reject(new PopupBlockedError());
     };
 
     document.head.appendChild(script);
@@ -130,7 +133,9 @@ export async function requestGoogleCredential(clientId: string): Promise<string>
 
   const google = window.google;
   if (!google?.accounts) {
-    throw new Error('Google Identity Services not available');
+    // Script may have been partially blocked by Brave Shields or similar.
+    // Fall back to redirect flow.
+    throw new PopupBlockedError();
   }
 
   return new Promise<string>((resolve, reject) => {
