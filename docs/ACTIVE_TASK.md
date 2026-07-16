@@ -1,16 +1,19 @@
-## FFH-147: Configure Automatic Production Deployments
+## FFH-150: Perform Production Readiness Review
 
 ### Description
 
-Establish continuous deployment for the application.
+Confirm that the application satisfies the minimum requirements for a public MVP deployment.
 
 ### Acceptance Criteria
 
-Every push to the `main` branch automatically:
+Review confirms:
 
-- Builds the frontend.
-- Deploys the frontend.
-- Builds the backend.
-- Deploys the backend.
-
-Deployment failures are reported clearly.
+- Production URLs are operational.
+- HTTPS is enabled.
+- Environment variables are configured correctly.
+- Authentication works end-to-end.
+- Database connectivity is stable.
+- Redis connectivity is stable.
+- Automatic deployments are operational.
+- Mock authentication has been completely removed.
+- Production documentation is updated to reflect the deployed architecture.
