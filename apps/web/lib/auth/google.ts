@@ -173,6 +173,8 @@ export async function requestGoogleCredential(clientId: string): Promise<string>
         resolved = true;
         reject(new PopupBlockedError());
       }
-    }, 8_000); // 8 second timeout for blocked-popup detection
+    }, 5_000); // 5 second timeout — long enough for GIS popup to appear
+    // in a normal browser, short enough that Brave/Firefox users don't wait
+    // forever before the OAuth2 redirect fallback kicks in.
   });
 }

@@ -21,7 +21,11 @@ interface AuthContextType {
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-const PUBLIC_ROUTES = ['/login', '/', '/room/join'];
+// Routes accessible without authentication.
+// /auth/callback  must be public because Google redirects back to it with the
+//                 OAuth authorization code — the AuthProvider would otherwise
+//                 redirect away before the callback can process the code.
+const PUBLIC_ROUTES = ['/login', '/', '/room/join', '/auth/callback'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<UserProfile | null>(null);
