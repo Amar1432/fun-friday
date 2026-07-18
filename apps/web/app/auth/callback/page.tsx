@@ -4,7 +4,6 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { handleGoogleCallback } from '@/lib/auth/google-redirect';
-import { ssoLogin } from '@/lib/api';
 import { useAuth } from '@/lib/auth/auth-context';
 
 export default function AuthCallbackPage() {
@@ -18,17 +17,13 @@ export default function AuthCallbackPage() {
 
     async function processCallback() {
       try {
-        // Step 1: Exchange the authorization code for an id_token
-        const idToken = await handleGoogleCallback();
+        // Exchange the authorization code for an app JWT + user info
+        // (the backend handles the OAuth token exchange server-side)
+        const result = await handleGoogleCallback();
 
         if (cancelled) return;
 
-        // Step 2: Exchange the id_token with our backend for an app JWT
-        const result = await ssoLogin('google', idToken);
-
-        if (cancelled) return;
-
-        // Step 3: Log in and redirect to dashboard
+        // Log in and redirect to dashboard
         setStatus('success');
         setTimeout(() => {
           login(result.accessToken, result.user);

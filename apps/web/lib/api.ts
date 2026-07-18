@@ -162,4 +162,25 @@ export async function getRooms(token: string): Promise<GetRoomsResponse[]> {
   return envelope.data;
 }
 
+// ---------------------------------------------------------------------------
+// Google OAuth2 Callback (server-side token exchange)
+// ---------------------------------------------------------------------------
+
+/**
+ * Sends the Google OAuth2 authorization code to the backend for server-side
+ * token exchange. The backend has the GOOGLE_CLIENT_SECRET and exchanges the
+ * code with Google's token endpoint securely.
+ */
+export async function exchangeGoogleCode(
+  code: string,
+  codeVerifier: string,
+  redirectUri: string,
+): Promise<SsoLoginResponse> {
+  const envelope = await request<ApiResponse<SsoLoginResponse>>('/auth/sso/google/callback', {
+    method: 'POST',
+    body: JSON.stringify({ code, codeVerifier, redirectUri }),
+  });
+  return envelope.data;
+}
+
 export { ApiError };

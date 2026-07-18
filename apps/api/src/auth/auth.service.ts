@@ -31,6 +31,34 @@ export class AuthService {
     };
   }
 
+  /**
+   * Handles the Google OAuth2 redirect callback.
+   *
+   * 1. Exchanges the authorization code for an id_token (Google token endpoint)
+   * 2. Verifies the id_token
+   * 3. Creates or finds the user
+   * 4. Returns a signed application JWT
+   */
+  async handleGoogleCallback(
+    code: string,
+    codeVerifier: string,
+    redirectUri: string,
+  ): Promise<{
+    accessToken: string;
+    expiresIn: number;
+    user: { id: string; name: string; email: string };
+  }> {
+    // Step 1: Exchange the authorization code for an id_token
+    const idToken = await this.googleSsoProvider.exchangeAuthorizationCode(
+      code,
+      codeVerifier,
+      redirectUri,
+    );
+
+    // Step 2-4: Reuse the existing ssoLogin flow
+    return this.ssoLogin('google', idToken);
+  }
+
   async ssoLogin(
     provider: string,
     idToken: string,

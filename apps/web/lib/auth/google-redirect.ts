@@ -9,13 +9,14 @@
  * 2. Redirect to Google's authorization page
  * 3. User authenticates on Google
  * 4. Google redirects back to /auth/callback with a code
- * 5. Exchange the code for tokens using the Google token endpoint
- * 6. Get the id_token and pass it to the standard ssoLogin flow
+ * 5. Send the code to our backend (has GOOGLE_CLIENT_SECRET) for token exchange
+ * 6. Backend returns the access token + user info directly
  *
  * @see https://developers.google.com/identity/protocols/oauth2/web-server#httprest
  */
 
 import { config } from '@/lib/config';
+import { exchangeGoogleCode, type SsoLoginResponse } from '@/lib/api';
 
 // ---------------------------------------------------------------------------
 // PKCE Helpers
@@ -69,40 +70,6 @@ function getAndClearState(): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Google OAuth2 Token Exchange
-// ---------------------------------------------------------------------------
-
-interface TokenResponse {
-  id_token: string;
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-}
-
-async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenResponse> {
-  const params = new URLSearchParams({
-    code,
-    client_id: config.googleClientId,
-    redirect_uri: config.authCallbackUrl,
-    grant_type: 'authorization_code',
-    code_verifier: codeVerifier,
-  });
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params,
-  });
-
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Google token exchange failed: ${res.status} ${body}`);
-  }
-
-  return res.json() as Promise<TokenResponse>;
-}
-
-// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -149,12 +116,13 @@ export function redirectToGoogle(): void {
  * Handles the OAuth2 redirect callback.
  *
  * To be called from the /auth/callback page. Extracts the authorization code
- * from the URL, exchanges it for tokens, and returns the id_token.
+ * from the URL, sends it to the backend for server-side token exchange, and
+ * returns the login response (access token + user info).
  *
- * @returns The Google id_token JWT string
+ * @returns Object containing accessToken, expiresIn, and user info
  * @throws Error if the code exchange fails or state is invalid
  */
-export async function handleGoogleCallback(): Promise<string> {
+export async function handleGoogleCallback(): Promise<SsoLoginResponse> {
   // Extract the authorization code from the URL
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
@@ -174,15 +142,13 @@ export async function handleGoogleCallback(): Promise<string> {
     throw new Error('Sign-in session expired. Please try signing in again.');
   }
 
-  // Exchange the code for tokens
-  const tokens = await exchangeCodeForTokens(code, codeVerifier);
-
-  if (!tokens.id_token) {
-    throw new Error('Google did not return an ID token');
-  }
-
   // Clean URL — remove OAuth params from the address bar
   window.history.replaceState({}, '', window.location.pathname);
 
-  return tokens.id_token;
+  // Send the code and the redirect URI to our backend for server-side token
+  // exchange. The backend uses this exact redirect_uri when calling Google's
+  // token endpoint, which ensures it matches the one sent in the original
+  // authorization request (important when the same backend serves multiple
+  // frontend domains like localhost, preview, and production).
+  return exchangeGoogleCode(code, codeVerifier, config.authCallbackUrl);
 }
