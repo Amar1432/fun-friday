@@ -1,0 +1,3 @@
+## 2024-10-27 - Consistent Keyboard Focus States
+**Learning:** Sometimes components might look and act perfectly fine for mouse users, but without explicit focus states (like `focus-visible`), keyboard navigators have no visual indication of where they are on the page. In this application, several buttons in the Room Create page were lacking the standard focus classes.
+**Action:** Always ensure that all interactive elements, especially `<button>` and `<Link>` tags, incorporate explicit `focus-visible:ring-2` (along with offset and colors matching the app's standard) to provide clear guidance for keyboard users.
