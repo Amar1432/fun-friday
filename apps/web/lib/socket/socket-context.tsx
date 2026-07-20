@@ -259,7 +259,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       });
 
       newSocket.on('connect_error', (err) => {
-        console.error('Socket connection error:', err);
+        if (process.env.NODE_ENV !== 'test') {
+          console.error('Socket connection error:', err);
+        }
         // Check if it's an authentication error
         if (
           err.message.includes('auth') ||
