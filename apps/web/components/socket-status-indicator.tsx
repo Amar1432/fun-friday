@@ -56,9 +56,10 @@ export function SocketStatusIndicator() {
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full border text-xs font-semibold select-none transition-all duration-300 backdrop-blur-sm cursor-help ${config.bg}`}
+      className={`inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full border text-xs font-semibold select-none transition-all duration-300 backdrop-blur-sm cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${config.bg}`}
       title={config.desc}
       role="status"
+      tabIndex={0}
       aria-live="polite"
       aria-label={`Real-time server connection status: ${config.text}. ${config.desc}`}
       data-testid="socket-status-indicator"
