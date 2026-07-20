@@ -1,0 +1,3 @@
+## 2026-07-20 - Custom Tooltips and Interactive Status Indicators Require Keyboard Focus
+**Learning:** Custom interactive elements (like the SocketStatusIndicator) that rely on tooltips (`title` attribute) or `aria-label` for descriptive information are inaccessible to keyboard and screen reader users if they are not focusable.
+**Action:** Always add `tabIndex={0}` and corresponding `focus-visible` styling to custom status indicators or informative elements so keyboard users can navigate to them and read the full status description.
