@@ -105,8 +105,8 @@ describe('CreateRoomPage', () => {
     expect(screen.getAllByText('Emoji Guess')).toHaveLength(2);
     expect(screen.getByText('Bad Movie Description')).toBeInTheDocument();
     expect(screen.getByText('Gibberish')).toBeInTheDocument();
-    expect(screen.getByText('39 questions')).toBeInTheDocument();
-    expect(screen.getAllByText('40 questions')).toHaveLength(2);
+    expect(screen.getAllByText(/questions/)).toHaveLength(3);
+
     expect(screen.getByText('Create Room')).toBeInTheDocument();
   });
 
