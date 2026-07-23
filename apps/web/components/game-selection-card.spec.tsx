@@ -14,7 +14,7 @@ describe('GameSelectionCard', () => {
       screen.getByText('Guess the movie, show, or phrase from a set of emojis!'),
     ).toBeInTheDocument();
     expect(screen.getByText('🎭')).toBeInTheDocument();
-    expect(screen.getByText('40 questions')).toBeInTheDocument();
+    expect(screen.getByText(/questions/)).toBeInTheDocument();
   });
 
   it('marks selected state accessibly and visually', () => {

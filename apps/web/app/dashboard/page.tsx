@@ -163,6 +163,8 @@ export default function DashboardPage() {
             <button
               onClick={logout}
               className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 p-2 sm:px-4 sm:py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              aria-label="Logout"
+              title="Logout"
             >
               <svg
                 className="w-4 h-4"
