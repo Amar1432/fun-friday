@@ -162,6 +162,8 @@ export default function DashboardPage() {
 
             <button
               onClick={logout}
+              aria-label="Logout"
+              title="Logout"
               className="text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 hover:border-slate-700 p-2 sm:px-4 sm:py-2 rounded-xl transition-all flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             >
               <svg
@@ -170,6 +172,7 @@ export default function DashboardPage() {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
