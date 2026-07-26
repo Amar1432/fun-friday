@@ -281,12 +281,17 @@ function JoinRoomForm() {
 
               {/* Display Name Field */}
               <div className="space-y-1.5">
-                <label
-                  htmlFor="display-name-input"
-                  className="text-xs font-semibold text-slate-350"
-                >
-                  Your Name
-                </label>
+                <div className="flex justify-between items-center">
+                  <label
+                    htmlFor="display-name-input"
+                    className="text-xs font-semibold text-slate-300"
+                  >
+                    Your Name
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {displayName.length}/20
+                  </span>
+                </div>
                 <input
                   type="text"
                   id="display-name-input"
