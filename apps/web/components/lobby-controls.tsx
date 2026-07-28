@@ -96,16 +96,26 @@ export function LobbyControls({
 
       {/* Start Button — host only */}
       {isHost ? (
-        <button
-          onClick={onStartGame}
-          disabled={isStartDisabled}
-          data-testid="start-game-button"
-          className={`px-4 py-2 rounded-lg font-bold text-xs tracking-wide shadow-lg flex items-center gap-1.5 cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 shrink-0 ${
+        <span
+          className={isStartDisabled ? 'cursor-not-allowed inline-flex' : 'inline-flex'}
+          title={
             isStartDisabled
-              ? 'bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed shadow-none'
-              : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-indigo-500/20 hover:shadow-indigo-500/30 hover:brightness-110 active:scale-[0.97]'
-          }`}
+              ? isStarting
+                ? 'Game is starting...'
+                : 'All players must be ready to start'
+              : 'Start the game'
+          }
         >
+          <button
+            onClick={onStartGame}
+            disabled={isStartDisabled}
+            data-testid="start-game-button"
+            className={`px-4 py-2 rounded-lg font-bold text-xs tracking-wide shadow-lg flex items-center gap-1.5 cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 shrink-0 ${
+              isStartDisabled
+                ? 'bg-slate-800 text-slate-500 border border-slate-700/50 pointer-events-none shadow-none'
+                : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-indigo-500/20 hover:shadow-indigo-500/30 hover:brightness-110 active:scale-[0.97]'
+            }`}
+          >
           {isStarting ? (
             <>
               <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
@@ -144,7 +154,8 @@ export function LobbyControls({
               <span>Start Game</span>
             </>
           )}
-        </button>
+          </button>
+        </span>
       ) : (
         <div className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 border border-dashed border-slate-700/50 shrink-0 flex items-center gap-1.5">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
