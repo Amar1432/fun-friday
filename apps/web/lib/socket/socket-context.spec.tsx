@@ -280,11 +280,11 @@ describe('SocketProvider and hooks', () => {
     const connectErrorListener = connectErrorCall![1];
 
     act(() => {
-      connectErrorListener(new Error('Unauthorized token'));
+      connectErrorListener(new Error('auth token'));
     });
 
     expect(screen.getByTestId('error-code')).toHaveTextContent('AUTH_FAILED');
-    expect(screen.getByTestId('error-message')).toHaveTextContent('Unauthorized token');
+    expect(screen.getByTestId('error-message')).toHaveTextContent('auth token');
   });
 
   it('updates error state on socket error event', () => {

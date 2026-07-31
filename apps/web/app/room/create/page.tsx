@@ -27,6 +27,7 @@ export default function CreateRoomPage() {
   const [roomId, setRoomId] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [selectedGameId, setSelectedGameId] = React.useState(DEFAULT_GAME_ID);
+  const [isCopied, setIsCopied] = React.useState(false);
 
   const selectedGameMode = getGameModeByGameId(selectedGameId) ?? supportedGameModes[0];
 
@@ -70,6 +71,8 @@ export default function CreateRoomPage() {
   const handleCopyRoomCode = () => {
     if (roomCode) {
       navigator.clipboard.writeText(roomCode);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
     }
   };
 
@@ -301,17 +304,48 @@ export default function CreateRoomPage() {
                   fullWidth
                   onPress={handleCopyRoomCode}
                   variant="secondary"
-                  className="bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white font-medium text-sm"
+                  aria-label={isCopied ? 'Room code copied' : 'Copy room code'}
+                  className={
+                    isCopied
+                      ? 'bg-green-500/15 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500/40 text-green-400 font-medium text-sm'
+                      : 'bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white font-medium text-sm'
+                  }
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  Copy Code
+                  {isCopied ? (
+                    <>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Copy Code
+                    </>
+                  )}
                 </Button>
               </Card.Content>
 
