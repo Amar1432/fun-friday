@@ -103,9 +103,4 @@ export interface ClientToServerEvents {
 }
 
 export type ConnectionStatus =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'reconnecting'
-  | 'restoring'
-  | 'auth_failed';
+  'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'restoring' | 'auth_failed';
