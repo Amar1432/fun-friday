@@ -1,0 +1,3 @@
+## 2026-08-01 - Consistent Focus States on Native Elements
+**Learning:** Custom native `<button>` and `<a>` elements don't automatically inherit the app's standard focus ring styling like the unified UI components (e.g., `<Button>`) do, making them inaccessible for keyboard users if left unstyled.
+**Action:** When adding or editing native interactive elements, explicitly add the standard focus ring classes (`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950`) and an appropriate rounded utility if necessary.
