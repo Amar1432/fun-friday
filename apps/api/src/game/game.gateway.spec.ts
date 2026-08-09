@@ -246,6 +246,11 @@ describe('GameGateway', () => {
         },
       } as unknown as Socket;
 
+      // Mock updateRoomMetadata to return a resolved promise so .catch() doesn't fail
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValueOnce(undefined);
+      // Mock buildRoomStatePayload to resolve
+      jest.spyOn(gateway as any, 'buildRoomStatePayload').mockResolvedValueOnce({});
+
       gateway.handleDisconnect(mockSocket);
 
       expect(gateway.disconnectTimers.has('guest-123')).toBe(true);
@@ -294,6 +299,23 @@ describe('GameGateway', () => {
         status: 'LOBBY',
         hostId: 'host-123',
       });
+
+      // Mock methods called during handleDisconnect
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValueOnce(undefined);
+
+      // Provide valid mock payload returns since it's called twice
+      jest.spyOn(gateway as any, 'buildRoomStatePayload')
+        .mockResolvedValueOnce({
+          status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 2,
+        })
+        .mockResolvedValueOnce({
+          status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 1,
+          players: [{id: 'guest-456'}]
+        });
 
       gateway.handleDisconnect(mockSocket);
 
@@ -348,6 +370,14 @@ describe('GameGateway', () => {
       } as unknown as Socket;
 
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValueOnce(undefined);
+      jest.spyOn(gateway as any, 'buildRoomStatePayload')
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({
+          status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 0,
+        });
 
       gateway.handleDisconnect(mockSocket);
 
