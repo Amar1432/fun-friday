@@ -1,0 +1,3 @@
+## 2026-08-20 - Adding focus rings to interactive elements
+**Learning:** Native `<button>` and `<a>` elements in this project do not inherit unified UI component styles and lack focus states, impacting keyboard accessibility. Also, updating tests based on UI state might be necessary when game data changes (e.g. question counts) but the underlying tests weren't updated in sync.
+**Action:** When working on navigation or custom interactive elements, always ensure to explicitly add the standard Tailwind focus ring classes (`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950`). Watch out for test assertions checking for static data when working with shared logic.
