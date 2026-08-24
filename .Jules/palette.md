@@ -1,0 +1,3 @@
+## 2026-08-24 - [Keyboard Focus Consistency on Custom Buttons]
+**Learning:** Custom native `<button>` and `<a>` elements in this app require explicit Tailwind focus styles (`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950`) along with proper border-radius (`rounded-xl` or `rounded`) to match the unified UI components focus rings.
+**Action:** Always append these specific focus-visible classes and border-radius explicitly when introducing or modifying custom interactive elements to ensure visual focus state accessibility.

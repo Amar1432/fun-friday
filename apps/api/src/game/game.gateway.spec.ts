@@ -233,6 +233,18 @@ describe('GameGateway', () => {
     it('should schedule cleanup timer for guest player with active roomCode', () => {
       jest.useFakeTimers();
 
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+
+      jest.spyOn(gateway as any, 'buildRoomStatePayload').mockResolvedValue({
+        status: 'LOBBY',
+        hostId: 'host-123',
+        playerCount: 1,
+        players: [{ id: 'guest-456' }],
+      } as any);
+      gateway.server = {
+        to: jest.fn().mockReturnValue({ emit: jest.fn() }),
+      } as unknown as Server;
+
       const mockSocket = {
         id: 'socket-guest',
         data: {
@@ -261,6 +273,31 @@ describe('GameGateway', () => {
 
     it('should execute cleanup and broadcast after grace period expires', async () => {
       jest.useFakeTimers();
+
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+
+      const payloadSequence = [
+        {
+          status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 1,
+          players: [{ id: 'guest-456' }],
+        }, // first call immediately
+        {
+          status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 1,
+          players: [{ id: 'guest-456' }],
+        }, // second call after 30s
+      ];
+      let callCount = 0;
+      jest
+
+        .spyOn(gateway as any, 'buildRoomStatePayload')
+
+        .mockImplementation(() =>
+          Promise.resolve(payloadSequence[callCount++] as any),
+        );
 
       const toEmitMock = jest.fn();
       gateway.server = {
@@ -327,6 +364,30 @@ describe('GameGateway', () => {
     it('should delete empty room after last player cleanup', async () => {
       jest.useFakeTimers();
 
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+
+      const payloadSequence = [
+        {
+          status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 0,
+          players: [],
+        }, // first call immediately
+        {
+          status: 'LOBBY',
+          hostId: 'host-123',
+          playerCount: 0,
+          players: [],
+        }, // second call after 30s
+      ];
+      let callCount = 0;
+      jest
+
+        .spyOn(gateway as any, 'buildRoomStatePayload')
+
+        .mockImplementation(() =>
+          Promise.resolve(payloadSequence[callCount++] as any),
+        );
       const toEmitMock = jest.fn();
       gateway.server = {
         to: jest.fn().mockReturnValue({
