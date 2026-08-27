@@ -326,6 +326,26 @@ describe('LobbyPage Component', () => {
     expect(screen.queryByText('Next Round')).not.toBeInTheDocument();
   });
 
+  it('host can end game early but prompt shows', () => {
+    mockRoomState.status = 'IN_PROGRESS';
+    mockRoomState.hostId = 'host-123';
+    mockGameState.currentQuestion = {
+      id: 'q-1',
+      prompt: '🎩⚡👦',
+      timeLimitSeconds: 20,
+      difficulty: 'MEDIUM',
+    };
+
+    const confirmSpy = jest.spyOn(window, 'confirm').mockImplementation(() => false);
+
+    render(<LobbyPage />);
+
+    fireEvent.click(screen.getByText('End Game Early'));
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+
+    confirmSpy.mockRestore();
+  });
+
   it('renders submitted answer state for non-host players', () => {
     mockRoomState.status = 'IN_PROGRESS';
     mockRoomState.hostId = 'host-123';
