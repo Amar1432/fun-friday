@@ -246,6 +246,9 @@ describe('GameGateway', () => {
         },
       } as unknown as Socket;
 
+      // Mock the promise returned by updateRoomMetadata
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+
       gateway.handleDisconnect(mockSocket);
 
       expect(gateway.disconnectTimers.has('guest-123')).toBe(true);

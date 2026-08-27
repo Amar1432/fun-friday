@@ -225,6 +225,12 @@ export default function LobbyPage() {
   }, [room.id, roomIdParam, dispatcher]);
 
   const handleEndGame = React.useCallback(() => {
+    const confirmed = window.confirm(
+      'Are you sure you want to end the game early? This will end the session for all players.',
+    );
+    if (!confirmed) {
+      return;
+    }
     const activeRoomId = room.id || roomIdParam;
     if (activeRoomId) {
       dispatcher.endGame({ roomId: activeRoomId });
