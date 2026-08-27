@@ -338,12 +338,7 @@ describe('LobbyPage Component', () => {
 
     const confirmSpy = jest.spyOn(window, 'confirm').mockImplementation(() => false);
 
-    render(
-      <LobbyPage
-        params={{ roomCode: 'ROOM12' }}
-        searchParams={{ roomId: 'room-id-123', gameId: 'game-1' }}
-      />,
-    );
+    render(<LobbyPage />);
 
     fireEvent.click(screen.getByText('End Game Early'));
     expect(confirmSpy).toHaveBeenCalledTimes(1);
