@@ -124,11 +124,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     // Mark player as disconnected in Redis metadata (for UI indication, not removal yet)
-    void this.redisRoomRepository
+    this.redisRoomRepository
       .updateRoomMetadata(roomCode, {
         [`player:${playerId}:disconnected`]: Date.now().toString(),
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         this.logger.warn(
           `Failed to mark player ${playerId} as disconnected in Redis: ${err instanceof Error ? err.message : String(err)}`,
         );
