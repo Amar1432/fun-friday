@@ -232,6 +232,9 @@ describe('GameGateway', () => {
 
     it('should schedule cleanup timer for guest player with active roomCode', () => {
       jest.useFakeTimers();
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+      redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
+      redisRoomRepositoryMock.getRoomMetadata.mockResolvedValue({});
 
       const mockSocket = {
         id: 'socket-guest',

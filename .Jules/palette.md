@@ -1,0 +1,3 @@
+## 2024-05-18 - Improve Player Stats Accessibility in Lobby Controls
+**Learning:** When displaying grouped statistics alongside icons (like total players or ready players), screen readers can fail to provide context. Adding a `title` attribute to the wrapping `<span>`, an `aria-hidden="true"` to decorative/redundant SVGs, and an explanatory `<span className="sr-only">` (e.g. `Ready players: `) right before the statistic dramatically improves keyboard and screen reader experiences without changing the visual layout.
+**Action:** Use this combination (wrapper `title` + hidden icon + `sr-only` text label) for future inline statistics throughout the Fun Friday Hub.
