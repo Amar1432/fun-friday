@@ -232,6 +232,7 @@ describe('GameGateway', () => {
 
     it('should schedule cleanup timer for guest player with active roomCode', () => {
       jest.useFakeTimers();
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
 
       const mockSocket = {
         id: 'socket-guest',
@@ -261,6 +262,7 @@ describe('GameGateway', () => {
 
     it('should execute cleanup and broadcast after grace period expires', async () => {
       jest.useFakeTimers();
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
 
       const toEmitMock = jest.fn();
       gateway.server = {
@@ -326,6 +328,7 @@ describe('GameGateway', () => {
 
     it('should delete empty room after last player cleanup', async () => {
       jest.useFakeTimers();
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
 
       const toEmitMock = jest.fn();
       gateway.server = {
@@ -4096,7 +4099,7 @@ describe('GameGateway', () => {
         status: 'IN_PROGRESS',
       });
 
-      jest.spyOn(gateway, 'completeGame').mockResolvedValue();
+      jest.spyOn(gateway, 'completeGame').mockResolvedValue(undefined);
 
       await gateway.handleEndGame(mockSocket, { roomId: 'room-uuid' });
 

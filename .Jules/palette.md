@@ -1,0 +1,1 @@
+## 2026-09-16 - Added accessible titles and sr-only to player counts in lobby controls\n**Learning:** Missing aria-labels on informative SVGs alongside visual-only text limits accessibility.\n**Action:** Applied `aria-hidden='true'` to visual SVGs and appended `sr-only` descriptive spans for accessible screen reader output.
