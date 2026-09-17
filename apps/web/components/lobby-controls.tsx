@@ -100,6 +100,13 @@ export function LobbyControls({
           onClick={onStartGame}
           disabled={isStartDisabled}
           data-testid="start-game-button"
+          title={
+            isStartDisabled
+              ? isStarting
+                ? 'Starting game...'
+                : 'Waiting for all players to be ready'
+              : 'Start the game'
+          }
           className={`px-4 py-2 rounded-lg font-bold text-xs tracking-wide shadow-lg flex items-center gap-1.5 cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 shrink-0 ${
             isStartDisabled
               ? 'bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed shadow-none'
