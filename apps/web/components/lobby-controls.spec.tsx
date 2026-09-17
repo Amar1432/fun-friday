@@ -26,6 +26,7 @@ describe('LobbyControls Component', () => {
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute('title', 'Waiting for all players to be ready');
     expect(startButton).toHaveTextContent('Start Game');
 
     expect(screen.getByTestId('lobby-status-message')).toHaveTextContent('Waiting for players...');
@@ -44,6 +45,7 @@ describe('LobbyControls Component', () => {
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute('title', 'Waiting for all players to be ready');
 
     expect(screen.getByTestId('lobby-status-message')).toHaveTextContent('Waiting for ready...');
   });
@@ -62,6 +64,7 @@ describe('LobbyControls Component', () => {
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeEnabled();
+    expect(startButton).toHaveAttribute('title', 'Start the game');
 
     expect(screen.getByTestId('lobby-status-message')).toHaveTextContent('All players ready!');
 
@@ -76,6 +79,7 @@ describe('LobbyControls Component', () => {
 
     const startButton = screen.getByTestId('start-game-button');
     expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute('title', 'Starting game...');
     expect(startButton).toHaveTextContent('Starting...');
   });
 
