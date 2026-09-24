@@ -1,0 +1,3 @@
+## 2024-05-18 - Grouped Statistic Accessibility
+**Learning:** Grouped statistics icons paired with plain text need specific HTML tags to be read properly. While tests may rely on `toHaveTextContent` over the entire parent wrapper, adding visually hidden `.sr-only` text *outside* the `data-testid` inner wrapper allows us to improve screen reader feedback without breaking existing test assertions.
+**Action:** When adding `.sr-only` descriptive text to existing stat counts, wrap it adjacent to (not inside) the specific element targeted by snapshot/content tests. Apply `aria-hidden="true"` to the decorative icon, and give the entire parent container a `title` attribute for mouse users.
