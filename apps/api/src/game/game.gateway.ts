@@ -124,7 +124,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     // Mark player as disconnected in Redis metadata (for UI indication, not removal yet)
-    void this.redisRoomRepository
+    this.redisRoomRepository
       .updateRoomMetadata(roomCode, {
         [`player:${playerId}:disconnected`]: Date.now().toString(),
       })
@@ -136,7 +136,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Broadcast updated room state immediately so all remaining clients
     // see the player's isConnected=false status without waiting for cleanup
-    void this.buildRoomStatePayload(roomCode)
+    this.buildRoomStatePayload(roomCode)
       .then((payload) => {
         if (this.server) {
           this.server.to(roomCode).emit('RoomStateUpdated', payload);

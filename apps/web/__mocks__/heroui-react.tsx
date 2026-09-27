@@ -13,8 +13,6 @@ export function Button({
   isDisabled,
   isPending,
   fullWidth,
-  size: _size,
-  variant: _variant,
   id,
   'data-testid': dataTestId,
 }: {
@@ -92,7 +90,6 @@ function CardFooter({ children, className }: { children?: React.ReactNode; class
 export function Card({
   children,
   className,
-  variant: _variant,
 }: {
   children?: React.ReactNode;
   className?: string;
@@ -108,14 +105,6 @@ Card.Content = CardContent;
 Card.Footer = CardFooter;
 
 // ── Spinner ─────────────────────────────────────────────────────────────
-export function Spinner({
-  className,
-  color: _color,
-  size: _size,
-}: {
-  className?: string;
-  color?: string;
-  size?: string;
-}) {
+export function Spinner({ className }: { className?: string; color?: string; size?: string }) {
   return <span className={className} data-spinner />;
 }
