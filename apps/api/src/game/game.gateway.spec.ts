@@ -178,6 +178,10 @@ describe('GameGateway', () => {
   });
 
   describe('handleDisconnect', () => {
+    beforeEach(() => {
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+    });
+
     it('should log disconnection', () => {
       const mockSocket = {
         id: 'socket-123',
