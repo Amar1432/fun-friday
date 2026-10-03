@@ -69,7 +69,6 @@ describe('GameGateway', () => {
     expireAllRoomKeys: jest.fn(),
     removePlayerDisconnectedStatus: jest.fn(),
   };
-  redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
