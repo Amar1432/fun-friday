@@ -1,0 +1,3 @@
+## 2026-10-03 - Accessible Grouped Statistics Icons
+**Learning:** When displaying grouped statistics alongside icons (like player and ready counts), screen readers often read raw numbers sequentially without context. However, adding descriptive labels inside elements with `data-testid` attributes can inadvertently break existing `toHaveTextContent` assertions in snapshot or integration tests.
+**Action:** Improve accessibility by adding a `title` attribute to the wrapper and `aria-hidden='true'` to the decorative SVGs. Crucially, insert a visually hidden text node (`<span className='sr-only'>`) describing the statistic, but ensure it is placed *outside* the specific DOM nodes targeted by `data-testid` wrappers to maintain test stability.
