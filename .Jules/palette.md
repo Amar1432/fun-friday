@@ -1,0 +1,3 @@
+## 2026-10-04 - Accessible Grouped Statistics
+**Learning:** When adding screen reader text (`.sr-only`) to describe grouped statistics near elements with `data-testid` attributes, the visually hidden text node must be placed outside the `data-testid` wrapper. Otherwise, it will break `toHaveTextContent` assertions in existing tests. Adding `title` to the wrapper and `aria-hidden='true'` to the SVGs also improves accessibility for both sighted and non-sighted users.
+**Action:** When making grouped statistics accessible, wrap the group, add a `title`, hide the SVG with `aria-hidden='true'`, and place the `<span className='sr-only'>` describing the statistic outside the element containing the value.
