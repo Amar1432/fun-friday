@@ -38,7 +38,9 @@ describe('SocketDispatcher', () => {
         guestToken: 'token123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.joinRoom(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -80,7 +82,9 @@ describe('SocketDispatcher', () => {
         playerId: 'player123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.leaveRoom(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -105,7 +109,9 @@ describe('SocketDispatcher', () => {
         playerId: 'player123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.playerReady(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -130,7 +136,9 @@ describe('SocketDispatcher', () => {
         gameId: 'game123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.startGame(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -155,7 +163,9 @@ describe('SocketDispatcher', () => {
         gameId: 'game123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.selectGame(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -178,7 +188,9 @@ describe('SocketDispatcher', () => {
         roomId: 'room123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.nextRound(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -201,7 +213,9 @@ describe('SocketDispatcher', () => {
         roomId: 'room123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.endGame(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -230,7 +244,9 @@ describe('SocketDispatcher', () => {
         responseTimeMs: 5000,
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.submitAnswer(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -255,7 +271,9 @@ describe('SocketDispatcher', () => {
         playerId: 'player456',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.kickPlayer(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });
@@ -296,7 +314,9 @@ describe('SocketDispatcher', () => {
         roomId: 'room123',
       };
 
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       dispatcher.reconnectRequest(payload);
+      consoleSpy.mockRestore();
 
       expect(mockSocket.emit).not.toHaveBeenCalled();
     });

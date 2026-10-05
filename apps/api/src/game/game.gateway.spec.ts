@@ -52,7 +52,7 @@ describe('GameGateway', () => {
   const redisRoomRepositoryMock = {
     getRoomMetadata: jest.fn(),
     createRoomState: jest.fn(),
-    updateRoomMetadata: jest.fn(),
+    updateRoomMetadata: jest.fn().mockResolvedValue(undefined),
     getPlayers: jest.fn(),
     getPlayer: jest.fn(),
     setPlayer: jest.fn(),
@@ -249,6 +249,7 @@ describe('GameGateway', () => {
       gateway.handleDisconnect(mockSocket);
 
       expect(gateway.disconnectTimers.has('guest-123')).toBe(true);
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
       expect(redisRoomRepositoryMock.updateRoomMetadata).toHaveBeenCalledWith(
         'ROOM12',
         expect.objectContaining({
