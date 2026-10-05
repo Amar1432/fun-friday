@@ -279,9 +279,11 @@ describe('SocketProvider and hooks', () => {
 
     const connectErrorListener = connectErrorCall![1];
 
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     act(() => {
       connectErrorListener(new Error('Unauthorized token'));
     });
+    consoleSpy.mockRestore();
 
     expect(screen.getByTestId('error-code')).toHaveTextContent('AUTH_FAILED');
     expect(screen.getByTestId('error-message')).toHaveTextContent('Unauthorized token');
