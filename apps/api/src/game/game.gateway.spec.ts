@@ -246,6 +246,9 @@ describe('GameGateway', () => {
         },
       } as unknown as Socket;
 
+      // Mock updateRoomMetadata to resolve safely
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
+
       gateway.handleDisconnect(mockSocket);
 
       expect(gateway.disconnectTimers.has('guest-123')).toBe(true);
@@ -294,6 +297,9 @@ describe('GameGateway', () => {
         status: 'LOBBY',
         hostId: 'host-123',
       });
+
+      // Mock updateRoomMetadata to resolve safely
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
 
       gateway.handleDisconnect(mockSocket);
 
@@ -348,6 +354,9 @@ describe('GameGateway', () => {
       } as unknown as Socket;
 
       redisRoomRepositoryMock.getPlayers.mockResolvedValue({});
+
+      // Mock updateRoomMetadata to resolve safely
+      redisRoomRepositoryMock.updateRoomMetadata.mockResolvedValue(undefined);
 
       gateway.handleDisconnect(mockSocket);
 
