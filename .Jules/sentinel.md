@@ -1,3 +1,3 @@
-## 2026-10-10 - Error Handling on Promises
-**Learning:** When invoking a method that returns a promise directly on an object, using the optional chaining operator `?.catch()` safely handles cases where the method might unexpectedly return undefined or throw synchronously without returning a promise.
-**Action:** Applied this pattern to Redis updates in the game gateway to prevent uncaught promise rejections from crashing the app.
+## 2026-10-10 - Synchronizing Mock Data with Frontend Definitions
+**Learning:** When making updates to game definitions that are mirrored between the backend and frontend (like question counts), always ensure that associated snapshot tests and mock data in the frontend are updated accordingly to avoid artificial CI failures.
+**Action:** Updated text assertions in `apps/web/components/game-selection-card.spec.tsx` and `apps/web/app/room/create/page.spec.tsx` to reflect the newly updated 43 questions for Emoji Guess and Bad Movie Description.
