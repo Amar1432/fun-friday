@@ -53,7 +53,13 @@ export function LobbyControls({
       <div className="flex items-center gap-2 text-xs text-slate-400 shrink-0">
         <span className="flex items-center gap-1" title="Total Players">
           <span className="sr-only">Total Players: </span>
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -63,10 +69,18 @@ export function LobbyControls({
           </svg>
           <span data-testid="player-count">{totalCount}</span>
         </span>
-        <span className="text-slate-700" aria-hidden="true">|</span>
+        <span className="text-slate-700" aria-hidden="true">
+          |
+        </span>
         <span className="flex items-center gap-1" title="Ready Players">
           <span className="sr-only">Ready Players: </span>
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
