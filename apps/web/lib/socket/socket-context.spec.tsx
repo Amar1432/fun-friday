@@ -261,6 +261,7 @@ describe('SocketProvider and hooks', () => {
   });
 
   it('updates error state on connect_error', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockUseAuth.mockReturnValue({
       token: 'some-token',
       logout: jest.fn(),
@@ -285,6 +286,7 @@ describe('SocketProvider and hooks', () => {
 
     expect(screen.getByTestId('error-code')).toHaveTextContent('AUTH_FAILED');
     expect(screen.getByTestId('error-message')).toHaveTextContent('Unauthorized token');
+    errorSpy.mockRestore();
   });
 
   it('updates error state on socket error event', () => {
