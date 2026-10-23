@@ -1,0 +1,4 @@
+## 2025-02-23 - Accessibility for Grouped Statistics with Icons
+
+**Learning:** When displaying grouped statistics alongside icons in a shared interface (like lobby controls), screen readers often read redundant generic information or lack context for what the numbers mean. Furthermore, blindly adding `.sr-only` text directly inside `data-testid` wrapped elements can easily break existing frontend tests that use `toHaveTextContent` assertions.
+**Action:** Always wrap grouped statistic indicators in a `title` attribute for mouse users. Apply `aria-hidden="true"` to the decorative SVG icons. Add a visually hidden `<span className="sr-only">` detailing the label (e.g., "Total players:") immediately before the text to provide context for screen readers. Crucially, ensure the `.sr-only` node is placed **outside** of the inner wrapper that holds the `data-testid` to prevent unexpected testing failures.
