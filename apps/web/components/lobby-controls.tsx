@@ -51,8 +51,14 @@ export function LobbyControls({
 
       {/* Player Stats — inline */}
       <div className="flex items-center gap-2 text-xs text-slate-400 shrink-0">
-        <span className="flex items-center gap-1">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span className="flex items-center gap-1" title="Total players">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -60,11 +66,18 @@ export function LobbyControls({
               d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
+          <span className="sr-only">Total players</span>
           <span data-testid="player-count">{totalCount}</span>
         </span>
         <span className="text-slate-700">|</span>
-        <span className="flex items-center gap-1">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span className="flex items-center gap-1" title="Ready players">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -72,6 +85,7 @@ export function LobbyControls({
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
+          <span className="sr-only">Ready players</span>
           <span data-testid="ready-count">
             {readyCount}/{totalCount}
           </span>
@@ -108,7 +122,12 @@ export function LobbyControls({
         >
           {isStarting ? (
             <>
-              <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+              <svg
+                className="animate-spin h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -127,7 +146,13 @@ export function LobbyControls({
             </>
           ) : (
             <>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -147,7 +172,13 @@ export function LobbyControls({
         </button>
       ) : (
         <div className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 border border-dashed border-slate-700/50 shrink-0 flex items-center gap-1.5">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
