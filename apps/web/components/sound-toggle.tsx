@@ -16,7 +16,13 @@ export function SoundToggle({ isMuted, onToggle }: SoundToggleProps) {
       title={isMuted ? 'Sound off' : 'Sound on'}
     >
       {isMuted ? (
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-3.5 h-3.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -31,7 +37,13 @@ export function SoundToggle({ isMuted, onToggle }: SoundToggleProps) {
           />
         </svg>
       ) : (
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-3.5 h-3.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
