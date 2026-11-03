@@ -1,0 +1,3 @@
+## 2024-03-24 - Initializing Palette Journal\n**Learning:** Started UX/a11y observations.\n**Action:** Will track significant findings here.
+
+\n## 2026-11-03 - Grouped Statistics Accessibility\n**Learning:** When displaying grouped statistics alongside icons (like player counts in lobby-controls), screen readers may fail to parse the visual structure correctly.\n**Action:** Add a `title` attribute to the wrapper, `aria-hidden='true'` to the SVG icon and a visually hidden `<span className='sr-only'>` text node describing the statistic directly before the testid wrapper, ensuring the semantic meaning is preserved without breaking test assertions.
