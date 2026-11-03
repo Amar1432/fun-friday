@@ -52,7 +52,7 @@ describe('GameGateway', () => {
   const redisRoomRepositoryMock = {
     getRoomMetadata: jest.fn(),
     createRoomState: jest.fn(),
-    updateRoomMetadata: jest.fn(),
+    updateRoomMetadata: jest.fn().mockResolvedValue(undefined),
     getPlayers: jest.fn(),
     getPlayer: jest.fn(),
     setPlayer: jest.fn(),
